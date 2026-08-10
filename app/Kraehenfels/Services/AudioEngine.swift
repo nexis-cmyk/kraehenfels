@@ -82,7 +82,7 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     private func configureSession() {
         let session = AVAudioSession.sharedInstance()
-        try? session.setCategory(.playback, mode: .ambient, options: [.mixWithOthers, .duckOthers])
+        try? session.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
         try? session.setActive(true)
     }
 
