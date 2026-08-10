@@ -1,0 +1,26 @@
+{
+  "product": "Kraehenfels Spielleitungs-App",
+  "platform": "ios",
+  "style": "black-frost-native",
+  "color": {
+    "background": "#090E17",
+    "surface": "#111826",
+    "surfaceRaised": "#172133",
+    "primary": "#B5D6EA",
+    "accent": "#4A8FCE",
+    "muted": "#94AABC",
+    "warning": "#D17B6E"
+  },
+  "type": {
+    "body": "system",
+    "display": "system-rounded",
+    "scale": "dynamic"
+  },
+  "rules": {
+    "minimumTouchTarget": 44,
+    "cardRadius": 18,
+    "pagePadding": 20,
+    "respectReducedMotion": true,
+    "doNotUseParchmentSkeuomorphism": true
+  }
+}

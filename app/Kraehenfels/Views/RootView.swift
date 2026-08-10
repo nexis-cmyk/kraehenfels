@@ -1,0 +1,139 @@
+import SwiftUI
+
+struct RootView: View {
+    @EnvironmentObject private var content: ContentStore
+    @EnvironmentObject private var audio: AudioEngine
+    @AppStorage("currentSceneID") private var currentSceneID = "S01"
+    @AppStorage("completedSceneIDs") private var completedSceneIDs = ""
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    header
+                    currentSceneCard
+                    sceneList
+                    quickActions
+                }
+                .padding(20)
+            }
+            .background(FrostTheme.ink.ignoresSafeArea())
+            .navigationTitle("Krähenfels")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        NavigationLink("Regeln", destination: RulesView())
+                        NavigationLink("Einstellungen", destination: SettingsView())
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .foregroundStyle(FrostTheme.frost)
+                    }
+                    .accessibilityLabel("Weitere Bereiche")
+                }
+            }
+        }
+        .tint(FrostTheme.cobalt)
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("DIE WEISSE FRAU SCHWEIGT")
+                .font(.caption.weight(.semibold))
+                .tracking(1.6)
+                .foregroundStyle(FrostTheme.cobalt)
+            Text("Die Nacht läuft.")
+                .font(.system(size: 35, weight: .bold, design: .rounded))
+                .foregroundStyle(FrostTheme.frost)
+            Text("Spielleitung für drei Reisende · Schwarzwald, November 1890")
+                .font(.subheadline)
+                .foregroundStyle(FrostTheme.quiet)
+        }
+    }
+
+    private var currentSceneCard: some View {
+        Group {
+            if let scene = content.scene(for: currentSceneID) {
+                NavigationLink(destination: SceneDetailView(scene: scene)) {
+                    FrostCard {
+                        HStack(alignment: .top, spacing: 14) {
+                            Image(systemName: "circle.dotted.circle")
+                                .font(.title2)
+                                .foregroundStyle(FrostTheme.frost)
+                                .frame(width: 28)
+                            VStack(alignment: .leading, spacing: 5) {
+                                SectionLabel(title: "Aktuelle Szene")
+                                Text(scene.title)
+                                    .font(.title3.weight(.semibold))
+                                    .foregroundStyle(.white)
+                                Text(scene.duration)
+                                    .font(.caption)
+                                    .foregroundStyle(FrostTheme.quiet)
+                            }
+                            Spacer()
+                            Image(systemName: "arrow.up.right")
+                                .foregroundStyle(FrostTheme.cobalt)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private var sceneList: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionLabel(title: "Szenen")
+            ForEach(content.manifest.scenes) { scene in
+                NavigationLink(destination: SceneDetailView(scene: scene)) {
+                    sceneRow(scene)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private func sceneRow(_ scene: SceneEntry) -> some View {
+        let completed = completedSceneIDs.split(separator: ",").contains(Substring(scene.id))
+        return HStack(spacing: 13) {
+            Text(scene.id)
+                .font(.caption.monospaced().weight(.bold))
+                .foregroundStyle(completed ? FrostTheme.cobalt : FrostTheme.quiet)
+                .frame(width: 32)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(scene.title)
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(.white)
+                Text(scene.duration)
+                    .font(.caption)
+                    .foregroundStyle(FrostTheme.quiet)
+            }
+            Spacer()
+            Image(systemName: completed ? "checkmark.circle.fill" : "chevron.right")
+                .foregroundStyle(completed ? FrostTheme.cobalt : FrostTheme.quiet)
+        }
+        .padding(.vertical, 8)
+        .contentShape(Rectangle())
+    }
+
+    private var quickActions: some View {
+        HStack(spacing: 12) {
+            NavigationLink(destination: RulesView()) {
+                FrostCard {
+                    Label("Regeln", systemImage: "dice")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(FrostTheme.frost)
+                }
+            }
+            .buttonStyle(.plain)
+            NavigationLink(destination: SettingsView()) {
+                FrostCard {
+                    Label("Audio", systemImage: "speaker.wave.2")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(FrostTheme.frost)
+                }
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}

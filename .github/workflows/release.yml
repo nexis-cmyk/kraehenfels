@@ -1,0 +1,41 @@
+name: iOS release IPA
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project
+        run: cd app && xcodegen generate
+      - name: Build unsigned app
+        run: |
+          xcodebuild \
+            -project app/Kraehenfels.xcodeproj \
+            -scheme Kraehenfels \
+            -sdk iphoneos \
+            -configuration Release \
+            -derivedDataPath "$RUNNER_TEMP/derived" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+      - name: Package IPA
+        run: |
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          cp -R "$RUNNER_TEMP/derived/Build/Products/Release-iphoneos/Kraehenfels.app" "$RUNNER_TEMP/ipa/Payload/"
+          cd "$RUNNER_TEMP/ipa"
+          zip -qry "$GITHUB_WORKSPACE/Kraehenfels.ipa" Payload
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Kraehenfels.ipa
+          generate_release_notes: true

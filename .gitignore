@@ -1,0 +1,13 @@
+outputs/
+work/
+_TMP/
+**/.DS_Store
+**/DerivedData/
+**/.build/
+**/build/
+**/*.xcuserstate
+**/xcuserdata/
+app/Kraehenfels.xcodeproj/
+audio/generated/
+print/generated/
+

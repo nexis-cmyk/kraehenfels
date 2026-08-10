@@ -1,0 +1,34 @@
+{
+  "title": "Die Weiße Frau schweigt",
+  "date": "1890-11-17",
+  "location": "Krähenfels, Schwarzwald",
+  "midnightEvent": "1890-11-18T00:00:00",
+  "names": {
+    "elizabeth": "Elisabeth Abele",
+    "echo": "Der Widerhall unter dem Stein",
+    "innkeeper": "Rosa Ketterer",
+    "priest": "Martin Hoch",
+    "smith": "Emil Bopp",
+    "miner": "Lorenz Sauter",
+    "coachman": "Jakob Rieger",
+    "deadFiance": "Matthias Renz",
+    "formerOwner": "Wilhelm Abele"
+  },
+  "facts": [
+    "Elisabeth Abele war 1848 Kantorin und wollte Matthias Renz heiraten.",
+    "Bergleute öffneten 1848 einen unnatürlich glatten Hohlraum.",
+    "Der Widerhall kopiert nur Stimmen und Wissen, das er zuvor gehört hat.",
+    "Elisabeth band den Widerhall mit einer Gegenmelodie.",
+    "Der neue Glockenklöppel wurde aus Grubeneisen von 1848 gegossen.",
+    "Die Schlagfolge im Finale lautet 3-1-2-4.",
+    "Der vollständige Name Elisabeth Abele muss ausgesprochen werden.",
+    "Die Kutschenachse brach durch eine Vibration vor dem Bergrutsch."
+  ],
+  "timeline": [
+    {"year": 1848, "event": "Hohlraum geöffnet, Matthias verschüttet, Elisabeth steigt hinab und bindet den Widerhall."},
+    {"year": 1848, "event": "Wilhelm Abele lässt Elisabeths Eintrag aus dem Kirchenbuch entfernen."},
+    {"year": 1889, "event": "Die alte Glocke wird wegen eines Risses aus dem Betrieb genommen."},
+    {"year": 1890, "event": "Ein neuer Klöppel aus altem Grubeneisen wird zur Kirche gebracht."},
+    {"year": 1890, "event": "Der Pfarrer plant die Weihe für Mitternacht am 18. November."}
+  ]
+}
