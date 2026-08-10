@@ -17,8 +17,13 @@ targets:
       - path: Kraehenfels
         excludes:
           - Resources/**
-    resources:
-      - path: Kraehenfels/Resources
+      - path: Kraehenfels/Resources/Assets.xcassets
+        buildPhase: resources
+      - path: Kraehenfels/Resources/manifest.json
+        buildPhase: resources
+      - path: Kraehenfels/Resources/Audio
+        type: folder
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: de.kraehenfels.spielleitung
