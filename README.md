@@ -54,6 +54,8 @@ Ein Tag wie `v1.0.0` oder der Button **Run workflow** mit einer Versionsnummer s
 
 ## Druckpaket
 
+Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: Schnee, Tannen, Kirche, Grube, gealtertes Papier, ein Kabinettfoto von Elisabeth Abele und eine Glockenradierung. Die Handouts sind als zwei ausschneidbare A5-Karten pro Seite angelegt.
+
 - `00_Spielstart.pdf`: kurze Vorbereitung für die erste Spielleitung
 - `01_Karte_Spieler.pdf`: spoilerfreie Tischkarte
 - `01_Karte_SL.pdf`: geheime Karte mit Flutstollen, Kammer und Wahrheit

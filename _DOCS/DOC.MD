@@ -22,7 +22,7 @@ Das Projekt liefert ein vollständiges Spielpaket für `Die Weiße Frau schweigt
 
 Die Audioerzeugung ist deterministisch. Python und NumPy erzeugen die Rohsignale, FFmpeg normalisiert und exportiert die Dateien. Es werden keine fremden Samples eingebunden.
 
-Die Druckunterlagen entstehen mit ReportLab. Die PDFs werden durch `pypdf` auf Lesbarkeit und Seitenzahl geprüft. Poppler ist im aktuellen Windows-Laufzeitpfad nicht vorhanden, deshalb bleibt der visuelle Render-Schritt für eine macOS- oder Linux-Session als expliziter QA-Schritt dokumentiert.
+Die Druckunterlagen entstehen mit ReportLab. `print/assets/` enthält drei eigens erzeugte Rasterbilder: das Titelmotiv von Krähenfels, Elisabeth Abeles Kabinettfoto und die Radierung von Glocke und Klöppel. Der Generator bettet sie gezielt in Titel, Handouts und Spielleitungsunterlagen ein. Die PDFs werden mit `pypdf` und per Poppler-Render geprüft.
 
 ## Gelieferte Artefakte
 
@@ -30,6 +30,7 @@ Die Druckunterlagen entstehen mit ReportLab. Die PDFs werden durch `pypdf` auf L
 - `outputs/01_Grubenplan_H08.pdf` und `outputs/01_Grubenplan_SL.pdf`
 - `outputs/02_Handouts.pdf`, `outputs/03_Figurenbau.pdf`, `outputs/10_SL_Abenteuer.pdf`, `outputs/11_SL_Schnellreferenz.pdf`
 - `outputs/14_Soundboard-Cues.pdf`
+- drei Druckgrafiken in `print/assets/`
 - 35 originale Audios in `audio/generated/` und im iOS-Bundle
 - SwiftUI-App mit Offline-Content, Cue-Steuerung, Regeln, Settings und GitHub-Release-Workflow
 
@@ -40,3 +41,4 @@ Die Druckunterlagen entstehen mit ReportLab. Die PDFs werden durch `pypdf` auf L
 - Jeder Audiohinweis besitzt eine gedruckte Entsprechung.
 - Spielerdateien enthalten keine Spoiler in Inhalt, Dateinamen, Metadaten oder Lesezeichen.
 - Code, Buildskripte und Daten bleiben modular und erhalten automatisierte Prüfungen.
+- Jede finale PDF-Seite wird vor der Weitergabe als Raster gerendert und visuell auf Textüberlauf, leere Seiten und Lesbarkeit geprüft.

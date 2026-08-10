@@ -19,9 +19,12 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.utils import ImageReader
 from reportlab.platypus import (
     BaseDocTemplate,
     Frame,
+    Flowable,
+    Image,
     KeepTogether,
     PageBreak,
     PageTemplate,
@@ -36,9 +39,13 @@ from reportlab.pdfgen import canvas
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "outputs"
 OUTPUT.mkdir(exist_ok=True)
+ASSETS = ROOT / "print" / "assets"
+COVER_ART = ASSETS / "kraehenfels-cover.png"
+ELISABETH_PHOTO = ASSETS / "elisabeth-abele-cabinet-photo.png"
+BELL_ETCHING = ASSETS / "bell-and-clapper-etching.png"
 
 
-def register_fonts() -> tuple[str, str]:
+def register_fonts() -> tuple[str, str, str, str]:
     candidates = [
         (Path("C:/Windows/Fonts/arial.ttf"), Path("C:/Windows/Fonts/arialbd.ttf")),
         (Path("C:/Windows/Fonts/segoeui.ttf"), Path("C:/Windows/Fonts/segoeuib.ttf")),
@@ -48,17 +55,28 @@ def register_fonts() -> tuple[str, str]:
         if regular.exists() and bold.exists():
             pdfmetrics.registerFont(TTFont("KraehenSans", str(regular)))
             pdfmetrics.registerFont(TTFont("KraehenSansBold", str(bold)))
-            return "KraehenSans", "KraehenSansBold"
-    return "Helvetica", "Helvetica-Bold"
+            serif = Path("C:/Windows/Fonts/georgia.ttf")
+            serif_bold = Path("C:/Windows/Fonts/georgiab.ttf")
+            if serif.exists() and serif_bold.exists():
+                pdfmetrics.registerFont(TTFont("KraehenSerif", str(serif)))
+                pdfmetrics.registerFont(TTFont("KraehenSerifBold", str(serif_bold)))
+                return "KraehenSans", "KraehenSansBold", "KraehenSerif", "KraehenSerifBold"
+            return "KraehenSans", "KraehenSansBold", "Times-Roman", "Times-Bold"
+    return "Helvetica", "Helvetica-Bold", "Times-Roman", "Times-Bold"
 
 
-FONT, FONT_BOLD = register_fonts()
-INK = colors.HexColor("#152338")
+FONT, FONT_BOLD, SERIF, SERIF_BOLD = register_fonts()
+INK = colors.HexColor("#1C2827")
 FROST = colors.HexColor("#B8D5E8")
-BLUE = colors.HexColor("#2F6FA3")
-PALE = colors.HexColor("#F2F6F8")
-LINE = colors.HexColor("#9AAEBA")
-RED = colors.HexColor("#9A4E4E")
+BLUE = colors.HexColor("#315F67")
+PALE = colors.HexColor("#E7ECE8")
+LINE = colors.HexColor("#869A91")
+RED = colors.HexColor("#7D392C")
+PARCHMENT = colors.HexColor("#EFE4CF")
+PARCHMENT_DARK = colors.HexColor("#D4C09A")
+PINE = colors.HexColor("#233D39")
+UMBER = colors.HexColor("#6B5137")
+WAX = colors.HexColor("#75362C")
 
 
 def p(text: str, style: ParagraphStyle) -> Paragraph:
@@ -67,8 +85,8 @@ def p(text: str, style: ParagraphStyle) -> Paragraph:
 
 styles = getSampleStyleSheet()
 styles.add(ParagraphStyle(
-    name="KTitle", parent=styles["Title"], fontName=FONT_BOLD,
-    fontSize=22, leading=26, textColor=INK, alignment=TA_LEFT,
+    name="KTitle", parent=styles["Title"], fontName=SERIF_BOLD,
+    fontSize=24, leading=28, textColor=INK, alignment=TA_LEFT,
     spaceAfter=5 * mm,
 ))
 styles.add(ParagraphStyle(
@@ -84,9 +102,113 @@ styles.add(ParagraphStyle(
     fontSize=8, leading=10.2, textColor=INK, spaceAfter=1.2 * mm,
 ))
 styles.add(ParagraphStyle(
-    name="KCardTitle", parent=styles["Heading2"], fontName=FONT_BOLD,
+    name="KCardTitle", parent=styles["Heading2"], fontName=SERIF_BOLD,
     fontSize=15, leading=18, textColor=INK, spaceAfter=2 * mm,
 ))
+
+
+def scaled_image(path: Path, max_width: float, max_height: float) -> Image:
+    """Return a proportionally scaled Platypus image."""
+    source = ImageReader(str(path))
+    width, height = source.getSize()
+    scale = min(max_width / width, max_height / height)
+    return Image(str(path), width=width * scale, height=height * scale)
+
+
+def draw_parchment(c: canvas.Canvas, width: float, height: float, *, dark: bool = False) -> None:
+    c.saveState()
+    c.setFillColor(INK if dark else PARCHMENT)
+    c.rect(0, 0, width, height, stroke=0, fill=1)
+    if not dark:
+        c.setStrokeColor(colors.HexColor("#DCCBAA"))
+        c.setLineWidth(0.22)
+        for offset in range(-20, int(width / mm) + 30, 9):
+            c.line(offset * mm, 0, (offset + 20) * mm, height)
+    c.restoreState()
+
+
+def draw_fir(c: canvas.Canvas, x: float, y: float, size: float, color=PINE) -> None:
+    c.saveState()
+    c.setFillColor(color)
+    c.setStrokeColor(color)
+    c.setLineWidth(0.35)
+    c.rect(x - size * 0.055, y, size * 0.11, size * 0.25, stroke=0, fill=1)
+    for level, width_ratio in ((0.18, 0.42), (0.34, 0.60), (0.52, 0.82), (0.70, 1.0)):
+        base_y = y + size * level
+        half = size * width_ratio / 2
+        c.line(x, base_y + size * 0.30, x - half, base_y)
+        c.line(x, base_y + size * 0.30, x + half, base_y)
+    c.restoreState()
+
+
+def draw_bell_mark(c: canvas.Canvas, x: float, y: float, size: float, color=INK) -> None:
+    c.saveState()
+    c.setStrokeColor(color)
+    c.setFillColor(color)
+    c.setLineWidth(max(0.55, size * 0.06))
+    c.arc(x - size * 0.44, y - size * 0.17, x + size * 0.44, y + size * 0.62, 0, 180)
+    c.line(x - size * 0.44, y + size * 0.22, x - size * 0.34, y - size * 0.34)
+    c.line(x + size * 0.44, y + size * 0.22, x + size * 0.34, y - size * 0.34)
+    c.line(x - size * 0.34, y - size * 0.34, x + size * 0.34, y - size * 0.34)
+    c.circle(x, y - size * 0.40, size * 0.09, stroke=0, fill=1)
+    c.line(x, y - size * 0.13, x, y - size * 0.40)
+    c.restoreState()
+
+
+def draw_house(c: canvas.Canvas, x: float, y: float, size: float, label: str | None = None) -> None:
+    c.saveState()
+    c.setFillColor(colors.HexColor("#CFC3A5"))
+    c.setStrokeColor(UMBER)
+    c.setLineWidth(0.7)
+    c.rect(x - size * 0.42, y, size * 0.84, size * 0.43, stroke=1, fill=1)
+    c.setFillColor(UMBER)
+    roof = c.beginPath()
+    roof.moveTo(x - size * 0.50, y + size * 0.43)
+    roof.lineTo(x, y + size * 0.78)
+    roof.lineTo(x + size * 0.50, y + size * 0.43)
+    roof.close()
+    c.drawPath(roof, stroke=1, fill=1)
+    c.setFillColor(INK)
+    c.rect(x - size * 0.07, y, size * 0.14, size * 0.25, stroke=0, fill=1)
+    if label:
+        c.setFillColor(INK)
+        c.setFont(FONT_BOLD, 6.6)
+        c.drawCentredString(x, y - size * 0.22, label)
+    c.restoreState()
+
+
+def draw_church(c: canvas.Canvas, x: float, y: float, size: float, label: str | None = None) -> None:
+    c.saveState()
+    c.setFillColor(colors.HexColor("#D7CFB8"))
+    c.setStrokeColor(UMBER)
+    c.setLineWidth(0.8)
+    c.rect(x - size * 0.36, y, size * 0.72, size * 0.48, stroke=1, fill=1)
+    c.rect(x - size * 0.12, y + size * 0.48, size * 0.24, size * 0.55, stroke=1, fill=1)
+    c.setFillColor(UMBER)
+    roof = c.beginPath()
+    roof.moveTo(x - size * 0.20, y + size * 1.03)
+    roof.lineTo(x, y + size * 1.32)
+    roof.lineTo(x + size * 0.20, y + size * 1.03)
+    roof.close()
+    c.drawPath(roof, stroke=1, fill=1)
+    c.setFillColor(INK)
+    c.circle(x, y + size * 0.74, size * 0.055, stroke=0, fill=1)
+    if label:
+        c.setFont(FONT_BOLD, 6.6)
+        c.drawCentredString(x, y - size * 0.20, label)
+    c.restoreState()
+
+
+def draw_ornament(c: canvas.Canvas, x: float, y: float, width: float, color=UMBER) -> None:
+    c.saveState()
+    c.setStrokeColor(color)
+    c.setFillColor(color)
+    c.setLineWidth(0.55)
+    c.line(x, y, x + width, y)
+    c.circle(x + width / 2, y, 1.6, stroke=1, fill=0)
+    c.line(x + width / 2 - 8, y - 3, x + width / 2, y)
+    c.line(x + width / 2 + 8, y - 3, x + width / 2, y)
+    c.restoreState()
 styles.add(ParagraphStyle(
     name="KCenter", parent=styles["Normal"], fontName=FONT,
     fontSize=10, leading=13, textColor=INK, alignment=TA_CENTER,
@@ -95,16 +217,36 @@ styles.add(ParagraphStyle(
     name="KMap", parent=styles["Normal"], fontName=FONT_BOLD,
     fontSize=9, leading=11, textColor=INK, alignment=TA_CENTER,
 ))
+styles.add(ParagraphStyle(
+    name="HandoutBody", parent=styles["BodyText"], fontName=SERIF,
+    fontSize=9.5, leading=13.2, textColor=INK,
+))
+styles.add(ParagraphStyle(
+    name="HandoutCaption", parent=styles["BodyText"], fontName=FONT,
+    fontSize=7.4, leading=9.4, textColor=UMBER, alignment=TA_CENTER,
+))
+styles.add(ParagraphStyle(
+    name="TableHeader", parent=styles["BodyText"], fontName=FONT_BOLD,
+    fontSize=7.8, leading=9.2, textColor=colors.white,
+))
 
 
 def page_frame(canv: canvas.Canvas, doc: BaseDocTemplate) -> None:
     canv.saveState()
     width, height = doc.pagesize
-    canv.setStrokeColor(LINE)
+    draw_parchment(canv, width, height)
+    canv.setStrokeColor(PARCHMENT_DARK)
+    canv.setLineWidth(0.65)
+    canv.roundRect(9 * mm, 9 * mm, width - 18 * mm, height - 18 * mm, 2 * mm, stroke=1, fill=0)
+    canv.setStrokeColor(UMBER)
+    canv.setLineWidth(0.45)
+    canv.line(16 * mm, height - 12 * mm, width - 16 * mm, height - 12 * mm)
+    draw_ornament(canv, width / 2 - 16 * mm, height - 12 * mm, 32 * mm)
+    canv.setStrokeColor(UMBER)
     canv.setLineWidth(0.5)
     canv.line(16 * mm, 12 * mm, width - 16 * mm, 12 * mm)
-    canv.setFont(FONT, 7.5)
-    canv.setFillColor(BLUE)
+    canv.setFont(FONT_BOLD, 7)
+    canv.setFillColor(UMBER)
     canv.drawString(16 * mm, 7 * mm, "KRÄHENFELS  /  DIE WEISSE FRAU SCHWEIGT")
     canv.drawRightString(width - 16 * mm, 7 * mm, f"{doc.page:02d}")
     canv.restoreState()
@@ -125,67 +267,127 @@ def title_block(title: str, subtitle: str = "") -> list:
     items = [p(title, styles["KTitle"])]
     if subtitle:
         items.append(p(subtitle, styles["KSub"]))
+    items.append(Spacer(1, 1.2 * mm))
     return items
+
+
+def art_banner(path: Path, width: float = 176 * mm, height: float = 54 * mm) -> list:
+    """A visual scene separator used only where it supports table usability."""
+    image = scaled_image(path, width, height)
+    return [image, Spacer(1, 2.8 * mm)]
+
+
+def cover_page(path: Path, title: str, subtitle: str) -> None:
+    """Draw a cinematic opening page, then append the written briefing separately."""
+    width, height = A4
+    c = canvas.Canvas(str(path), pagesize=A4, pageCompression=1)
+    c.setTitle(title)
+    c.drawImage(str(COVER_ART), 0, 0, width=width, height=height, mask="auto")
+    c.setFillColor(colors.Color(0.02, 0.05, 0.06, alpha=0.55))
+    c.rect(0, 0, width, height, stroke=0, fill=1)
+    c.setFillColor(colors.HexColor("#EEE3CE"))
+    c.setFont(SERIF_BOLD, 32)
+    c.drawCentredString(width / 2, height - 46 * mm, title)
+    c.setStrokeColor(colors.HexColor("#CFB985"))
+    c.setLineWidth(0.8)
+    c.line(43 * mm, height - 52 * mm, width - 43 * mm, height - 52 * mm)
+    draw_bell_mark(c, width / 2, height - 60 * mm, 10 * mm, colors.HexColor("#CFB985"))
+    c.setFont(FONT_BOLD, 10)
+    c.drawCentredString(width / 2, height - 69 * mm, subtitle.upper())
+    c.setFont(SERIF, 16)
+    c.drawCentredString(width / 2, 33 * mm, "Die Glocke schweigt. Der Berg antwortet trotzdem.")
+    c.setFillColor(colors.HexColor("#D8CBAE"))
+    c.setFont(FONT_BOLD, 7.6)
+    c.drawCentredString(width / 2, 18 * mm, "KRÄHENFELS  /  NOVEMBER 1890  /  HOW TO BE A HERO")
+    c.showPage()
+    c.save()
+
+
+def append_pdf(base: Path, addition: Path, output: Path) -> None:
+    """Concatenate PDFs without changing their visual content."""
+    from pypdf import PdfReader, PdfWriter
+
+    writer = PdfWriter()
+    for source in (base, addition):
+        reader = PdfReader(str(source))
+        for page in reader.pages:
+            writer.add_page(page)
+    with output.open("wb") as stream:
+        writer.write(stream)
 
 
 def draw_map(path: Path, gm: bool = False) -> None:
     width, height = landscape(A4)
     c = canvas.Canvas(str(path), pagesize=(width, height), pageCompression=1)
     c.setTitle("Kraehenfels Karte")
-    c.setFillColor(PALE)
-    c.rect(0, 0, width, height, stroke=0, fill=1)
+    draw_parchment(c, width, height)
+    c.setStrokeColor(PARCHMENT_DARK)
+    c.setLineWidth(0.7)
+    c.roundRect(8 * mm, 8 * mm, width - 16 * mm, height - 16 * mm, 2 * mm, stroke=1, fill=0)
     c.setFillColor(INK)
-    c.setFont(FONT_BOLD, 21)
+    c.setFont(SERIF_BOLD, 23)
     c.drawString(18 * mm, height - 19 * mm, "Krähenfels")
     c.setFont(FONT, 9)
-    c.setFillColor(BLUE)
-    c.drawString(18 * mm, height - 25 * mm, "Handskizze für die Reise durch den Schwarzwald")
+    c.setFillColor(UMBER)
+    c.drawString(18 * mm, height - 25 * mm, "Handskizze für die Reise durch den Schwarzwald · November 1890")
+    draw_bell_mark(c, 145 * mm, height - 21.5 * mm, 5.8 * mm, UMBER)
     if gm:
         c.setFillColor(RED)
         c.setFont(FONT_BOLD, 9)
         c.drawRightString(width - 18 * mm, height - 20 * mm, "SL-KARTE / SPOILER")
     else:
-        c.setFillColor(BLUE)
+        c.setFillColor(UMBER)
         c.setFont(FONT_BOLD, 9)
         c.drawRightString(width - 18 * mm, height - 20 * mm, "SPIELERKARTE")
 
     # Roads and terrain
-    c.setStrokeColor(colors.HexColor("#6E8797"))
-    c.setLineWidth(2.3)
+    c.setStrokeColor(UMBER)
+    c.setLineWidth(2.8)
     c.bezier(40 * mm, 54 * mm, 95 * mm, 103 * mm, 131 * mm, 45 * mm, 251 * mm, 48 * mm)
-    c.setLineWidth(1.0)
+    c.setLineWidth(1.25)
     c.bezier(51 * mm, 59 * mm, 82 * mm, 17 * mm, 114 * mm, 22 * mm, 132 * mm, 50 * mm)
     c.bezier(137 * mm, 49 * mm, 151 * mm, 93 * mm, 178 * mm, 110 * mm, 214 * mm, 127 * mm)
     # Bach
-    c.setStrokeColor(BLUE)
-    c.setLineWidth(2)
+    c.setStrokeColor(colors.HexColor("#4B7780"))
+    c.setLineWidth(2.3)
     c.bezier(38 * mm, 120 * mm, 78 * mm, 108 * mm, 97 * mm, 133 * mm, 132 * mm, 118 * mm)
     c.bezier(132 * mm, 118 * mm, 172 * mm, 101 * mm, 208 * mm, 132 * mm, 254 * mm, 113 * mm)
-    # Woods
-    c.setStrokeColor(colors.HexColor("#B0C1C5"))
-    c.setLineWidth(0.8)
-    for x in range(39, 249, 11):
-        c.line(x * mm, 30 * mm, (x + 8) * mm, 142 * mm)
-    # locations
-    places = {
-        "Zur Krähe": (100, 73),
-        "Kirche / Friedhof": (151, 93),
-        "Schmiede": (75, 44),
-        "Brücke": (122, 54),
-        "alter Grubenweg": (198, 115),
-        "Kutschenweg nach Freiburg": (39, 50),
-        "verlassene Grube": (224, 131),
-    }
+    # Dense Black Forest bands. The repeated pines turn the map into a place,
+    # while leaving the routes readable at the table.
+    for x, y, size in (
+        (35, 35, 13), (48, 31, 16), (60, 35, 12), (69, 29, 14), (84, 33, 13),
+        (190, 31, 16), (205, 33, 12), (219, 29, 15), (235, 35, 13), (247, 31, 16),
+        (37, 132, 15), (50, 137, 13), (64, 130, 17), (180, 137, 12), (196, 131, 16),
+        (211, 140, 14), (232, 132, 17), (246, 138, 12), (256, 130, 15),
+    ):
+        draw_fir(c, x * mm, y * mm, size * mm, colors.HexColor("#2D4B43"))
+    c.setFillColor(colors.HexColor("#E0D2B4"))
+    c.setStrokeColor(PARCHMENT_DARK)
+    c.setLineWidth(0.65)
+    c.roundRect(87 * mm, 60 * mm, 31 * mm, 24 * mm, 2 * mm, stroke=1, fill=1)
+    draw_house(c, 102 * mm, 68 * mm, 14 * mm, "Zur Krähe")
+    draw_church(c, 151 * mm, 89 * mm, 15 * mm, "Kirche / Friedhof")
+    draw_house(c, 75 * mm, 43 * mm, 12 * mm, "Schmiede")
+    # bridge and mine headframe
+    c.setStrokeColor(UMBER)
+    c.setLineWidth(1.2)
+    c.line(116 * mm, 52 * mm, 128 * mm, 57 * mm)
+    c.line(118 * mm, 49 * mm, 130 * mm, 54 * mm)
+    c.setFont(FONT_BOLD, 6.6)
     c.setFillColor(INK)
-    for label, (x, y) in places.items():
-        c.setFillColor(colors.white)
-        c.circle(x * mm, y * mm, 4.2 * mm, stroke=0, fill=1)
-        c.setStrokeColor(INK)
-        c.setLineWidth(1.1)
-        c.circle(x * mm, y * mm, 4.2 * mm, stroke=1, fill=0)
-        c.setFillColor(INK)
-        c.setFont(FONT_BOLD if label in {"Zur Krähe", "Kirche / Friedhof"} else FONT, 7.4)
-        c.drawCentredString(x * mm, y * mm - 7 * mm, label)
+    c.drawCentredString(123 * mm, 43 * mm, "Brücke")
+    c.setStrokeColor(INK)
+    c.setLineWidth(1.0)
+    c.line(218 * mm, 121 * mm, 226 * mm, 139 * mm)
+    c.line(234 * mm, 121 * mm, 226 * mm, 139 * mm)
+    c.line(218 * mm, 121 * mm, 234 * mm, 121 * mm)
+    c.line(221 * mm, 126 * mm, 231 * mm, 126 * mm)
+    c.setFillColor(INK)
+    c.setFont(FONT_BOLD, 6.6)
+    c.drawCentredString(226 * mm, 114 * mm, "verlassene Grube")
+    c.setFont(FONT, 6.8)
+    c.drawCentredString(197 * mm, 106 * mm, "alter Grubenweg")
+    c.drawString(23 * mm, 46 * mm, "Kutschenweg nach Freiburg")
     # Hidden routes and clues on GM map
     if gm:
         c.setStrokeColor(RED)
@@ -210,9 +412,9 @@ def draw_map(path: Path, gm: bool = False) -> None:
         c.drawString(30 * mm, 26 * mm, "Elisabeth hat die Kinder gerettet. Der Widerhall trägt Stimmen.")
         c.drawString(30 * mm, 21 * mm, "Finale: 3 - 1 - 2 - 4 und Elisabeth Abele.")
     else:
-        c.setFillColor(colors.white)
+        c.setFillColor(colors.HexColor("#F5ECD9"))
         c.roundRect(25 * mm, 19 * mm, 100 * mm, 21 * mm, 3 * mm, stroke=0, fill=1)
-        c.setStrokeColor(LINE)
+        c.setStrokeColor(PARCHMENT_DARK)
         c.roundRect(25 * mm, 19 * mm, 100 * mm, 21 * mm, 3 * mm, stroke=1, fill=0)
         c.setFillColor(INK)
         c.setFont(FONT_BOLD, 8)
@@ -232,10 +434,10 @@ def draw_map(path: Path, gm: bool = False) -> None:
     c.line(width - 57 * mm, 20 * mm, width - 37 * mm, 20 * mm)
     c.setFont(FONT, 7)
     c.drawCentredString(width - 47 * mm, 14 * mm, "ca. 500 Schritte")
-    c.setStrokeColor(LINE)
+    c.setStrokeColor(UMBER)
     c.line(18 * mm, 12 * mm, width - 18 * mm, 12 * mm)
-    c.setFillColor(BLUE)
-    c.setFont(FONT, 7.5)
+    c.setFillColor(UMBER)
+    c.setFont(FONT_BOLD, 7)
     c.drawString(18 * mm, 7 * mm, "KRÄHENFELS  /  DIE WEISSE FRAU SCHWEIGT")
     c.drawRightString(width - 18 * mm, 7 * mm, "KARTE")
     c.showPage()
@@ -247,27 +449,35 @@ def draw_mine_plan(path: Path, gm: bool = False) -> None:
     width, height = landscape(A4)
     c = canvas.Canvas(str(path), pagesize=(width, height), pageCompression=1)
     c.setTitle("Alter Flur- und Grubenplan")
-    c.setFillColor(colors.white)
-    c.rect(0, 0, width, height, stroke=0, fill=1)
+    draw_parchment(c, width, height)
+    c.setStrokeColor(PARCHMENT_DARK)
+    c.setLineWidth(0.7)
+    c.roundRect(8 * mm, 8 * mm, width - 16 * mm, height - 16 * mm, 2 * mm, stroke=1, fill=0)
     c.setFillColor(INK)
-    c.setFont(FONT_BOLD, 21)
+    c.setFont(SERIF_BOLD, 22)
     c.drawString(18 * mm, height - 19 * mm, "H08  /  Alter Flur- und Grubenplan")
     c.setFont(FONT, 9)
-    c.setFillColor(BLUE)
+    c.setFillColor(UMBER)
     c.drawString(18 * mm, height - 25 * mm, "Gefunden zwischen Werkzeugkiste und nassem Holz")
+    draw_bell_mark(c, 142 * mm, height - 21.5 * mm, 5.6 * mm, UMBER)
     if gm:
         c.setFillColor(RED)
         c.setFont(FONT_BOLD, 9)
         c.drawRightString(width - 18 * mm, height - 20 * mm, "SL-OVERLAY / SPOILER")
     else:
-        c.setFillColor(BLUE)
+        c.setFillColor(UMBER)
         c.setFont(FONT_BOLD, 9)
         c.drawRightString(width - 18 * mm, height - 20 * mm, "SPIELERHANDOUT")
 
     left, bottom = 25 * mm, 28 * mm
-    c.setStrokeColor(LINE)
+    c.setFillColor(colors.HexColor("#E1D3B8"))
+    c.setStrokeColor(UMBER)
     c.setLineWidth(1.2)
-    c.roundRect(left, bottom, 200 * mm, 102 * mm, 3 * mm, stroke=1, fill=0)
+    c.roundRect(left, bottom, 200 * mm, 102 * mm, 3 * mm, stroke=1, fill=1)
+    c.setStrokeColor(PARCHMENT_DARK)
+    c.setLineWidth(0.35)
+    for x in range(32, 223, 10):
+        c.line(x * mm, 31 * mm, (x + 7) * mm, 128 * mm)
     # Three routes
     c.setStrokeColor(INK)
     c.setLineWidth(2.3)
@@ -283,7 +493,7 @@ def draw_mine_plan(path: Path, gm: bool = False) -> None:
     c.line(84 * mm, 123 * mm, 138 * mm, 123 * mm)
     c.line(138 * mm, 123 * mm, 170 * mm, 108 * mm)
     # rooms
-    c.setFillColor(PALE)
+    c.setFillColor(colors.HexColor("#EEE4CE"))
     c.rect(30 * mm, 73 * mm, 18 * mm, 14 * mm, stroke=0, fill=1)
     c.rect(105 * mm, 95 * mm, 18 * mm, 14 * mm, stroke=0, fill=1)
     c.rect(151 * mm, 50 * mm, 18 * mm, 14 * mm, stroke=0, fill=1)
@@ -298,7 +508,7 @@ def draw_mine_plan(path: Path, gm: bool = False) -> None:
     c.drawString(48 * mm, 84 * mm, "Försterweg")
     c.drawString(88 * mm, 67 * mm, "Bachlauf")
     c.drawString(90 * mm, 119 * mm, "Seilzugweg")
-    c.setFillColor(BLUE)
+    c.setFillColor(UMBER)
     c.drawString(30 * mm, 34 * mm, "Notiz am Rand: Der Plan ist an drei Stellen nass und nicht vollständig lesbar.")
     if gm:
         c.setStrokeColor(RED)
@@ -315,10 +525,10 @@ def draw_mine_plan(path: Path, gm: bool = False) -> None:
         c.setFont(FONT, 7.2)
         c.drawString(177 * mm, 84 * mm, "Kammer unter")
         c.drawString(177 * mm, 78 * mm, "der Kapelle")
-    c.setStrokeColor(LINE)
+    c.setStrokeColor(UMBER)
     c.line(18 * mm, 12 * mm, width - 18 * mm, 12 * mm)
-    c.setFillColor(BLUE)
-    c.setFont(FONT, 7.5)
+    c.setFillColor(UMBER)
+    c.setFont(FONT_BOLD, 7)
     c.drawString(18 * mm, 7 * mm, "KRÄHENFELS  /  H08")
     c.drawRightString(width - 18 * mm, 7 * mm, "GRUBENPLAN")
     c.showPage()
@@ -339,32 +549,142 @@ HANDOUTS = {
 }
 
 
+def draw_wax_seal(c: canvas.Canvas, x: float, y: float, radius: float) -> None:
+    c.saveState()
+    c.setFillColor(WAX)
+    c.setStrokeColor(colors.HexColor("#4B221D"))
+    c.setLineWidth(0.7)
+    c.circle(x, y, radius, stroke=1, fill=1)
+    c.setStrokeColor(colors.HexColor("#C88C70"))
+    c.setLineWidth(0.6)
+    c.circle(x, y, radius * 0.70, stroke=1, fill=0)
+    c.setFillColor(colors.HexColor("#E2B39A"))
+    c.setFont(SERIF_BOLD, radius * 0.92)
+    c.drawCentredString(x, y - radius * 0.33, "K")
+    c.restoreState()
+
+
+def draw_handout_card(
+    c: canvas.Canvas, x: float, y: float, width: float, height: float,
+    hid: str, title: str, body: str,
+) -> None:
+    c.saveState()
+    c.setFillColor(PARCHMENT)
+    c.setStrokeColor(UMBER)
+    c.setLineWidth(1.1)
+    c.roundRect(x, y, width, height, 2.5 * mm, stroke=1, fill=1)
+    c.setStrokeColor(PARCHMENT_DARK)
+    c.setLineWidth(0.45)
+    c.roundRect(x + 3 * mm, y + 3 * mm, width - 6 * mm, height - 6 * mm, 1.4 * mm, stroke=1, fill=0)
+    # visual handout tag
+    c.setFillColor(INK)
+    c.roundRect(x + 7 * mm, y + height - 19 * mm, 21 * mm, 9 * mm, 1.5 * mm, stroke=0, fill=1)
+    c.setFillColor(PARCHMENT)
+    c.setFont(FONT_BOLD, 7.3)
+    c.drawCentredString(x + 17.5 * mm, y + height - 15.8 * mm, hid)
+    c.setFillColor(INK)
+    c.setFont(SERIF_BOLD, 15)
+    c.drawString(x + 32 * mm, y + height - 16.2 * mm, title)
+    draw_ornament(c, x + 8 * mm, y + height - 24 * mm, width - 16 * mm)
+
+    body_x = x + 9 * mm
+    body_top = y + height - 31 * mm
+    body_width = width - 18 * mm
+
+    if hid == "H01":
+        c.setFillColor(UMBER)
+        c.setFont(SERIF_BOLD, 11)
+        c.drawString(body_x, body_top - 7 * mm, "POSTKUTSCHE  ·  FREIBURG — FREUDENSTADT")
+        c.setStrokeColor(UMBER)
+        c.setLineWidth(0.55)
+        for line_y in (body_top - 17 * mm, body_top - 30 * mm, body_top - 43 * mm, body_top - 56 * mm):
+            c.line(body_x, line_y, x + width - 9 * mm, line_y)
+        draw_wax_seal(c, x + width - 25 * mm, y + 31 * mm, 10 * mm)
+        body_top -= 21 * mm
+    elif hid == "H03":
+        c.setFillColor(INK)
+        c.setFont(SERIF_BOLD, 18)
+        c.drawCentredString(x + width / 2, body_top - 6 * mm, "KRÄHENFELSER WOCHENBLATT")
+        c.setFont(FONT_BOLD, 7)
+        c.drawCentredString(x + width / 2, body_top - 12 * mm, "SONNTAGSBEILAGE · 17. NOVEMBER 1890 · PREIS 2 PFENNIG")
+        c.setStrokeColor(UMBER)
+        c.line(body_x, body_top - 16 * mm, x + width - 9 * mm, body_top - 16 * mm)
+        draw_bell_mark(c, x + width - 22 * mm, body_top - 34 * mm, 8 * mm, UMBER)
+        body_width -= 32 * mm
+        body_top -= 23 * mm
+    elif hid == "H04":
+        c.setStrokeColor(PARCHMENT_DARK)
+        c.setLineWidth(0.35)
+        for row in range(10):
+            c.line(body_x, body_top - (7 + row * 12) * mm, x + width - 9 * mm, body_top - (7 + row * 12) * mm)
+        draw_bell_mark(c, x + width - 22 * mm, y + 29 * mm, 8 * mm, UMBER)
+    elif hid == "H05":
+        image = ImageReader(str(ELISABETH_PHOTO))
+        photo_w = width - 26 * mm
+        photo_h = 110 * mm
+        c.drawImage(image, x + 13 * mm, y + 44 * mm, width=photo_w, height=photo_h, mask="auto", preserveAspectRatio=True, anchor="c")
+        caption = Paragraph("<b>Elisabeth Abele</b><br/>Krähenfels, Winter 1848", styles["HandoutCaption"])
+        cap_w, cap_h = caption.wrap(width - 26 * mm, 18 * mm)
+        caption.drawOn(c, x + 13 * mm, y + 24 * mm)
+        c.restoreState()
+        return
+    elif hid in {"H06", "H10", "H11"}:
+        image = ImageReader(str(BELL_ETCHING))
+        art_w = 43 * mm
+        art_h = 62 * mm
+        c.drawImage(image, x + width - art_w - 9 * mm, y + 18 * mm, width=art_w, height=art_h, mask="auto", preserveAspectRatio=True, anchor="c")
+        body_width -= 49 * mm
+    elif hid == "H07":
+        c.setStrokeColor(PARCHMENT_DARK)
+        c.setLineWidth(0.35)
+        for row in range(11):
+            c.line(body_x, body_top - (8 + row * 11) * mm, x + width - 9 * mm, body_top - (8 + row * 11) * mm)
+        c.setStrokeColor(RED)
+        c.setLineWidth(1.0)
+        c.line(x + 18 * mm, y + 9 * mm, x + 18 * mm, y + height - 29 * mm)
+    elif hid == "H08":
+        c.setStrokeColor(INK)
+        c.setLineWidth(1.2)
+        c.line(x + width - 49 * mm, y + 44 * mm, x + width - 20 * mm, y + 44 * mm)
+        c.line(x + width - 49 * mm, y + 44 * mm, x + width - 37 * mm, y + 66 * mm)
+        c.line(x + width - 49 * mm, y + 44 * mm, x + width - 36 * mm, y + 24 * mm)
+        c.setDash(2, 2)
+        c.line(x + width - 20 * mm, y + 44 * mm, x + width - 13 * mm, y + 44 * mm)
+        c.setDash()
+        body_width -= 55 * mm
+    elif hid == "H09":
+        draw_bell_mark(c, x + width - 21 * mm, y + 31 * mm, 9 * mm, UMBER)
+
+    body_para = Paragraph(body, styles["HandoutBody"])
+    _, body_h = body_para.wrap(body_width, height - 46 * mm)
+    body_para.drawOn(c, body_x, max(y + 12 * mm, body_top - body_h))
+    c.setFillColor(UMBER)
+    c.setFont(FONT_BOLD, 6.2)
+    c.drawRightString(x + width - 8 * mm, y + 7 * mm, "Krähenfels · Spielerhinweis")
+    c.restoreState()
+
+
 def build_handouts(path: Path) -> None:
-    story: list = []
-    for index, (hid, (title, body)) in enumerate(HANDOUTS.items()):
-        if index % 2 == 0:
-            story.extend(title_block("Spielerhinweise", "Ausschneiden oder als A5-Seite drucken"))
-        card = [
-            p(f"{hid}  /  {title}", styles["KCardTitle"]),
-            p(body, styles["KBody"]),
-            Spacer(1, 3 * mm),
-        ]
-        table = Table([[card]], colWidths=[170 * mm], rowHeights=[90 * mm])
-        table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), colors.white),
-            ("BOX", (0, 0), (-1, -1), 1.1, LINE),
-            ("LEFTPADDING", (0, 0), (-1, -1), 7 * mm),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 7 * mm),
-            ("TOPPADDING", (0, 0), (-1, -1), 6 * mm),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5 * mm),
-        ]))
-        story.append(table)
-        story.append(Spacer(1, 5 * mm))
-        if index % 2 == 1:
-            story.append(PageBreak())
-    if story and isinstance(story[-1], PageBreak):
-        story.pop()
-    build_story_pdf(path, story, "Spielerhinweise")
+    width, height = landscape(A4)
+    c = canvas.Canvas(str(path), pagesize=(width, height), pageCompression=1)
+    c.setTitle("Kraehenfels Spielerhinweise")
+    entries = list(HANDOUTS.items())
+    for page_index in range(0, len(entries), 2):
+        draw_parchment(c, width, height)
+        c.setFillColor(INK)
+        c.setFont(SERIF_BOLD, 16)
+        c.drawString(10 * mm, height - 11 * mm, "Krähenfels · Spielerhinweise")
+        c.setFillColor(UMBER)
+        c.setFont(FONT_BOLD, 6.8)
+        c.drawRightString(width - 10 * mm, height - 10 * mm, "A5-HANDOUTS · AUSSCHNEIDEN ODER EINZELN DRUCKEN")
+        draw_ornament(c, 105 * mm, height - 11 * mm, 32 * mm)
+        card_width = (width - 28 * mm) / 2
+        card_height = height - 29 * mm
+        for column, (hid, (title, body)) in enumerate(entries[page_index:page_index + 2]):
+            card_x = 9 * mm + column * (card_width + 10 * mm)
+            draw_handout_card(c, card_x, 9 * mm, card_width, card_height, hid, title, body)
+        c.showPage()
+    c.save()
 
 
 def build_character_sheet(path: Path) -> None:
@@ -414,11 +734,17 @@ def build_start_pdf(path: Path) -> None:
         Spacer(1, 7 * mm),
         p("<para alignment='center'><font size='16'>Die Glocke schweigt.<br/>Der Berg antwortet trotzdem.</font></para>", styles["KBody"]),
     ]
-    build_story_pdf(path, story, "Spielstart")
+    temp_dir = ROOT / "_TMP"
+    temp_dir.mkdir(exist_ok=True)
+    cover = temp_dir / "kraehenfels-spielstart-cover.pdf"
+    briefing = temp_dir / "kraehenfels-spielstart-briefing.pdf"
+    cover_page(cover, "Die Weiße Frau schweigt", "Ein Schwarzwald-Folk-Horror für drei Spieler und eine Spielleitung")
+    build_story_pdf(briefing, story, "Spielstart")
+    append_pdf(cover, briefing, path)
 
 
 def build_soundboard_cues(path: Path) -> None:
-    rows = [["Cue", "Wann", "Bedienung", "Fallback am Tisch"]]
+    rows = [[p(text, styles["TableHeader"]) for text in ["Cue", "Wann", "Bedienung", "Fallback am Tisch"]]]
     cue_rows = [
         ("A01", "Kutschenpanne", "Loop leise, SFX01 beim Bruch", "Wind beschreiben, dann Holzknacken"),
         ("A03 / A04", "Dorf / Wirtshaus", "Atmosphäre wechseln, keine Musik nötig", "Stimmen absenken und Pausen setzen"),
@@ -429,18 +755,18 @@ def build_soundboard_cues(path: Path) -> None:
         ("M06", "Epilog", "Einmal abspielen, danach Stille", "Fenster öffnen oder Wasser einschenken"),
     ]
     for row in cue_rows:
-        rows.append(list(row))
-    table = Table(rows, colWidths=[27 * mm, 42 * mm, 58 * mm, 50 * mm], repeatRows=1)
+        rows.append([p(cell, styles["KSmall"]) for cell in row])
+    table = Table(rows, colWidths=[23 * mm, 35 * mm, 51 * mm, 64 * mm], repeatRows=1)
     table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), INK), ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
         ("FONTNAME", (0, 0), (-1, 0), FONT_BOLD), ("FONTNAME", (0, 1), (-1, -1), FONT),
-        ("FONTSIZE", (0, 0), (-1, -1), 8), ("LEADING", (0, 0), (-1, -1), 10),
         ("GRID", (0, 0), (-1, -1), 0.5, LINE), ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, PALE]),
         ("LEFTPADDING", (0, 0), (-1, -1), 2.5 * mm), ("RIGHTPADDING", (0, 0), (-1, -1), 2.5 * mm),
         ("TOPPADDING", (0, 0), (-1, -1), 2.5 * mm), ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5 * mm),
     ]))
     story = title_block("Soundboard-Cues", "Jeder akustische Hinweis hat eine gedruckte Entsprechung")
+    story += [scaled_image(BELL_ETCHING, 37 * mm, 38 * mm), Spacer(1, 2 * mm)]
     story += [p("Grundregel: Geräusch leise starten und nur hervorheben, wenn die Szene es verdient. Ein Cue darf auch ausbleiben. Die Sounddateien sind original prozedural erzeugt und ohne Sprachaufnahmen.", styles["KBody"]), Spacer(1, 4 * mm), table, Spacer(1, 6 * mm)]
     story += [p("Lautstärke: Master 35 bis 50 Prozent. SFX kurz auf 60 Prozent, nie dauerhaft. Bei empfindlichen Mitspielern alle Hochfrequenzen und die Herzschlagspur reduzieren.", styles["KBody"])]
     build_story_pdf(path, story, "Soundboard-Cues")
@@ -448,6 +774,7 @@ def build_soundboard_cues(path: Path) -> None:
 
 def build_sl_reference(path: Path) -> None:
     story = title_block("SL-Schnellreferenz", "Spoiler / offene Fäden / Enden")
+    story += [scaled_image(BELL_ETCHING, 42 * mm, 43 * mm), Spacer(1, 2 * mm)]
     blocks = [
         ("Die Wahrheit", "Elisabeth Abele hat 1848 drei Kinder aus der Grube geführt. Der Widerhall unter dem Stein blieb zurück und kann Stimmen imitieren. Der neue Klöppel aus Grubeneisen öffnet ihn, wenn er ohne Gegenantwort läutet."),
         ("Die Pflichtspuren", "H01 bringt den Klöppel ins Spiel. H03 nennt 1848 und das Schweigegebot. H04 macht Elisabeth zur Retterin. H06 liefert 3 – 1 – 2 – 4. H07 erklärt die Vibration. H08 und H09 öffnen die Grube. H10 bestätigt die Lösung."),
@@ -464,7 +791,8 @@ def build_sl_reference(path: Path) -> None:
 def build_sl_adventure(path: Path) -> None:
     raw = (ROOT / "content" / "scenario.md").read_text(encoding="utf-8")
     # Markdown-lite conversion, retaining headings and paragraphs.
-    story = title_block("SL-Abenteuer", "Die Weiße Frau schweigt / spoilerhaltig")
+    story = art_banner(COVER_ART, 176 * mm, 56 * mm)
+    story += title_block("SL-Abenteuer", "Die Weiße Frau schweigt / spoilerhaltig")
     for block in re.split(r"\n\s*\n", raw):
         block = block.strip()
         if not block:
