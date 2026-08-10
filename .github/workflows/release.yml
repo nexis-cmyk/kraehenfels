@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, for example 1.0.0"
+        required: true
+        default: "1.0.0"
 
 permissions:
   contents: write
@@ -17,6 +23,14 @@ jobs:
         run: brew install xcodegen
       - name: Generate project
         run: cd app && xcodegen generate
+      - name: Resolve release tag
+        id: release
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=v${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build unsigned app
         run: |
           xcodebuild \
@@ -38,12 +52,13 @@ jobs:
         run: |
           python3 tools/update_altstore_feed.py \
             --repo "$GITHUB_REPOSITORY" \
-            --tag "$GITHUB_REF_NAME" \
+            --tag "${{ steps.release.outputs.tag }}" \
             --ipa Kraehenfels.ipa \
             --output altstore/source.generated.json
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.release.outputs.tag }}
           files: |
             Kraehenfels.ipa
             altstore/source.generated.json
