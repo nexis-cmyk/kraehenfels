@@ -11,6 +11,16 @@ Das Repository enthält:
 - eine native iOS-Begleitapp ab iOS 17
 - GitHub Actions für Tests, IPA-Build und AltStore-Feed
 
+## Fertiger iPhone-Build
+
+Die öffentliche Release-Version 1.0.1 ist hier verfügbar:
+
+- [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
+- [Kraehenfels.ipa herunterladen](https://github.com/nexis-cmyk/kraehenfels/releases/download/v1.0.1/Kraehenfels.ipa)
+- [AltStore-Feed](https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/source.json)
+
+Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-Account signiert. Eine kurze Windows-Anleitung steht in [`altstore/README.md`](altstore/README.md).
+
 ## Projektstruktur
 
 - `content/`: verbindliche Geschichte, Szenen, Hinweise und Cue-IDs
@@ -40,7 +50,7 @@ xcodebuild -project Kraehenfels.xcodeproj -scheme Kraehenfels \
   -destination 'generic/platform=iOS Simulator' test
 ```
 
-Ein Tag wie `v1.0.0` oder der Button **Run workflow** mit einer Versionsnummer startet `.github/workflows/release.yml`. Der Workflow erzeugt eine unsignierte `Kraehenfels.ipa` und zusätzlich einen ausgefüllten `altstore/source.generated.json` als Release-Asset. Für eine dauerhafte Feed-URL kannst du diese erzeugte JSON-Datei in dein Repository oder GitHub Pages übernehmen.
+Ein Tag wie `v1.0.0` oder der Button **Run workflow** mit einer Versionsnummer startet `.github/workflows/release.yml`. Der Workflow erzeugt eine unsignierte `Kraehenfels.ipa` und zusätzlich einen ausgefüllten `altstore/source.generated.json` als Release-Asset. Die aktuell gepflegte dauerhafte Feed-URL ist `https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/source.json`.
 
 ## Druckpaket
 
