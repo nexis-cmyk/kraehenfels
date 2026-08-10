@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Build the printable Kraehenfels game pack.
 
-The script intentionally draws the maps as vector diagrams. They remain legible
-in black and white and do not depend on external image assets.
+The player-facing props intentionally use different visual languages: a real
+newspaper, church register, ticket, cabinet photograph, hymn sheet, workshop
+ledger, witness statement, personal letter, and ritual card.
 """
 
 from __future__ import annotations
@@ -43,6 +44,9 @@ ASSETS = ROOT / "print" / "assets"
 COVER_ART = ASSETS / "kraehenfels-cover.png"
 ELISABETH_PHOTO = ASSETS / "elisabeth-abele-cabinet-photo.png"
 BELL_ETCHING = ASSETS / "bell-and-clapper-etching.png"
+AERIAL_MAP = ASSETS / "kraehenfels-aerial-map.png"
+WOCHENBLATT_WOODCUT = ASSETS / "wochenblatt-woodcut.png"
+STALLMACHEREI_ETCHING = ASSETS / "stallmacherei-technical-etching.png"
 
 
 def register_fonts() -> tuple[str, str, str, str]:
@@ -320,126 +324,105 @@ def draw_map(path: Path, gm: bool = False) -> None:
     width, height = landscape(A4)
     c = canvas.Canvas(str(path), pagesize=(width, height), pageCompression=1)
     c.setTitle("Kraehenfels Karte")
-    draw_parchment(c, width, height)
-    c.setStrokeColor(PARCHMENT_DARK)
-    c.setLineWidth(0.7)
-    c.roundRect(8 * mm, 8 * mm, width - 16 * mm, height - 16 * mm, 2 * mm, stroke=1, fill=0)
-    c.setFillColor(INK)
-    c.setFont(SERIF_BOLD, 23)
-    c.drawString(18 * mm, height - 19 * mm, "Krähenfels")
-    c.setFont(FONT, 9)
-    c.setFillColor(UMBER)
-    c.drawString(18 * mm, height - 25 * mm, "Handskizze für die Reise durch den Schwarzwald · November 1890")
-    draw_bell_mark(c, 145 * mm, height - 21.5 * mm, 5.8 * mm, UMBER)
-    if gm:
-        c.setFillColor(RED)
-        c.setFont(FONT_BOLD, 9)
-        c.drawRightString(width - 18 * mm, height - 20 * mm, "SL-KARTE / SPOILER")
-    else:
-        c.setFillColor(UMBER)
-        c.setFont(FONT_BOLD, 9)
-        c.drawRightString(width - 18 * mm, height - 20 * mm, "SPIELERKARTE")
+    draw_parchment(c, width, height, dark=True)
+    inset_x, inset_y = 8 * mm, 8 * mm
+    inset_w, inset_h = width - 16 * mm, height - 16 * mm
+    c.drawImage(ImageReader(str(AERIAL_MAP)), inset_x, inset_y, width=inset_w, height=inset_h,
+                preserveAspectRatio=True, anchor="c", mask="auto")
+    c.setStrokeColor(colors.HexColor("#D8C69C"))
+    c.setLineWidth(1.1)
+    c.roundRect(inset_x, inset_y, inset_w, inset_h, 2 * mm, stroke=1, fill=0)
 
-    # Roads and terrain
-    c.setStrokeColor(UMBER)
-    c.setLineWidth(2.8)
-    c.bezier(40 * mm, 54 * mm, 95 * mm, 103 * mm, 131 * mm, 45 * mm, 251 * mm, 48 * mm)
-    c.setLineWidth(1.25)
-    c.bezier(51 * mm, 59 * mm, 82 * mm, 17 * mm, 114 * mm, 22 * mm, 132 * mm, 50 * mm)
-    c.bezier(137 * mm, 49 * mm, 151 * mm, 93 * mm, 178 * mm, 110 * mm, 214 * mm, 127 * mm)
-    # Bach
-    c.setStrokeColor(colors.HexColor("#4B7780"))
-    c.setLineWidth(2.3)
-    c.bezier(38 * mm, 120 * mm, 78 * mm, 108 * mm, 97 * mm, 133 * mm, 132 * mm, 118 * mm)
-    c.bezier(132 * mm, 118 * mm, 172 * mm, 101 * mm, 208 * mm, 132 * mm, 254 * mm, 113 * mm)
-    # Dense Black Forest bands. The repeated pines turn the map into a place,
-    # while leaving the routes readable at the table.
-    for x, y, size in (
-        (35, 35, 13), (48, 31, 16), (60, 35, 12), (69, 29, 14), (84, 33, 13),
-        (190, 31, 16), (205, 33, 12), (219, 29, 15), (235, 35, 13), (247, 31, 16),
-        (37, 132, 15), (50, 137, 13), (64, 130, 17), (180, 137, 12), (196, 131, 16),
-        (211, 140, 14), (232, 132, 17), (246, 138, 12), (256, 130, 15),
-    ):
-        draw_fir(c, x * mm, y * mm, size * mm, colors.HexColor("#2D4B43"))
-    c.setFillColor(colors.HexColor("#E0D2B4"))
-    c.setStrokeColor(PARCHMENT_DARK)
-    c.setLineWidth(0.65)
-    c.roundRect(87 * mm, 60 * mm, 31 * mm, 24 * mm, 2 * mm, stroke=1, fill=1)
-    draw_house(c, 102 * mm, 68 * mm, 14 * mm, "Zur Krähe")
-    draw_church(c, 151 * mm, 89 * mm, 15 * mm, "Kirche / Friedhof")
-    draw_house(c, 75 * mm, 43 * mm, 12 * mm, "Schmiede")
-    # bridge and mine headframe
-    c.setStrokeColor(UMBER)
-    c.setLineWidth(1.2)
-    c.line(116 * mm, 52 * mm, 128 * mm, 57 * mm)
-    c.line(118 * mm, 49 * mm, 130 * mm, 54 * mm)
-    c.setFont(FONT_BOLD, 6.6)
+    # The image contains the terrain. Labels are deliberately overlaid as
+    # physical map tags so the game locations remain readable at the table.
+    c.setFillColor(colors.Color(0.96, 0.91, 0.79, alpha=0.94))
+    c.roundRect(15 * mm, height - 38 * mm, 83 * mm, 24 * mm, 2 * mm, stroke=0, fill=1)
+    c.setStrokeColor(colors.HexColor("#B89D6B"))
+    c.setLineWidth(0.55)
+    c.roundRect(15 * mm, height - 38 * mm, 83 * mm, 24 * mm, 2 * mm, stroke=1, fill=0)
     c.setFillColor(INK)
-    c.drawCentredString(123 * mm, 43 * mm, "Brücke")
-    c.setStrokeColor(INK)
-    c.setLineWidth(1.0)
-    c.line(218 * mm, 121 * mm, 226 * mm, 139 * mm)
-    c.line(234 * mm, 121 * mm, 226 * mm, 139 * mm)
-    c.line(218 * mm, 121 * mm, 234 * mm, 121 * mm)
-    c.line(221 * mm, 126 * mm, 231 * mm, 126 * mm)
-    c.setFillColor(INK)
-    c.setFont(FONT_BOLD, 6.6)
-    c.drawCentredString(226 * mm, 114 * mm, "verlassene Grube")
-    c.setFont(FONT, 6.8)
-    c.drawCentredString(197 * mm, 106 * mm, "alter Grubenweg")
-    c.drawString(23 * mm, 46 * mm, "Kutschenweg nach Freiburg")
-    # Hidden routes and clues on GM map
+    c.setFont(SERIF_BOLD, 21)
+    c.drawString(20 * mm, height - 23 * mm, "Krähenfels")
+    c.setFont(FONT, 7.6)
+    c.setFillColor(UMBER)
+    c.drawString(20 * mm, height - 30 * mm, "Luftansicht des Dorfes · November 1890")
+    draw_bell_mark(c, 90 * mm, height - 26 * mm, 5 * mm, UMBER)
+    c.setFillColor(colors.Color(0.96, 0.91, 0.79, alpha=0.94))
+    c.roundRect(width - 63 * mm, height - 28 * mm, 48 * mm, 14 * mm, 2 * mm, stroke=0, fill=1)
+    c.setFillColor(RED if gm else UMBER)
+    c.setFont(FONT_BOLD, 8)
+    c.drawCentredString(width - 39 * mm, height - 21.5 * mm, "SL-KARTE / SPOILER" if gm else "SPIELERKARTE")
+
+    def map_tag(label: str, tx: float, ty: float, px: float, py: float) -> None:
+        c.saveState()
+        c.setStrokeColor(colors.Color(0.96, 0.91, 0.79, alpha=0.90))
+        c.setLineWidth(1.4)
+        c.line(px, py, tx, ty - 1.5 * mm)
+        c.setFillColor(colors.Color(0.96, 0.91, 0.79, alpha=0.94))
+        c.roundRect(tx - 1.5 * mm, ty - 4.3 * mm, pdfmetrics.stringWidth(label, FONT_BOLD, 7.2) + 3 * mm, 6.2 * mm, 1.0 * mm, stroke=0, fill=1)
+        c.setFillColor(INK)
+        c.setFont(FONT_BOLD, 7.2)
+        c.drawString(tx, ty - 2.2 * mm, label)
+        c.restoreState()
+
+    # Landmark positions are tied to the illustrated terrain: inn at centre
+    # left, church to its right, smithy lower left, bridge above, mine upper right.
+    map_tag("Zur Krähe", 60 * mm, 96 * mm, 96 * mm, 109 * mm)
+    map_tag("Kirche / Friedhof", 150 * mm, 94 * mm, 170 * mm, 106 * mm)
+    map_tag("Schmiede", 26 * mm, 68 * mm, 45 * mm, 73 * mm)
+    map_tag("Brücke", 102 * mm, 160 * mm, 121 * mm, 149 * mm)
+    map_tag("alter Grubenweg", 188 * mm, 148 * mm, 229 * mm, 147 * mm)
+    map_tag("verlassene Grube", 225 * mm, 159 * mm, 242 * mm, 178 * mm)
+    c.setFillColor(colors.Color(0.96, 0.91, 0.79, alpha=0.94))
+    c.roundRect(17 * mm, 17 * mm, 95 * mm, 22 * mm, 2 * mm, stroke=0, fill=1)
+    c.setStrokeColor(colors.HexColor("#B89D6B"))
+    c.setLineWidth(0.5)
+    c.roundRect(17 * mm, 17 * mm, 95 * mm, 22 * mm, 2 * mm, stroke=1, fill=0)
+
+    # Hidden routes and clues on GM map.
     if gm:
         c.setStrokeColor(RED)
-        c.setLineWidth(1.4)
+        c.setLineWidth(1.7)
         c.setDash(4, 3)
-        c.bezier(151 * mm, 91 * mm, 166 * mm, 72 * mm, 186 * mm, 72 * mm, 204 * mm, 65 * mm)
-        c.bezier(204 * mm, 65 * mm, 219 * mm, 59 * mm, 222 * mm, 44 * mm, 225 * mm, 32 * mm)
+        c.bezier(156 * mm, 72 * mm, 177 * mm, 91 * mm, 194 * mm, 85 * mm, 213 * mm, 100 * mm)
+        c.bezier(213 * mm, 100 * mm, 229 * mm, 110 * mm, 229 * mm, 129 * mm, 239 * mm, 144 * mm)
         c.setDash()
         c.setFillColor(RED)
         c.setFont(FONT_BOLD, 8)
-        c.drawString(176 * mm, 69 * mm, "Flutstollen")
-        c.drawString(218 * mm, 38 * mm, "Kammer")
+        c.drawString(180 * mm, 90 * mm, "Flutstollen")
+        c.drawString(220 * mm, 122 * mm, "Kammer")
         c.setFont(FONT, 7.3)
-        c.drawString(165 * mm, 61 * mm, "H08: Plan")
-        c.drawString(215 * mm, 25 * mm, "H09: Sauter")
-        c.setFillColor(colors.HexColor("#F8E8E8"))
-        c.roundRect(25 * mm, 19 * mm, 110 * mm, 21 * mm, 3 * mm, stroke=0, fill=1)
+        c.drawString(171 * mm, 82 * mm, "H08: Plan")
+        c.drawString(218 * mm, 114 * mm, "H09: Sauter")
         c.setFillColor(RED)
         c.setFont(FONT_BOLD, 8)
-        c.drawString(30 * mm, 33 * mm, "Wahrheit für die SL")
+        c.drawString(22 * mm, 32 * mm, "Wahrheit für die SL")
         c.setFont(FONT, 7.6)
-        c.drawString(30 * mm, 26 * mm, "Elisabeth hat die Kinder gerettet. Der Widerhall trägt Stimmen.")
-        c.drawString(30 * mm, 21 * mm, "Finale: 3 - 1 - 2 - 4 und Elisabeth Abele.")
+        c.drawString(22 * mm, 26 * mm, "Elisabeth hat die Kinder gerettet. Der Widerhall trägt Stimmen.")
+        c.drawString(22 * mm, 21 * mm, "Finale: 3 - 1 - 2 - 4 und Elisabeth Abele.")
     else:
-        c.setFillColor(colors.HexColor("#F5ECD9"))
-        c.roundRect(25 * mm, 19 * mm, 100 * mm, 21 * mm, 3 * mm, stroke=0, fill=1)
-        c.setStrokeColor(PARCHMENT_DARK)
-        c.roundRect(25 * mm, 19 * mm, 100 * mm, 21 * mm, 3 * mm, stroke=1, fill=0)
         c.setFillColor(INK)
         c.setFont(FONT_BOLD, 8)
-        c.drawString(30 * mm, 33 * mm, "Randnotiz")
+        c.drawString(22 * mm, 32 * mm, "Randnotiz")
         c.setFont(FONT, 7.6)
-        c.drawString(30 * mm, 26 * mm, "Nach Sonnenuntergang keine Glocke.")
-        c.drawString(30 * mm, 21 * mm, "Kein Singen. Keine fremden Namen rufen.")
-    # compass and scale
+        c.drawString(22 * mm, 26 * mm, "Nach Sonnenuntergang keine Glocke.")
+        c.drawString(22 * mm, 21 * mm, "Kein Singen. Keine fremden Namen rufen.")
+    # Compass and scale.
     c.setFillColor(INK)
     c.setFont(FONT_BOLD, 8)
-    c.drawString(width - 35 * mm, 32 * mm, "N")
+    c.drawString(width - 35 * mm, 35 * mm, "N")
     c.setStrokeColor(INK)
     c.setLineWidth(1)
-    c.line(width - 34 * mm, 22 * mm, width - 34 * mm, 30 * mm)
-    c.line(width - 34 * mm, 30 * mm, width - 36 * mm, 26 * mm)
-    c.line(width - 34 * mm, 30 * mm, width - 32 * mm, 26 * mm)
+    c.line(width - 34 * mm, 25 * mm, width - 34 * mm, 33 * mm)
+    c.line(width - 34 * mm, 33 * mm, width - 36 * mm, 29 * mm)
+    c.line(width - 34 * mm, 33 * mm, width - 32 * mm, 29 * mm)
     c.line(width - 57 * mm, 20 * mm, width - 37 * mm, 20 * mm)
     c.setFont(FONT, 7)
     c.drawCentredString(width - 47 * mm, 14 * mm, "ca. 500 Schritte")
-    c.setStrokeColor(UMBER)
-    c.line(18 * mm, 12 * mm, width - 18 * mm, 12 * mm)
-    c.setFillColor(UMBER)
+    c.setFillColor(colors.HexColor("#F3E4C6"))
     c.setFont(FONT_BOLD, 7)
-    c.drawString(18 * mm, 7 * mm, "KRÄHENFELS  /  DIE WEISSE FRAU SCHWEIGT")
-    c.drawRightString(width - 18 * mm, 7 * mm, "KARTE")
+    c.drawString(13 * mm, 11 * mm, "KRÄHENFELS  /  DIE WEISSE FRAU SCHWEIGT")
+    c.drawRightString(width - 13 * mm, 11 * mm, "KARTE")
     c.showPage()
     c.save()
 
@@ -564,103 +547,240 @@ def draw_wax_seal(c: canvas.Canvas, x: float, y: float, radius: float) -> None:
     c.restoreState()
 
 
+def draw_prop_page(c: canvas.Canvas, x: float, y: float, width: float, height: float, fill=PARCHMENT) -> None:
+    """A restrained outer edge; individual prop functions supply their own identity."""
+    c.setFillColor(fill)
+    c.setStrokeColor(UMBER)
+    c.setLineWidth(0.75)
+    c.roundRect(x, y, width, height, 1.5 * mm, stroke=1, fill=1)
+
+
+def prop_paragraph(c: canvas.Canvas, text: str, x: float, top: float, width: float, height: float, *, size: float = 8.4, leading: float = 11, font: str | None = None, color=INK, align=TA_LEFT) -> None:
+    style = ParagraphStyle("Prop", fontName=font or FONT, fontSize=size, leading=leading, textColor=color, alignment=align)
+    paragraph = Paragraph(text, style)
+    _, paragraph_height = paragraph.wrap(width, height)
+    paragraph.drawOn(c, x, top - paragraph_height)
+
+
 def draw_handout_card(
     c: canvas.Canvas, x: float, y: float, width: float, height: float,
     hid: str, title: str, body: str,
 ) -> None:
     c.saveState()
-    c.setFillColor(PARCHMENT)
-    c.setStrokeColor(UMBER)
-    c.setLineWidth(1.1)
-    c.roundRect(x, y, width, height, 2.5 * mm, stroke=1, fill=1)
-    c.setStrokeColor(PARCHMENT_DARK)
-    c.setLineWidth(0.45)
-    c.roundRect(x + 3 * mm, y + 3 * mm, width - 6 * mm, height - 6 * mm, 1.4 * mm, stroke=1, fill=0)
-    # visual handout tag
-    c.setFillColor(INK)
-    c.roundRect(x + 7 * mm, y + height - 19 * mm, 21 * mm, 9 * mm, 1.5 * mm, stroke=0, fill=1)
-    c.setFillColor(PARCHMENT)
-    c.setFont(FONT_BOLD, 7.3)
-    c.drawCentredString(x + 17.5 * mm, y + height - 15.8 * mm, hid)
-    c.setFillColor(INK)
-    c.setFont(SERIF_BOLD, 15)
-    c.drawString(x + 32 * mm, y + height - 16.2 * mm, title)
-    draw_ornament(c, x + 8 * mm, y + height - 24 * mm, width - 16 * mm)
-
-    body_x = x + 9 * mm
-    body_top = y + height - 31 * mm
-    body_width = width - 18 * mm
-
     if hid == "H01":
-        c.setFillColor(UMBER)
-        c.setFont(SERIF_BOLD, 11)
-        c.drawString(body_x, body_top - 7 * mm, "POSTKUTSCHE  ·  FREIBURG — FREUDENSTADT")
+        # A carriage ticket, with dispatch rules and a postal seal.
+        draw_prop_page(c, x, y, width, height, colors.HexColor("#EADBBC"))
         c.setStrokeColor(UMBER)
-        c.setLineWidth(0.55)
-        for line_y in (body_top - 17 * mm, body_top - 30 * mm, body_top - 43 * mm, body_top - 56 * mm):
-            c.line(body_x, line_y, x + width - 9 * mm, line_y)
-        draw_wax_seal(c, x + width - 25 * mm, y + 31 * mm, 10 * mm)
-        body_top -= 21 * mm
-    elif hid == "H03":
-        c.setFillColor(INK)
-        c.setFont(SERIF_BOLD, 18)
-        c.drawCentredString(x + width / 2, body_top - 6 * mm, "KRÄHENFELSER WOCHENBLATT")
+        c.setDash(2, 2)
+        c.line(x + 10 * mm, y + 6 * mm, x + 10 * mm, y + height - 6 * mm)
+        c.setDash()
         c.setFont(FONT_BOLD, 7)
-        c.drawCentredString(x + width / 2, body_top - 12 * mm, "SONNTAGSBEILAGE · 17. NOVEMBER 1890 · PREIS 2 PFENNIG")
-        c.setStrokeColor(UMBER)
-        c.line(body_x, body_top - 16 * mm, x + width - 9 * mm, body_top - 16 * mm)
-        draw_bell_mark(c, x + width - 22 * mm, body_top - 34 * mm, 8 * mm, UMBER)
-        body_width -= 32 * mm
-        body_top -= 23 * mm
+        c.setFillColor(UMBER)
+        c.drawString(x + 14 * mm, y + height - 13 * mm, "GROSSHERZOGLICHE POSTKUTSCHE")
+        c.setFillColor(INK)
+        c.setFont(SERIF_BOLD, 17)
+        c.drawString(x + 14 * mm, y + height - 24 * mm, "FAHRTSCHEIN & FRACHTZETTEL")
+        c.setStrokeColor(INK)
+        c.setLineWidth(1.3)
+        c.line(x + 14 * mm, y + height - 29 * mm, x + width - 12 * mm, y + height - 29 * mm)
+        c.setFillColor(RED)
+        c.setFont(FONT_BOLD, 8)
+        c.drawRightString(x + width - 13 * mm, y + height - 13 * mm, "No. 017-1890")
+        c.setFont(FONT, 7.6)
+        c.setFillColor(INK)
+        c.drawString(x + 14 * mm, y + height - 39 * mm, "FREIBURG  >  FREUDENSTADT     17. XI. 1890     16:10 UHR")
+        for row in range(4):
+            rule_y = y + height - (49 + row * 18) * mm
+            c.setStrokeColor(colors.HexColor("#B99B70"))
+            c.setLineWidth(0.35)
+            c.line(x + 14 * mm, rule_y, x + width - 14 * mm, rule_y)
+        prop_paragraph(c, "<b>Fahrgäste:</b> drei Reisende, Namen nicht eingetragen.<br/><br/><b>Fracht:</b> ein verschnürtes Eisenstück. Absender: <b>W. Abele, Krähenfels</b>.<br/><br/><i>Nicht öffnen. Nicht läuten. Bei Frost nicht berühren.</i><br/><br/>Umleitung über Krähenfels wegen Schnee auf der Passstraße.", x + 14 * mm, y + height - 43 * mm, width - 38 * mm, 92 * mm, size=8.2, leading=10.2)
+        draw_wax_seal(c, x + width - 23 * mm, y + 24 * mm, 9 * mm)
+        c.setFillColor(UMBER)
+        c.setFont(FONT_BOLD, 6.7)
+        c.drawString(x + 14 * mm, y + 12 * mm, "ABSCHNITT BEIM KUTSCHER BELASSEN")
+
+    elif hid == "H03":
+        # Actual newspaper composition: masthead, datum, woodcut and columns.
+        draw_prop_page(c, x, y, width, height, colors.HexColor("#E9E5D9"))
+        c.setStrokeColor(INK)
+        c.setLineWidth(0.8)
+        c.rect(x + 6 * mm, y + 6 * mm, width - 12 * mm, height - 12 * mm, stroke=1, fill=0)
+        c.setFont(SERIF_BOLD, 18)
+        c.setFillColor(INK)
+        c.drawCentredString(x + width / 2, y + height - 16 * mm, "KRÄHENFELSER WOCHENBLATT")
+        c.setFont(FONT_BOLD, 6.6)
+        c.drawCentredString(x + width / 2, y + height - 22 * mm, "SONNTAGSBEILAGE · 17. NOVEMBER 1890 · PREIS 2 PFENNIG")
+        c.setLineWidth(1.4)
+        c.line(x + 9 * mm, y + height - 26 * mm, x + width - 9 * mm, y + height - 26 * mm)
+        c.drawImage(ImageReader(str(WOCHENBLATT_WOODCUT)), x + 10 * mm, y + height - 67 * mm, width=width - 20 * mm, height=36 * mm, preserveAspectRatio=True, anchor="c", mask="auto")
+        c.setFont(SERIF_BOLD, 9)
+        c.drawString(x + 11 * mm, y + height - 74 * mm, "WINTERDIENST VERSCHOBEN")
+        newspaper_width = (width - 28 * mm) / 2
+        left = "Der neue Klöppel für die obere Kirchenglocke ist eingetroffen. Die Montage wird bis zum Ende des Frostes verschoben. Die Glocke wird seit dem Unglück von 1848 nicht mehr nach Einbruch der Dunkelheit geläutet.<br/><br/><b>VERMISSTER HOLZSAMMLER</b><br/><br/>Wilhelm Abele, 42, wurde am alten Grubenweg zuletzt gesehen."
+        right = "<b>AUS DEM GEMEINDERAT</b><br/><br/>Besucher sollen sich nach Sonnenuntergang in ihren Unterkünften aufhalten.<br/><br/>Wer nach Einbruch der Dunkelheit einen Ton aus dem Grubenhang hört, möge die Straße nehmen und nicht antworten.<br/><br/><i>Redaktion und Druck: Krähenfels.</i>"
+        prop_paragraph(c, left, x + 10 * mm, y + height - 78 * mm, newspaper_width, 74 * mm, size=7.3, leading=8.6, font=SERIF)
+        prop_paragraph(c, right, x + 15 * mm + newspaper_width, y + height - 78 * mm, newspaper_width, 74 * mm, size=7.3, leading=8.6, font=SERIF)
+        c.setStrokeColor(INK)
+        c.setLineWidth(0.35)
+        c.line(x + width / 2, y + 11 * mm, x + width / 2, y + height - 78 * mm)
+
     elif hid == "H04":
-        c.setStrokeColor(PARCHMENT_DARK)
-        c.setLineWidth(0.35)
-        for row in range(10):
-            c.line(body_x, body_top - (7 + row * 12) * mm, x + width - 9 * mm, body_top - (7 + row * 12) * mm)
-        draw_bell_mark(c, x + width - 22 * mm, y + 29 * mm, 8 * mm, UMBER)
-    elif hid == "H05":
-        image = ImageReader(str(ELISABETH_PHOTO))
-        photo_w = width - 26 * mm
-        photo_h = 110 * mm
-        c.drawImage(image, x + 13 * mm, y + 44 * mm, width=photo_w, height=photo_h, mask="auto", preserveAspectRatio=True, anchor="c")
-        caption = Paragraph("<b>Elisabeth Abele</b><br/>Krähenfels, Winter 1848", styles["HandoutCaption"])
-        cap_w, cap_h = caption.wrap(width - 26 * mm, 18 * mm)
-        caption.drawOn(c, x + 13 * mm, y + 24 * mm)
-        c.restoreState()
-        return
-    elif hid in {"H06", "H10", "H11"}:
-        image = ImageReader(str(BELL_ETCHING))
-        art_w = 43 * mm
-        art_h = 62 * mm
-        c.drawImage(image, x + width - art_w - 9 * mm, y + 18 * mm, width=art_w, height=art_h, mask="auto", preserveAspectRatio=True, anchor="c")
-        body_width -= 49 * mm
-    elif hid == "H07":
-        c.setStrokeColor(PARCHMENT_DARK)
-        c.setLineWidth(0.35)
-        for row in range(11):
-            c.line(body_x, body_top - (8 + row * 11) * mm, x + width - 9 * mm, body_top - (8 + row * 11) * mm)
+        # Parish register: ruled paper, red margin and a dated historic record.
+        draw_prop_page(c, x, y, width, height, colors.HexColor("#F0E2C5"))
+        c.setStrokeColor(colors.HexColor("#C3B08A"))
+        c.setLineWidth(0.28)
+        for row in range(12):
+            c.line(x + 19 * mm, y + 15 * mm + row * 11 * mm, x + width - 10 * mm, y + 15 * mm + row * 11 * mm)
         c.setStrokeColor(RED)
         c.setLineWidth(1.0)
-        c.line(x + 18 * mm, y + 9 * mm, x + 18 * mm, y + height - 29 * mm)
-    elif hid == "H08":
-        c.setStrokeColor(INK)
-        c.setLineWidth(1.2)
-        c.line(x + width - 49 * mm, y + 44 * mm, x + width - 20 * mm, y + 44 * mm)
-        c.line(x + width - 49 * mm, y + 44 * mm, x + width - 37 * mm, y + 66 * mm)
-        c.line(x + width - 49 * mm, y + 44 * mm, x + width - 36 * mm, y + 24 * mm)
-        c.setDash(2, 2)
-        c.line(x + width - 20 * mm, y + 44 * mm, x + width - 13 * mm, y + 44 * mm)
-        c.setDash()
-        body_width -= 55 * mm
-    elif hid == "H09":
-        draw_bell_mark(c, x + width - 21 * mm, y + 31 * mm, 9 * mm, UMBER)
+        c.line(x + 17 * mm, y + 9 * mm, x + 17 * mm, y + height - 9 * mm)
+        c.setFillColor(RED)
+        c.setFont(SERIF_BOLD, 9)
+        c.drawCentredString(x + width / 2, y + height - 15 * mm, "AUS DEM KIRCHENBUCH ZU KRÄHENFELS")
+        c.setFont(SERIF, 8)
+        c.setFillColor(UMBER)
+        c.drawString(x + 21 * mm, y + height - 27 * mm, "3. Dezember 1848 · Nachtrag des Küsters")
+        prop_paragraph(c, "Heute wurde Elisabeth Abele, Kantorin und Lehrerin, im Schnee oberhalb der Grube gefunden. Sie hatte drei Kinder aus dem eingestürzten Stollen geführt. Der Rückweg blieb ihr versperrt.<br/><br/>Die Glocke schlug danach viermal, obwohl niemand im Turm war.<br/><br/><i>... nicht die Frau ...<br/>... was unter dem Stein ...<br/>... die Stimme ...</i>", x + 22 * mm, y + height - 34 * mm, width - 36 * mm, 101 * mm, size=8.4, leading=11.1, font=SERIF)
+        draw_bell_mark(c, x + width - 23 * mm, y + 20 * mm, 8 * mm, UMBER)
 
-    body_para = Paragraph(body, styles["HandoutBody"])
-    _, body_h = body_para.wrap(body_width, height - 46 * mm)
-    body_para.drawOn(c, body_x, max(y + 12 * mm, body_top - body_h))
-    c.setFillColor(UMBER)
-    c.setFont(FONT_BOLD, 6.2)
-    c.drawRightString(x + width - 8 * mm, y + 7 * mm, "Krähenfels · Spielerhinweis")
+    elif hid == "H05":
+        # Separate cabinet photo with photographer imprint and mat border.
+        c.setFillColor(colors.HexColor("#382E29"))
+        c.rect(x, y, width, height, stroke=0, fill=1)
+        c.setFillColor(colors.HexColor("#D4C59F"))
+        c.rect(x + 8 * mm, y + 8 * mm, width - 16 * mm, height - 16 * mm, stroke=0, fill=1)
+        c.setStrokeColor(colors.HexColor("#171311"))
+        c.setLineWidth(1.2)
+        c.rect(x + 13 * mm, y + 31 * mm, width - 26 * mm, height - 50 * mm, stroke=1, fill=0)
+        c.drawImage(ImageReader(str(ELISABETH_PHOTO)), x + 15 * mm, y + 34 * mm, width=width - 30 * mm, height=height - 57 * mm, mask="auto", preserveAspectRatio=True, anchor="c")
+        c.setFillColor(colors.HexColor("#261F1B"))
+        c.setFont(SERIF_BOLD, 11)
+        c.drawCentredString(x + width / 2, y + 23 * mm, "ELISABETH ABELE")
+        c.setFont(SERIF, 7.8)
+        c.drawCentredString(x + width / 2, y + 16 * mm, "Krähenfels · Winter 1848")
+        c.setFont(SERIF, 6.5)
+        c.drawCentredString(x + width / 2, y + 11 * mm, "Atelieraufnahme auf nassem Kollodium")
+
+    elif hid == "H06":
+        # A hymn sheet: centred title, staffs and the indispensable sequence.
+        draw_prop_page(c, x, y, width, height, colors.HexColor("#F4EBD5"))
+        c.setFillColor(INK)
+        c.setFont(SERIF_BOLD, 16)
+        c.drawCentredString(x + width / 2, y + height - 17 * mm, "LIED FÜR DEN HEIMWEG")
+        c.setFont(SERIF, 8)
+        c.drawCentredString(x + width / 2, y + height - 24 * mm, "für eine Stimme und die obere Glocke")
+        for staff in (y + 101 * mm, y + 66 * mm):
+            c.setStrokeColor(UMBER)
+            c.setLineWidth(0.35)
+            for row in range(5):
+                c.line(x + 12 * mm, staff + row * 2.2 * mm, x + width - 12 * mm, staff + row * 2.2 * mm)
+        prop_paragraph(c, "Wenn der erste Schnee fällt,<br/>wenn der zweite Weg schweigt,<br/>wenn der dritte Ton ruft,<br/>bleibt der vierte Stein.", x + 19 * mm, y + 94 * mm, width - 38 * mm, 34 * mm, size=9.3, leading=11.5, font=SERIF, align=TA_CENTER)
+        c.setFillColor(RED)
+        c.setFont(SERIF_BOLD, 24)
+        c.drawCentredString(x + width / 2, y + 48 * mm, "3   1   2   4")
+        c.setFillColor(UMBER)
+        c.setFont(SERIF, 8.2)
+        c.drawCentredString(x + width / 2, y + 36 * mm, "Nicht die Glocke antwortet. Das Echo tut es.")
+        draw_bell_mark(c, x + width - 22 * mm, y + 20 * mm, 8 * mm, UMBER)
+
+    elif hid == "H07":
+        # A working ledger with red accounting lines and technical plate.
+        draw_prop_page(c, x, y, width, height, colors.HexColor("#E9DFC8"))
+        c.setFillColor(INK)
+        c.setFont(SERIF_BOLD, 15)
+        c.drawString(x + 12 * mm, y + height - 16 * mm, "WERKBUCH DER STELLMACHEREI")
+        c.setFont(FONT, 7.4)
+        c.setFillColor(UMBER)
+        c.drawString(x + 12 * mm, y + height - 23 * mm, "Emil Bopp · Eintrag vom 15. November 1890")
+        c.setStrokeColor(RED)
+        c.setLineWidth(0.9)
+        c.line(x + 16 * mm, y + 10 * mm, x + 16 * mm, y + height - 29 * mm)
+        c.setStrokeColor(colors.HexColor("#BCA986"))
+        c.setLineWidth(0.28)
+        for row in range(9):
+            c.line(x + 18 * mm, y + 14 * mm + row * 12 * mm, x + width - 62 * mm, y + 14 * mm + row * 12 * mm)
+        c.drawImage(ImageReader(str(STALLMACHEREI_ETCHING)), x + width - 58 * mm, y + 18 * mm, width=48 * mm, height=82 * mm, preserveAspectRatio=True, anchor="c", mask="auto")
+        prop_paragraph(c, "Die Kutschenachse aus Freiburg ist sauber gearbeitet. Der Bruch sitzt nicht an der schwächsten Stelle. Metallstaub liegt im Holz, als hätte etwas von innen dagegen geschlagen.<br/><br/>Der neue Glockenklöppel besteht aus altem Grubeneisen. Beim Anschlagen summt er, auch wenn die Glocke gedämpft wird.<br/><br/><b>Nicht zusammen mit der Glocke lagern.</b>", x + 20 * mm, y + height - 34 * mm, width - 84 * mm, 95 * mm, size=8.0, leading=10.1)
+
+    elif hid == "H08":
+        # Folded field note that points deliberately to the full-size mine plan.
+        draw_prop_page(c, x, y, width, height, colors.HexColor("#E7D6B5"))
+        c.setStrokeColor(UMBER)
+        c.setLineWidth(0.8)
+        c.setDash(3, 2)
+        c.line(x + width / 2, y + 8 * mm, x + width / 2, y + height - 8 * mm)
+        c.setDash()
+        c.setFont(SERIF_BOLD, 15)
+        c.setFillColor(INK)
+        c.drawString(x + 12 * mm, y + height - 17 * mm, "ALTER FLUR- UND GRUBENPLAN")
+        c.setFont(FONT_BOLD, 7)
+        c.setFillColor(RED)
+        c.drawRightString(x + width - 12 * mm, y + height - 16 * mm, "BEILAGE H08")
+        c.setStrokeColor(INK)
+        c.setLineWidth(1.3)
+        c.line(x + 17 * mm, y + 63 * mm, x + 54 * mm, y + 63 * mm)
+        c.line(x + 54 * mm, y + 63 * mm, x + 77 * mm, y + 87 * mm)
+        c.line(x + 54 * mm, y + 63 * mm, x + 83 * mm, y + 36 * mm)
+        c.setDash(2, 2)
+        c.line(x + 83 * mm, y + 36 * mm, x + 99 * mm, y + 36 * mm)
+        c.setDash()
+        c.setFillColor(UMBER)
+        c.setFont(FONT_BOLD, 7)
+        c.drawString(x + 18 * mm, y + 67 * mm, "Mundloch")
+        c.drawString(x + 65 * mm, y + 91 * mm, "Försterweg")
+        c.drawString(x + 84 * mm, y + 39 * mm, "Flutstollen")
+        prop_paragraph(c, "<b>Drei Wege vom Dorf zur verlassenen Grube</b><br/><br/>1. Försterweg, endet am verschütteten Mundloch<br/>2. Bachlauf, führt zu einem niedrigen Flutstollen<br/>3. alter Seilzugweg, führt zu einer Kammer unter der Kapelle<br/><br/>Kreis am Rand: <b>Abele, Werkzeug und Liedblatt</b><br/><br/><i>Die vollständige Karte ist als großes Handout H08 beigelegt.</i>", x + width / 2 + 9 * mm, y + height - 30 * mm, width / 2 - 20 * mm, 102 * mm, size=8.3, leading=10.6)
+
+    elif hid == "H09":
+        # Creased witness statement, more intimate and less formal than a letter.
+        draw_prop_page(c, x, y, width, height, colors.HexColor("#EEE0C5"))
+        c.setStrokeColor(colors.HexColor("#B9A17C"))
+        c.setLineWidth(0.4)
+        c.line(x + 11 * mm, y + height - 25 * mm, x + width - 11 * mm, y + 16 * mm)
+        c.line(x + 16 * mm, y + 12 * mm, x + width - 18 * mm, y + height - 15 * mm)
+        c.setFillColor(INK)
+        c.setFont(SERIF_BOLD, 13)
+        c.drawString(x + 14 * mm, y + height - 17 * mm, "AUSSAGE VON LORENZ SAUTER")
+        c.setFillColor(UMBER)
+        c.setFont(SERIF, 7.6)
+        c.drawString(x + 14 * mm, y + height - 24 * mm, "Aufgenommen im Hinterzimmer der Krähe")
+        prop_paragraph(c, "<i>Ich höre schlecht, aber der Berg hört zu gut.</i><br/><br/>Die Stimmen kommen nicht aus einer Richtung. Sie nehmen Wörter, die gerade gesprochen wurden, und geben sie später zurück. Erst leise. Dann mit einer Stimme, die man kennt.<br/><br/>Elisabeth war nicht die Frau, die den Berg weckte. Sie war die Frau, die ihn unten hielt.<br/><br/>Wenn ihr den Klöppel habt, lasst ihn nicht allein schwingen. Gebt ihm eine Antwort.", x + 17 * mm, y + height - 35 * mm, width - 34 * mm, 103 * mm, size=9, leading=12, font=SERIF)
+        c.setFillColor(UMBER)
+        c.setFont(SERIF, 10)
+        c.drawRightString(x + width - 16 * mm, y + 16 * mm, "L. Sauter")
+
+    elif hid == "H10":
+        # Folded personal letter, with salutation, signature, and wax seal.
+        draw_prop_page(c, x, y, width, height, colors.HexColor("#F0E4CE"))
+        c.setStrokeColor(colors.HexColor("#C0AE8E"))
+        c.setLineWidth(0.35)
+        c.line(x + 10 * mm, y + height - 28 * mm, x + width - 10 * mm, y + height - 28 * mm)
+        c.setFillColor(INK)
+        c.setFont(SERIF_BOLD, 11)
+        c.drawString(x + 14 * mm, y + height - 17 * mm, "An Wilhelm, falls ich nicht zurückkehre.")
+        prop_paragraph(c, "Die Leute werden sagen, ich hätte die Kinder in die Grube geführt. Das stimmt nicht. Ich habe sie herausgeführt. Was unten blieb, trägt unsere Stimmen wie Mäntel.<br/><br/>Der neue Klöppel ist aus dem Eisen des ersten Einsturzes. Er öffnet den Widerhall, wenn er ohne Antwort läutet. Nennt meinen vollen Namen und singt die Gegenfolge: <b>drei, eins, zwei, vier</b>.<br/><br/>Wenn niemand antwortet, schmilzt das Eisen. Wenn ihr schweigt, hört der Berg auf euch.<br/><br/><b>Elisabeth Abele</b>", x + 15 * mm, y + height - 36 * mm, width - 42 * mm, 103 * mm, size=8.5, leading=10.8, font=SERIF)
+        c.drawImage(ImageReader(str(BELL_ETCHING)), x + width - 39 * mm, y + 20 * mm, width=29 * mm, height=45 * mm, preserveAspectRatio=True, anchor="c", mask="auto")
+        draw_wax_seal(c, x + width - 22 * mm, y + 17 * mm, 7 * mm)
+
+    else:  # H11, a distilled ritual card for the finale.
+        c.setFillColor(INK)
+        c.rect(x, y, width, height, stroke=0, fill=1)
+        c.setStrokeColor(colors.HexColor("#C8B171"))
+        c.setLineWidth(0.9)
+        c.rect(x + 6 * mm, y + 6 * mm, width - 12 * mm, height - 12 * mm, stroke=1, fill=0)
+        c.setFillColor(colors.HexColor("#F0DFC0"))
+        c.setFont(SERIF_BOLD, 14)
+        c.drawCentredString(x + width / 2, y + height - 18 * mm, "DIE ANTWORT")
+        c.setFont(SERIF_BOLD, 29)
+        c.setFillColor(colors.HexColor("#C9A454"))
+        c.drawCentredString(x + width / 2, y + height - 39 * mm, "3 · 1 · 2 · 4")
+        c.setStrokeColor(colors.HexColor("#C8B171"))
+        c.setLineWidth(0.4)
+        for ring in (17 * mm, 23 * mm):
+            c.circle(x + width / 2, y + 57 * mm, ring, stroke=1, fill=0)
+        draw_bell_mark(c, x + width / 2, y + 57 * mm, 11 * mm, colors.HexColor("#C9A454"))
+        prop_paragraph(c, "<b>1.</b> Klöppel sichern oder schmelzen.<br/><b>2.</b> Gegenfolge hörbar machen.<br/><b>3.</b> Den Namen vollständig sprechen: <b>Elisabeth Abele</b>.<br/><b>4.</b> Entscheiden, ob Glocke, Grube oder Eisen das Ende trägt.", x + 17 * mm, y + 38 * mm, width - 34 * mm, 36 * mm, size=8.2, leading=10.1, font=SERIF, color=colors.HexColor("#F0DFC0"), align=TA_CENTER)
     c.restoreState()
 
 

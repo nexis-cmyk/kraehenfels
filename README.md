@@ -54,7 +54,7 @@ Ein Tag wie `v1.0.0` oder der Button **Run workflow** mit einer Versionsnummer s
 
 ## Druckpaket
 
-Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: Schnee, Tannen, Kirche, Grube, gealtertes Papier, ein Kabinettfoto von Elisabeth Abele und eine Glockenradierung. Die Handouts sind als zwei ausschneidbare A5-Karten pro Seite angelegt.
+Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: Schnee, Tannen, Kirche, Grube, gealtertes Papier, ein Kabinettfoto von Elisabeth Abele und eine Glockenradierung. Die Dorfkarte ist eine realistische Luftansicht mit sichtbarem Gelände, Bach, Gebäuden und Grubenweg. Die Handouts sind als zwei ausschneidbare A5-Requisiten pro Seite angelegt: Kutschschein, Wochenblatt, Kirchenbuch, Foto, Liedblatt, Werkbuch, Feldplan, Aussage, Brief und Ritualkarte besitzen jeweils ein eigenes Layout.
 
 - `00_Spielstart.pdf`: kurze Vorbereitung für die erste Spielleitung
 - `01_Karte_Spieler.pdf`: spoilerfreie Tischkarte
