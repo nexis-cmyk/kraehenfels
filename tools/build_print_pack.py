@@ -47,6 +47,7 @@ BELL_ETCHING = ASSETS / "bell-and-clapper-etching.png"
 AERIAL_MAP = ASSETS / "kraehenfels-aerial-map.png"
 WOCHENBLATT_WOODCUT = ASSETS / "wochenblatt-woodcut.png"
 STALLMACHEREI_ETCHING = ASSETS / "stallmacherei-technical-etching.png"
+MINE_SURVEY = ASSETS / "alter-grubenplan-survey.png"
 
 
 def register_fonts() -> tuple[str, str, str, str]:
@@ -453,61 +454,60 @@ def draw_mine_plan(path: Path, gm: bool = False) -> None:
         c.drawRightString(width - 18 * mm, height - 20 * mm, "SPIELERHANDOUT")
 
     left, bottom = 25 * mm, 28 * mm
-    c.setFillColor(colors.HexColor("#E1D3B8"))
     c.setStrokeColor(UMBER)
     c.setLineWidth(1.2)
-    c.roundRect(left, bottom, 200 * mm, 102 * mm, 3 * mm, stroke=1, fill=1)
-    c.setStrokeColor(PARCHMENT_DARK)
-    c.setLineWidth(0.35)
-    for x in range(32, 223, 10):
-        c.line(x * mm, 31 * mm, (x + 7) * mm, 128 * mm)
-    # Three routes
+    c.roundRect(left, bottom, 200 * mm, 102 * mm, 3 * mm, stroke=1, fill=0)
+    c.saveState()
+    clip = c.beginPath()
+    clip.roundRect(left, bottom, 200 * mm, 102 * mm, 3 * mm)
+    c.clipPath(clip, stroke=0, fill=0)
+    c.drawImage(ImageReader(str(MINE_SURVEY)), left, bottom, width=200 * mm, height=102 * mm,
+                preserveAspectRatio=False, mask="auto")
+    c.restoreState()
+    # A deliberately incomplete set of field labels. The surveying marks remain
+    # visible beneath them so the prop reads as an actual plan rather than a diagram.
+    def survey_label(label: str, x: float, y: float, *, red: bool = False) -> None:
+        c.saveState()
+        c.setFillColor(colors.Color(0.94, 0.89, 0.78, alpha=0.86))
+        c.roundRect(x - 2 * mm, y - 3.5 * mm, pdfmetrics.stringWidth(label, FONT_BOLD, 7.4) + 4 * mm, 6 * mm, 1.0 * mm, stroke=0, fill=1)
+        c.setFillColor(RED if red else INK)
+        c.setFont(FONT_BOLD, 7.4)
+        c.drawString(x, y - 1.4 * mm, label)
+        c.restoreState()
+
+    survey_label("Mundloch", 34 * mm, 80 * mm)
+    survey_label("Schacht", 113 * mm, 80 * mm)
+    survey_label("Seilzugweg", 104 * mm, 116 * mm)
+    survey_label("Kapelle", 76 * mm, 67 * mm)
+    survey_label("Bachlauf", 143 * mm, 61 * mm)
+    survey_label("Flutstollen", 177 * mm, 60 * mm)
+    survey_label("Abele", 178 * mm, 48 * mm)
     c.setStrokeColor(INK)
-    c.setLineWidth(2.3)
-    c.line(38 * mm, 80 * mm, 84 * mm, 80 * mm)
-    c.line(84 * mm, 80 * mm, 112 * mm, 102 * mm)
-    c.line(84 * mm, 80 * mm, 117 * mm, 57 * mm)
-    c.line(117 * mm, 57 * mm, 159 * mm, 57 * mm)
-    c.setLineWidth(1.4)
-    c.setDash(4, 3)
-    c.line(159 * mm, 57 * mm, 199 * mm, 57 * mm)
+    c.setLineWidth(1.0)
+    c.setDash(3, 2)
+    c.line(165 * mm, 63 * mm, 185 * mm, 63 * mm)
     c.setDash()
-    c.line(84 * mm, 80 * mm, 84 * mm, 123 * mm)
-    c.line(84 * mm, 123 * mm, 138 * mm, 123 * mm)
-    c.line(138 * mm, 123 * mm, 170 * mm, 108 * mm)
-    # rooms
-    c.setFillColor(colors.HexColor("#EEE4CE"))
-    c.rect(30 * mm, 73 * mm, 18 * mm, 14 * mm, stroke=0, fill=1)
-    c.rect(105 * mm, 95 * mm, 18 * mm, 14 * mm, stroke=0, fill=1)
-    c.rect(151 * mm, 50 * mm, 18 * mm, 14 * mm, stroke=0, fill=1)
-    c.rect(163 * mm, 101 * mm, 22 * mm, 14 * mm, stroke=0, fill=1)
-    c.setFillColor(INK)
-    c.setFont(FONT_BOLD, 8)
-    c.drawCentredString(39 * mm, 79 * mm, "Mundloch")
-    c.drawCentredString(114 * mm, 101 * mm, "Kapelle")
-    c.drawCentredString(160 * mm, 56 * mm, "Flutstollen")
-    c.drawCentredString(174 * mm, 107 * mm, "Abele")
-    c.setFont(FONT, 7.4)
-    c.drawString(48 * mm, 84 * mm, "Försterweg")
-    c.drawString(88 * mm, 67 * mm, "Bachlauf")
-    c.drawString(90 * mm, 119 * mm, "Seilzugweg")
     c.setFillColor(UMBER)
+    c.setFont(SERIF, 8.4)
     c.drawString(30 * mm, 34 * mm, "Notiz am Rand: Der Plan ist an drei Stellen nass und nicht vollständig lesbar.")
     if gm:
         c.setStrokeColor(RED)
         c.setLineWidth(1.4)
-        c.circle(160 * mm, 57 * mm, 7 * mm, stroke=1, fill=0)
+        c.circle(184 * mm, 63 * mm, 7 * mm, stroke=1, fill=0)
+        c.setDash(3, 2)
+        c.line(184 * mm, 70 * mm, 192 * mm, 113 * mm)
+        c.setDash()
+        c.setFillColor(colors.Color(0.98, 0.91, 0.88, alpha=0.94))
+        c.roundRect(190 * mm, 110 * mm, 65 * mm, 20 * mm, 2 * mm, stroke=0, fill=1)
+        c.setStrokeColor(RED)
+        c.setLineWidth(0.6)
+        c.roundRect(190 * mm, 110 * mm, 65 * mm, 20 * mm, 2 * mm, stroke=1, fill=0)
         c.setFillColor(RED)
         c.setFont(FONT_BOLD, 8)
-        c.drawString(171 * mm, 62 * mm, "Hier liegt der Flutstollen")
-        c.drawString(171 * mm, 51 * mm, "Widerhall unter dem Stein")
-        c.setStrokeColor(RED)
-        c.setDash(3, 2)
-        c.line(174 * mm, 101 * mm, 174 * mm, 80 * mm)
-        c.setDash()
+        c.drawString(194 * mm, 123 * mm, "SL: Widerhall unter dem Stein")
         c.setFont(FONT, 7.2)
-        c.drawString(177 * mm, 84 * mm, "Kammer unter")
-        c.drawString(177 * mm, 78 * mm, "der Kapelle")
+        c.drawString(194 * mm, 117 * mm, "Flutstollen ist die direkte Route.")
+        c.drawString(194 * mm, 113 * mm, "Kammer liegt unter der Kapelle.")
     c.setStrokeColor(UMBER)
     c.line(18 * mm, 12 * mm, width - 18 * mm, 12 * mm)
     c.setFillColor(UMBER)
@@ -831,14 +831,32 @@ def build_character_sheet(path: Path) -> None:
     story += [p("__________________________________________________________________________________________________<br/><br/>__________________________________________________________________________________________________<br/><br/>__________________________________________________________________________________________________", styles["KBody"])]
     story.append(PageBreak())
     story += title_block("HTBAH auf einer Seite", "Diese Seite darf am Tisch liegen bleiben")
-    story += [
-        p("<b>Probe:</b> W100 gleich oder kleiner als der Wert ist Erfolg. Unteres Zehntel ist ein kritischer Erfolg. Ab 90 plus einem Zehntel ist es ein kritischer Patzer.", styles["KBody"]),
-        p("<b>Begabung:</b> Punkte der Begabung addieren, durch 10 teilen und kaufmännisch runden. Begabung auf passende Fähigkeiten addieren, maximal 100.", styles["KBody"]),
-        p("<b>Geistesblitz:</b> Begabung durch 10. Ein Punkt erlaubt einen neuen Wurf bei einer misslungenen, nicht kritischen Probe. Erneuert sich zum nächsten Abenteuer.", styles["KBody"]),
-        p("<b>Schaden:</b> Unter 10 Lebenspunkten bewusstlos. Bei 0 tot. Mehr als 60 Schaden in einem Angriff macht bewusstlos.", styles["KBody"]),
-        Spacer(1, 3 * mm),
-        p("Rollenimpulse: Werkzeug / Notizbuch / gutes Gesicht / falscher Grund / Schnee lesen / nicht glauben", styles["KBody"]),
+    quick_rules = [
+        [p("<b>PROBE</b><br/><br/>W100 gleich oder kleiner als der Wert: Erfolg.<br/><br/>Unteres Zehntel: kritischer Erfolg.<br/><br/>Ab 90 plus einem Zehntel: kritischer Patzer.", styles["KSmall"]),
+         p("<b>BEGABUNG</b><br/><br/>Punkte einer Begabung addieren, durch 10 teilen und kaufmännisch runden.<br/><br/>Den Wert auf passende Fähigkeiten addieren, maximal 100.", styles["KSmall"])],
+        [p("<b>GEISTESBLITZ</b><br/><br/>Begabung durch 10.<br/><br/>Ein Punkt erlaubt einen neuen Wurf bei einer misslungenen, nicht kritischen Probe.<br/><br/>Erneuert sich zum nächsten Abenteuer.", styles["KSmall"]),
+         p("<b>SCHADEN</b><br/><br/>Unter 10 Lebenspunkten: bewusstlos.<br/><br/>Bei 0: tot.<br/><br/>Mehr als 60 Schaden in einem Angriff macht bewusstlos.", styles["KSmall"])],
     ]
+    quick_table = Table(quick_rules, colWidths=[84 * mm, 84 * mm], rowHeights=[49 * mm, 49 * mm])
+    quick_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (0, 0), colors.HexColor("#F4EBD8")),
+        ("BACKGROUND", (1, 0), (1, 0), PALE),
+        ("BACKGROUND", (0, 1), (0, 1), PALE),
+        ("BACKGROUND", (1, 1), (1, 1), colors.HexColor("#F4EBD8")),
+        ("BOX", (0, 0), (-1, -1), 0.85, UMBER),
+        ("INNERGRID", (0, 0), (-1, -1), 0.55, LINE),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 5 * mm),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 5 * mm),
+        ("TOPPADDING", (0, 0), (-1, -1), 5 * mm),
+    ]))
+    impulse = Table([[p("<font color='#F3E5CA'><b>ROLLENIMPULSE</b><br/>Werkzeug · Notizbuch · gutes Gesicht · falscher Grund · Schnee lesen · nicht glauben</font>", styles["KBody"])]], colWidths=[168 * mm])
+    impulse.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), INK), ("TEXTCOLOR", (0, 0), (-1, -1), colors.HexColor("#F3E5CA")),
+        ("BOX", (0, 0), (-1, -1), 0.7, UMBER), ("LEFTPADDING", (0, 0), (-1, -1), 5 * mm),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 5 * mm), ("TOPPADDING", (0, 0), (-1, -1), 4 * mm), ("BOTTOMPADDING", (0, 0), (-1, -1), 4 * mm),
+    ]))
+    story += [quick_table, Spacer(1, 6 * mm), impulse]
     build_story_pdf(path, story, "Figurenbau")
 
 

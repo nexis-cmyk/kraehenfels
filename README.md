@@ -59,7 +59,7 @@ Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: Schnee, Tannen, K
 - `00_Spielstart.pdf`: kurze Vorbereitung für die erste Spielleitung
 - `01_Karte_Spieler.pdf`: spoilerfreie Tischkarte
 - `01_Karte_SL.pdf`: geheime Karte mit Flutstollen, Kammer und Wahrheit
-- `01_Grubenplan_H08.pdf` und `01_Grubenplan_SL.pdf`: unvollständiger Plan mit optionalem SL-Overlay
+- `01_Grubenplan_H08.pdf` und `01_Grubenplan_SL.pdf`: beschädigter Vermessungsplan mit optionalem SL-Overlay
 - `02_Handouts.pdf`: Kutschschein, Zeitung, Kirchenbuch, Liedblatt, Brief und weitere Spuren
 - `03_Figurenbau.pdf`: drei Begabungen, 400 Punkte und HTBAH-Schnellregeln
 - `10_SL_Abenteuer.pdf`: vorlesbare Szenen, NPCs und Enden
