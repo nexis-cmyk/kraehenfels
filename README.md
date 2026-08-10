@@ -40,7 +40,7 @@ xcodebuild -project Kraehenfels.xcodeproj -scheme Kraehenfels \
   -destination 'generic/platform=iOS Simulator' test
 ```
 
-Ein Tag wie `v1.0.0` startet `.github/workflows/release.yml`. Der Workflow erzeugt eine unsignierte `Kraehenfels.ipa` als GitHub-Release-Asset. In `altstore/source.json` müssen vor dem Veröffentlichen die Repository-Platzhalter und der SHA-256-Wert ersetzt werden.
+Ein Tag wie `v1.0.0` startet `.github/workflows/release.yml`. Der Workflow erzeugt eine unsignierte `Kraehenfels.ipa` und zusätzlich einen ausgefüllten `altstore/source.generated.json` als Release-Asset. Für eine dauerhafte Feed-URL kannst du diese erzeugte JSON-Datei in dein Repository oder GitHub Pages übernehmen.
 
 ## Druckpaket
 

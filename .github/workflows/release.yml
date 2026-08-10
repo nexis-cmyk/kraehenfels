@@ -34,8 +34,17 @@ jobs:
           cp -R "$RUNNER_TEMP/derived/Build/Products/Release-iphoneos/Kraehenfels.app" "$RUNNER_TEMP/ipa/Payload/"
           cd "$RUNNER_TEMP/ipa"
           zip -qry "$GITHUB_WORKSPACE/Kraehenfels.ipa" Payload
+      - name: Prepare AltStore feed
+        run: |
+          python3 tools/update_altstore_feed.py \
+            --repo "$GITHUB_REPOSITORY" \
+            --tag "$GITHUB_REF_NAME" \
+            --ipa Kraehenfels.ipa \
+            --output altstore/source.generated.json
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          files: Kraehenfels.ipa
+          files: |
+            Kraehenfels.ipa
+            altstore/source.generated.json
           generate_release_notes: true

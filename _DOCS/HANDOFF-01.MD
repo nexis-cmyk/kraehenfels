@@ -13,6 +13,7 @@ Die Produktentscheidungen, die Spielprämisse und der technische Rahmen sind fes
 5. SwiftUI-App für iOS 17, Audio-Engine, Offline-Content, App-Icon.
 6. GitHub-Actions-Workflow für Test und unsigned IPA sowie AltStore-Feed-Vorlage.
 7. Manifest-, Audio- und PDF-Seitenzahlprüfung erfolgreich ausgeführt.
+8. AltStore-Feed-Generator ergänzt: ein Release kann nun automatisch SHA-256, Dateigröße und Download-URL eintragen.
 
 ## Nächste Sitzung
 
