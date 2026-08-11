@@ -5,6 +5,19 @@ const sceneNav = document.querySelector("#scene-nav");
 const progressCount = document.querySelector("#progress-count");
 const progressFill = document.querySelector("#progress-fill");
 const audioStatus = document.querySelector("#audio-status");
+const nightPhases = [
+  { title: "Ankunft", detail: "Kutschenpanne und erster Weg ins Dorf.", symbol: "✦" },
+  { title: "Dunkelheit", detail: "Dorf, Kirche, Schmiede und Grube stehen offen.", symbol: "☾" },
+  { title: "Warnung", detail: "Die Weiße Frau und die Wahrheit vor Mitternacht.", symbol: "!" },
+  { title: "Mitternacht", detail: "Das Finale beginnt. Jetzt zählt jede Entscheidung.", symbol: "◉" },
+  { title: "Tauwetter", detail: "Stille nach dem Finale und persönlicher Epilog.", symbol: "◌" },
+];
+
+function normalizedNightPhase(value) {
+  const index = Number(value);
+  if (!Number.isFinite(index)) return 0;
+  return Math.min(Math.max(Math.trunc(index), 0), nightPhases.length - 1);
+}
 
 const stored = (key, fallback) => {
   try {
@@ -26,6 +39,7 @@ const state = {
   }),
   sessionNote: localStorage.getItem("kraehenfels.sessionNote") || "",
   sceneNotes: stored("kraehenfels.sceneNotes", {}),
+  nightPhase: normalizedNightPhase(localStorage.getItem("kraehenfels.nightPhase")),
   spoilersOpen: false,
   statusTone: "ok",
 };
@@ -38,6 +52,7 @@ function persist() {
   localStorage.setItem("kraehenfels.playerNames", JSON.stringify(state.playerNames));
   localStorage.setItem("kraehenfels.sessionNote", state.sessionNote);
   localStorage.setItem("kraehenfels.sceneNotes", JSON.stringify(state.sceneNotes));
+  localStorage.setItem("kraehenfels.nightPhase", String(state.nightPhase));
 }
 
 const audio = new AudioEngine({
@@ -137,6 +152,7 @@ function render() {
   const handouts = scene.handoutIds.map(handoutById).filter(Boolean);
   const checklistCount = scene.checklist.filter((_, index) => state.checklist.has(`${scene.id}-${index}`)).length;
   const nextScene = scene.nextSceneIds[0] ? sceneById(scene.nextSceneIds[0]) : null;
+  const nightPhase = nightPhases[state.nightPhase];
   const soundboard = cues.length ? `
     <section class="soundboard" aria-labelledby="soundboard-title">
       <div class="section-heading soundboard-heading"><div><h2 id="soundboard-title">Soundboard</h2><p>Preset für die Stimmung. Effekte bleiben bewusst einzeln.</p></div><button class="button button-primary" data-action="preset" type="button">Szene starten</button></div>
@@ -154,7 +170,7 @@ function render() {
   app.innerHTML = `
     <section class="scene-hero" style="--scene-art: url('./assets/art/${encodeURIComponent(scene.art)}')">
       <div class="scene-hero-content">
-        <div class="scene-meta"><span>${scene.id}</span><span>${escapeHtml(scene.duration)}</span><span>${escapeHtml(scene.soundPreset || "Freies Spiel")}</span></div>
+        <div class="scene-meta"><span>${scene.id}</span><span>${escapeHtml(scene.duration)}</span><span>${escapeHtml(nightPhase.symbol)} ${escapeHtml(nightPhase.title)}</span><span>${escapeHtml(scene.soundPreset || "Freies Spiel")}</span></div>
         <h2>${escapeHtml(scene.title)}</h2>
         <p>${escapeHtml(scene.goal)}</p>
       </div>
@@ -170,6 +186,10 @@ function render() {
 
     <section class="content-section table-section" aria-labelledby="table-title">
       <div class="section-heading"><div><h2 id="table-title">Am Tisch</h2><p>Nur auf diesem Gerät gespeichert.</p></div><button class="text-button" data-action="clear-table" type="button">Tischdaten löschen</button></div>
+      <div class="night-control" aria-label="Nachtstand">
+        <div><span class="eyebrow">Nachtstand</span><strong>${escapeHtml(nightPhase.symbol)} ${escapeHtml(nightPhase.title)}</strong><small>${escapeHtml(nightPhase.detail)}</small></div>
+        <div class="night-control-actions"><button class="button button-quiet" data-action="night-previous" type="button" ${state.nightPhase === 0 ? "disabled" : ""}>Zurück</button><select data-night-phase aria-label="Nachtstand auswählen">${nightPhases.map((phase, index) => `<option value="${index}" ${index === state.nightPhase ? "selected" : ""}>${escapeHtml(phase.title)}</option>`).join("")}</select><button class="button button-primary" data-action="night-next" type="button" ${state.nightPhase === nightPhases.length - 1 ? "disabled" : ""}>Weiter</button></div>
+      </div>
       <div class="table-fields">
         ${state.playerNames.map((name, index) => `<label class="field"><span>Reisender ${index + 1}</span><input data-player-index="${index}" type="text" autocomplete="off" autocapitalize="words" placeholder="Name der Figur" value="${escapeHtml(name)}"></label>`).join("")}
       </div>
@@ -238,6 +258,16 @@ document.addEventListener("click", async (event) => {
     state.spoilersOpen = !state.spoilersOpen;
     render();
   }
+  if (action === "night-previous") {
+    state.nightPhase = Math.max(0, state.nightPhase - 1);
+    persist();
+    render();
+  }
+  if (action === "night-next") {
+    state.nightPhase = Math.min(nightPhases.length - 1, state.nightPhase + 1);
+    persist();
+    render();
+  }
   if (action === "preset") await audio.playPreset(sceneById(state.currentSceneId).audioCueIds.map(cueById).filter(Boolean));
   if (action === "finish") {
     const scene = sceneById(state.currentSceneId);
@@ -270,6 +300,11 @@ document.addEventListener("input", (event) => {
   if (event.target.matches("[data-scene-note]")) {
     state.sceneNotes[event.target.dataset.sceneNote] = event.target.value;
     persist();
+  }
+  if (event.target.matches("[data-night-phase]")) {
+    state.nightPhase = normalizedNightPhase(event.target.value);
+    persist();
+    render();
   }
 });
 

@@ -23,6 +23,24 @@ struct SessionView: View {
             }
 
             Section {
+                Picker("Aktueller Moment", selection: Binding(
+                    get: { session.nightPhaseIndex },
+                    set: { session.setNightPhase($0) }
+                )) {
+                    ForEach(SessionStore.nightPhases) { phase in
+                        Label(phase.title, systemImage: phase.symbol).tag(phase.id)
+                    }
+                }
+                Text(session.currentNightPhase.detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } header: {
+                Text("Nachtstand")
+            } footer: {
+                Text("Du steuerst die Nacht selbst. Der Stand ändert keine Szene und löst nichts automatisch aus.")
+            }
+
+            Section {
                 TextEditor(text: $session.sessionNote)
                     .frame(minHeight: 132)
                     .accessibilityLabel("Allgemeine Spielnotiz")

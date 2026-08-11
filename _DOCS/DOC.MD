@@ -28,6 +28,8 @@ Die Druckunterlagen entstehen mit ReportLab. `print/assets/` enthält eigens erz
 
 Die iPhone-App nutzt `SessionStore` für dieselben Arbeitsnotizen. Die Daten bleiben ausschließlich in den lokalen App-Einstellungen: drei frei benennbare Reisende, eine Notiz für die Vorbereitung und jeweils eine kurze Notiz pro Szene. Ein separater Bereich "Am Tisch" löscht nur diese Eingaben. Fortschritt, Hinweise und Audio-Einstellungen bleiben davon unberührt.
 
+Der ebenfalls lokal gespeicherte Nachtstand ergänzt den Szenenfortschritt. Die Spielleitung wechselt manuell zwischen Ankunft, Dunkelheit, Warnung, Mitternacht und Tauwetter; die Steuerung verschiebt keine Szenen und löst keine Ereignisse automatisch aus. App und Web-Leitstand zeigen den aktuellen Stand auf der Start- beziehungsweise Szenenansicht.
+
 Die einseitige SL-Referenz `12_SL_Am_Tisch.pdf` führt für jede Szene nicht nur Handout, Sound und Eskalation, sondern auch die konkrete Fundstelle oder den NSC auf, der den Hinweis geben kann. Sie ist die verbindliche Tisch-Navigation für eine unerfahrene Spielleitung.
 
 `00_Spielstart.pdf` enthält zusätzlich eine zweite Spielleitungsseite für die ersten 90 Sekunden: Tischaufbau, wörtlicher Einstieg, die ersten fünf Minuten, Notfallregel und die drei dramaturgischen Grundregeln. Sie verweist bei Unsicherheit direkt auf `12_SL_Am_Tisch.pdf`.

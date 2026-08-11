@@ -13,6 +13,7 @@ struct RootView: View {
                 VStack(alignment: .leading, spacing: 22) {
                     header
                     tableStatus
+                    nightStatus
                     currentSceneCard
                     sceneList
                     quickActions
@@ -121,6 +122,33 @@ struct RootView: View {
                         .frame(minWidth: 44, minHeight: 44)
                 }
                 .accessibilityLabel("Tischdaten bearbeiten")
+            }
+        }
+    }
+
+    private var nightStatus: some View {
+        FrostCard {
+            HStack(alignment: .center, spacing: 12) {
+                Image(systemName: session.currentNightPhase.symbol)
+                    .font(.title3)
+                    .foregroundStyle(session.currentNightPhase.id >= 2 ? FrostTheme.warning : FrostTheme.cobalt)
+                    .frame(width: 28)
+                VStack(alignment: .leading, spacing: 3) {
+                    SectionLabel(title: "Nachtstand")
+                    Text(session.currentNightPhase.title)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.white)
+                    Text(session.currentNightPhase.detail)
+                        .font(.caption)
+                        .foregroundStyle(FrostTheme.quiet)
+                }
+                Spacer()
+                NavigationLink(destination: SessionView()) {
+                    Image(systemName: "chevron.right")
+                        .foregroundStyle(FrostTheme.cobalt)
+                        .frame(minWidth: 44, minHeight: 44)
+                }
+                .accessibilityLabel("Nachtstand ändern")
             }
         }
     }
