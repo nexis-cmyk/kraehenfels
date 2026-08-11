@@ -20,3 +20,9 @@ Die Swift-Dateien liegen unter `app/Kraehenfels/` und werden von XcodeGen automa
 Die iOS-Action lief nach dem Fast-forward auf `main` erstmals wieder an. Ihr erster Fehler lag vor dem Swift-Build: Homebrew verweigerte das Installieren von XcodeGen wegen der Tap-Trust-Abfrage. Beide iOS-Workflows setzen deshalb jetzt für diesen einen Installationsbefehl `HOMEBREW_NO_REQUIRE_TAP_TRUST=1`. Der reguläre Check kompiliert die iPhone-App mit dem Simulator-SDK, startet aber keinen Simulator. So prüft er die Swift-Quellen verlässlich, ohne an einem Simulatorstart hängen zu bleiben.
 
 Die Web-Testversion wird über `.github/workflows/pages.yml` nach GitHub Pages veröffentlicht. Die erwartete Adresse lautet `https://nexis-cmyk.github.io/kraehenfels/`.
+
+## Release 2.0.5
+
+- `v2.0.5` wurde erfolgreich mit dem macOS-Release-Workflow gebaut und veröffentlicht.
+- Die veröffentlichte IPA ist 66.058.856 Bytes groß und hat die SHA-256-Prüfsumme `87c78acfdcda090a8a871e838556e5ba5aeb688ea9a6ddcfbcf38b97684dd5dd`.
+- `altstore/source.json` verweist auf diese Datei und enthält dieselbe sichtbare Version sowie Buildnummer 1.

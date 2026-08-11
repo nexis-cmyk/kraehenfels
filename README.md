@@ -14,10 +14,10 @@ Das Repository enthält:
 
 ## Fertiger iPhone-Build
 
-Die öffentliche Release-Version 2.0.4 ist hier verfügbar:
+Die öffentliche Release-Version 2.0.5 ist hier verfügbar:
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
-- [Kraehenfels.ipa herunterladen](https://github.com/nexis-cmyk/kraehenfels/releases/download/v2.0.4/Kraehenfels.ipa)
+- [Kraehenfels.ipa herunterladen](https://github.com/nexis-cmyk/kraehenfels/releases/download/v2.0.5/Kraehenfels.ipa)
 - [AltStore-Feed](https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/source.json)
 
 Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-Account signiert. Eine kurze Windows-Anleitung steht in [`altstore/README.md`](altstore/README.md).
