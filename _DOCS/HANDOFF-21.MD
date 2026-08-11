@@ -17,3 +17,7 @@ python tools/validate_project.py
 ```
 
 Alle 18 Cue-Dateien haben eindeutige SHA-256-Fingerprints, 48 kHz und zwei Kanäle. Die Dauern betragen 8 Sekunden für Atmosphären, 10 Sekunden für Musik und 4 Sekunden für One-Shots. Die ausführlichen Produktionsprompts stehen in `SOUND-PROMPTS-V4.md`.
+
+## Release
+
+`v3.1.0` wurde als unsignierte IPA veröffentlicht. Der statische Feed `altstore/source.json` enthält die passende Größe und SHA-256-Prüfsumme. Für AltStore genügt ein Aktualisieren der Quelle `https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json`.
