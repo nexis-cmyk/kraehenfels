@@ -24,7 +24,7 @@ Im Browser `http://localhost:4173` öffnen. Der Browser muss dafür geöffnet bl
 
 - Szenenwechsel, Vorlesetexte, Hinweise, Fakten und Checklisten
 - NPCs inklusive Zuständen und der Handouts, die sie geben können
-- Reisehaken, Karten und getrennte SL-Spoiler
+- Figuren-Verbindungen, Karten und getrennte SL-Spoiler
 - Spoiler-Schalter und Spielerhandouts
 - Szenen-Presets, einzelne Effekte und Lautstärkemischung
 - Stopp-Taste, Fortschritt und Speicherung im Browser

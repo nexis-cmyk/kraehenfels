@@ -37,7 +37,7 @@ struct CaseFileView: View {
 
     private var hooks: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(title: "Reisehaken")
+            SectionLabel(title: "Figuren-Verbindungen")
             ForEach(content.manifest.travelHooks) { hook in
                 Button {
                     if session.selectedHooks.values.contains(hook.id) {

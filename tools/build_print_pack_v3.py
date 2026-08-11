@@ -88,6 +88,19 @@ def image_cover(c: canvas.Canvas, path: Path, x: float, y: float, width: float, 
     c.restoreState()
 
 
+def image_contain(c: canvas.Canvas, path: Path, x: float, y: float, width: float, height: float, background=PANEL) -> None:
+    """Place an image fully inside a box without cropping its map legend."""
+    c.setFillColor(background)
+    c.roundRect(x, y, width, height, 2 * mm, fill=1, stroke=0)
+    if not path.exists():
+        return
+    image = ImageReader(str(path))
+    iw, ih = image.getSize()
+    scale = min(width / iw, height / ih)
+    dw, dh = iw * scale, ih * scale
+    c.drawImage(image, x + (width - dw) / 2, y + (height - dh) / 2, dw, dh, mask="auto")
+
+
 def build_start(path: Path, data: dict) -> None:
     c = canvas.Canvas(str(path), pagesize=A4)
     width, height = A4
@@ -109,7 +122,7 @@ def build_start(path: Path, data: dict) -> None:
     y = height - 55 * mm
     steps = [
         ("Tisch", "Lege die Spielerkarte, Figurenbögen und H01 bis H08 verdeckt bereit. H09 bleibt bei dir."),
-        ("Figuren", "Die drei Spieler erstellen eigene HTBAH-Figuren und wählen je einen Reisehaken aus der Akte."),
+        ("Figuren", "Die drei Spieler erstellen eigene HTBAH-Figuren und wählen je eine Figuren-Verbindung aus der Akte."),
         ("Einstieg", "Starte A01 leise. Lies S01 vor. Frage nur: Was tut ihr? Gib H01 unabhängig vom Würfelwurf."),
         ("Leitung", "Setze die Dorfspannung manuell. Die App zeigt Empfehlungen, entscheidet aber nie an deiner Stelle."),
         ("Grenzen", "Kinder bleiben sicher. Gewalt bleibt unheimlich und dosiert. Sprich vor Beginn kurz über Stoppsignale."),
@@ -137,7 +150,7 @@ def build_characters(path: Path) -> None:
         c.setFont("Helvetica-Bold", 12)
         c.drawString(25 * mm, height - 67 * mm, "Name der Figur:")
         c.line(62 * mm, height - 68 * mm, 125 * mm, height - 68 * mm)
-        c.drawString(135 * mm, height - 67 * mm, "Reisehaken:")
+        c.drawString(135 * mm, height - 67 * mm, "Figuren-Verbindung:")
         c.line(170 * mm, height - 68 * mm, 190 * mm, height - 68 * mm)
         y = height - 105 * mm
         headings = ["Handeln · Körper und Kampf", "Wissen · Gehirn und Planung", "Soziales · Reden und Macht"]
@@ -180,6 +193,22 @@ def draw_newspaper(c: canvas.Canvas, x: float, y: float, w: float, h: float) -> 
     col = (w - 30 * mm) / 2
     paragraph(c, "<b>REISENDE NICHT ANGEKOMMEN</b><br/><br/>Drei Reisende, die über den alten Pass nach Krähenfels kamen, haben ihre Weiterfahrt nicht angetreten. Der Gemeinderat verweist auf die Witterung. Angehörige werden gebeten, Namen nicht unnötig zu wiederholen.<br/><br/><b>GASTHOF MELDET VOLLE BELEGUNG</b><br/><br/>Der schwarze Keiler nimmt bei Schnee weiterhin Gäste auf. Bürgermeister Gruber erinnert an die Pflicht jedes Hauses, Fremden bis zum Morgen Schutz zu gewähren.", x + 10 * mm, y + 22 * mm, col, h - 62 * mm, text_style("newsleft", 9.2, 11, CHARCOAL, "Times-Roman"))
     paragraph(c, "<b>WINTERDIENST VERSCHOBEN</b><br/><br/>Die Wege zur Alten Eiche bleiben bis auf Weiteres gesperrt. Eine private Prozession ist nicht genehmigt.<br/><br/><b>VOM WALDRAND</b><br/><br/>Ein Holzfäller berichtet von Spuren, die im Schnee als Hufe beginnen und in menschlichen Sohlen enden. Der Bericht wurde nicht bestätigt.", x + 20 * mm + col, y + 22 * mm, col, h - 62 * mm, text_style("newsright", 9.2, 11, CHARCOAL, "Times-Roman"))
+    # A real broadsheet needs a lower news rail as well; it keeps the evidence
+    # useful and prevents the page from reading like a sparse text mockup.
+    rail_y = y + 26 * mm
+    c.setStrokeColor(CHARCOAL)
+    c.setLineWidth(0.8)
+    c.line(x + 10 * mm, rail_y + 48 * mm, x + w - 10 * mm, rail_y + 48 * mm)
+    c.setFont("Times-Bold", 9)
+    c.setFillColor(CHARCOAL)
+    c.drawString(x + 10 * mm, rail_y + 40 * mm, "AUS DEM GEMEINDERAT")
+    paragraph(c, "Der Pass bleibt nach Einbruch der Dunkelheit gesperrt. Fremde melden sich beim Wirt.<br/><br/>Wer die alte Glocke hört, wartet bis zum ersten Hahnenschrei.", x + 10 * mm, rail_y + 20 * mm, w * .43, 19 * mm, text_style("newsrailleft", 8.2, 10, CHARCOAL, "Times-Roman"))
+    c.setStrokeColor(PAPER_DARK)
+    c.line(x + w * .58, rail_y + 18 * mm, x + w * .58, rail_y + 44 * mm)
+    c.setFont("Times-Bold", 9)
+    c.setFillColor(RUST)
+    c.drawString(x + w * .61, rail_y + 40 * mm, "KLEINANZEIGE")
+    paragraph(c, "<i>Gesucht: vermisster Reisender</i><br/><br/><i>Letzte Sichtung: Passstraße · 23. Nov.</i>", x + w * .61, rail_y + 20 * mm, w * .29, 19 * mm, text_style("newsrailright", 8.2, 10, CHARCOAL, "Times-Roman"))
 
 
 def draw_guestbook(c: canvas.Canvas, x: float, y: float, w: float, h: float) -> None:
@@ -228,6 +257,166 @@ def draw_ledger(c: canvas.Canvas, x: float, y: float, w: float, h: float) -> Non
             c.drawString(x + 12 * mm + i * (w - 20 * mm) / 4, y + h - 42 * mm - r * 12 * mm, value)
 
 
+def handout_stamp(c: canvas.Canvas, text_value: str, x: float, y: float, color=RUST, angle: float = -8) -> None:
+    c.saveState()
+    c.translate(x, y)
+    c.rotate(angle)
+    c.setStrokeColor(color)
+    c.setFillColor(color)
+    c.setLineWidth(1.5)
+    c.roundRect(-28 * mm, -7 * mm, 56 * mm, 14 * mm, 2 * mm, fill=0, stroke=1)
+    c.setFont("Helvetica-Bold", 10)
+    c.drawCentredString(0, -3 * mm, text_value)
+    c.restoreState()
+
+
+def draw_order(c: canvas.Canvas, x: float, y: float, w: float, h: float) -> None:
+    c.setFillColor(colors.HexColor("#E8D9B9"))
+    c.roundRect(x, y, w, h, 2 * mm, fill=1, stroke=0)
+    c.setStrokeColor(colors.HexColor("#A78A61"))
+    c.setLineWidth(0.7)
+    c.rect(x + 7 * mm, y + 7 * mm, w - 14 * mm, h - 14 * mm, fill=0, stroke=1)
+    c.setFillColor(CHARCOAL)
+    c.setFont("Courier-Bold", 17)
+    c.drawString(x + 15 * mm, y + h - 21 * mm, "POST- UND FRACHTAUFTRAG")
+    c.setFont("Courier", 8)
+    c.drawRightString(x + w - 15 * mm, y + h - 20 * mm, "Nr. 28/11-KF")
+    c.setStrokeColor(colors.HexColor("#B79D76"))
+    c.line(x + 15 * mm, y + h - 28 * mm, x + w - 15 * mm, y + h - 28 * mm)
+    rows = [("ABFAHRT", "28. November 1890 · 21:10"), ("ROUTE", "Hauptstraße – Umleitung Krähenfels"), ("EMPFÄNGER", "Bürgermeister Konrad Gruber"), ("FÜR DIE GÄSTE", "Unter Dach bringen · bis zum Hahnenschrei"), ("ANWEISUNG", "Keine Rückkehr auf die Passstraße")]
+    yy = y + h - 47 * mm
+    for label, value in rows:
+        c.setFillColor(RUST)
+        c.setFont("Courier-Bold", 8)
+        c.drawString(x + 15 * mm, yy, label)
+        c.setFillColor(CHARCOAL)
+        c.setFont("Courier", 10)
+        c.drawString(x + 52 * mm, yy, value)
+        c.setStrokeColor(colors.HexColor("#C7B994"))
+        c.line(x + 15 * mm, yy - 3 * mm, x + w - 15 * mm, yy - 3 * mm)
+        yy -= 17 * mm
+    c.setStrokeColor(CHARCOAL)
+    c.setLineWidth(1.1)
+    c.line(x + 20 * mm, y + 42 * mm, x + 84 * mm, y + 42 * mm)
+    c.line(x + 55 * mm, y + 26 * mm, x + 55 * mm, y + 59 * mm)
+    c.setFont("Helvetica-Oblique", 8)
+    c.drawString(x + 18 * mm, y + 30 * mm, "Achse vor Abfahrt geprüft")
+    c.setFillColor(colors.HexColor("#D7C7A2"))
+    c.circle(x + w - 35 * mm, y + 37 * mm, 18 * mm, fill=1, stroke=0)
+    handout_stamp(c, "RATHAUS KF", x + w - 35 * mm, y + 37 * mm, colors.HexColor("#7E3F35"), -13)
+    c.setFillColor(RUST)
+    c.setFont("Courier-Bold", 10)
+    c.drawString(x + 98 * mm, y + 38 * mm, "NICHT ZURÜCK AUF DIE HAUPTSTRASSE")
+
+
+def draw_oath(c: canvas.Canvas, x: float, y: float, w: float, h: float) -> None:
+    c.setFillColor(colors.HexColor("#E2D4B8"))
+    c.roundRect(x, y, w, h, 2 * mm, fill=1, stroke=0)
+    c.setStrokeColor(colors.HexColor("#9E8765"))
+    c.setLineWidth(1)
+    c.rect(x + 9 * mm, y + 9 * mm, w - 18 * mm, h - 18 * mm, fill=0, stroke=1)
+    c.setFillColor(CHARCOAL)
+    c.setFont("Times-Bold", 21)
+    c.drawCentredString(x + w / 2, y + h - 28 * mm, "AUSZUG AUS DEM KIRCHENBUCH")
+    c.setFont("Times-Italic", 10)
+    c.drawCentredString(x + w / 2, y + h - 39 * mm, "Blatt 17 · abgeschrieben vor dem Winter 1764")
+    c.setStrokeColor(RUST)
+    c.line(x + 24 * mm, y + h - 47 * mm, x + w - 24 * mm, y + h - 47 * mm)
+    paragraph(c, "<b>Der Gast unter unserem Dach</b><br/><br/>Wer bei Schnee und Nacht unter dem Dach von Krähenfels aufgenommen wird, bleibt bis zum ersten Hahnenschrei Gast. Kein Messer, kein Seil und kein Name soll ihn an den Wald zurückgeben.<br/><br/>Wer dieses Wort bricht, öffnet die Tür für das, was draußen wartet.", x + 28 * mm, y + 53 * mm, w - 56 * mm, h - 105 * mm, text_style("oath", 13, 18, CHARCOAL, "Times-Roman"))
+    c.setFont("Times-Italic", 9)
+    c.setFillColor(colors.HexColor("#665743"))
+    c.drawString(x + 28 * mm, y + 33 * mm, "Randnotiz, fremde Hand: Nicht Gruber fragen.")
+    handout_stamp(c, "PFARRAMT", x + w - 38 * mm, y + 31 * mm, colors.HexColor("#5D5145"), 9)
+
+
+def draw_smithy(c: canvas.Canvas, x: float, y: float, w: float, h: float) -> None:
+    c.setFillColor(colors.HexColor("#D6C4A2"))
+    c.rect(x, y, w, h, fill=1, stroke=0)
+    c.setStrokeColor(colors.HexColor("#6F5B46"))
+    c.setLineWidth(0.8)
+    c.rect(x + 8 * mm, y + 8 * mm, w - 16 * mm, h - 16 * mm, fill=0, stroke=1)
+    c.setFillColor(CHARCOAL)
+    c.setFont("Courier-Bold", 16)
+    c.drawString(x + 16 * mm, y + h - 21 * mm, "WERKBLATT · GEWEIHRELIQUIE")
+    c.setFont("Courier", 8)
+    c.drawRightString(x + w - 16 * mm, y + h - 20 * mm, "M. KERN · SCHMIEDE")
+    cx, cy = x + w * 0.46, y + h * 0.56
+    c.setStrokeColor(CHARCOAL)
+    c.setLineWidth(2.2)
+    c.arc(cx - 55 * mm, cy - 32 * mm, cx + 5 * mm, cy + 56 * mm, 80, 270)
+    c.arc(cx - 5 * mm, cy - 32 * mm, cx + 55 * mm, cy + 56 * mm, -90, 100)
+    c.line(cx, cy - 32 * mm, cx, cy + 50 * mm)
+    for offset in (-38, 0, 38):
+        c.setFillColor(colors.HexColor("#24272A"))
+        c.circle(cx + offset * mm, cy - 47 * mm, 4 * mm, fill=1, stroke=0)
+        c.setFillColor(RUST)
+        c.setFont("Courier-Bold", 8)
+        c.drawCentredString(cx + offset * mm, cy - 60 * mm, f"NAGEL {1 + ((offset + 38) // 38)}")
+    c.setStrokeColor(RUST)
+    c.setLineWidth(1)
+    c.line(x + 26 * mm, y + 43 * mm, x + w - 25 * mm, y + 43 * mm)
+    c.setFillColor(CHARCOAL)
+    c.setFont("Courier", 10)
+    c.drawString(x + 27 * mm, y + 30 * mm, "Drei schwarze Nägel · altes Eisen · Feuer")
+    c.setFont("Courier-Oblique", 9)
+    c.drawString(x + 27 * mm, y + 18 * mm, "Feuer löst die Bindung. Ein Eid kann sie wenden.")
+
+
+def draw_child_drawing(c: canvas.Canvas, x: float, y: float, w: float, h: float) -> None:
+    c.setFillColor(colors.HexColor("#F4EBD6"))
+    c.rect(x, y, w, h, fill=1, stroke=0)
+    c.setStrokeColor(colors.HexColor("#D2B47A"))
+    c.setLineWidth(0.6)
+    for yy in range(int(y + 12 * mm), int(y + h - 8 * mm), 22): c.line(x + 10 * mm, yy, x + w - 10 * mm, yy)
+    c.setStrokeColor(colors.HexColor("#1A2028"))
+    c.setLineWidth(2.8)
+    cx, cy = x + w * 0.55, y + h * 0.59
+    c.circle(cx, cy + 44 * mm, 11 * mm, fill=0, stroke=1)
+    c.line(cx, cy + 33 * mm, cx, cy - 6 * mm)
+    c.line(cx, cy + 20 * mm, cx - 30 * mm, cy + 2 * mm)
+    c.line(cx, cy + 20 * mm, cx + 30 * mm, cy + 2 * mm)
+    c.line(cx, cy - 6 * mm, cx - 17 * mm, cy - 38 * mm)
+    c.line(cx, cy - 6 * mm, cx + 17 * mm, cy - 38 * mm)
+    c.setStrokeColor(RUST)
+    c.setLineWidth(3.8)
+    c.arc(cx - 53 * mm, cy + 47 * mm, cx - 5 * mm, cy + 96 * mm, 45, 135)
+    c.arc(cx + 5 * mm, cy + 47 * mm, cx + 53 * mm, cy + 96 * mm, 45, 135)
+    c.setStrokeColor(colors.HexColor("#3A8C61"))
+    c.setLineWidth(2)
+    for px in (x + 45 * mm, x + 75 * mm, x + 105 * mm, x + 135 * mm):
+        c.circle(px, y + 54 * mm, 4 * mm, fill=0, stroke=1)
+        c.line(px, y + 50 * mm, px, y + 32 * mm)
+        c.line(px, y + 44 * mm, px - 7 * mm, y + 37 * mm)
+        c.line(px, y + 44 * mm, px + 7 * mm, y + 37 * mm)
+    c.setFillColor(CHARCOAL)
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(x + 18 * mm, y + 20 * mm, "ER KOMMT, WENN DAS FEUER ERLISCHT")
+    c.setFont("Helvetica-Oblique", 9)
+    c.drawString(x + 18 * mm, y + 9 * mm, "Leni · Dachfenster · nicht für Erwachsene")
+
+
+def draw_rubbing(c: canvas.Canvas, x: float, y: float, w: float, h: float) -> None:
+    c.setFillColor(colors.HexColor("#CFC0A3"))
+    c.rect(x, y, w, h, fill=1, stroke=0)
+    c.setStrokeColor(colors.HexColor("#8D765D"))
+    c.setLineWidth(1.5)
+    c.rect(x + 7 * mm, y + 7 * mm, w - 14 * mm, h - 14 * mm, fill=0, stroke=1)
+    c.setFillColor(colors.HexColor("#4B4540"))
+    c.setFont("Courier-Bold", 14)
+    c.drawString(x + 17 * mm, y + h - 23 * mm, "HOLZABRIEBUNG · ELIAS RENK")
+    c.setStrokeColor(colors.HexColor("#292B2D"))
+    c.setLineWidth(5)
+    cx, cy = x + w * .5, y + h * .55
+    c.circle(cx, cy, 62 * mm, fill=0, stroke=1)
+    c.line(cx - 48 * mm, cy + 5 * mm, cx + 28 * mm, cy + 30 * mm)
+    c.line(cx + 28 * mm, cy + 30 * mm, cx + 63 * mm, cy - 7 * mm)
+    c.setFillColor(colors.HexColor("#4B4540"))
+    c.setFont("Courier-Bold", 16)
+    c.drawCentredString(cx, y + 28 * mm, "ÖFFNEN · ERINNERN · BRECHEN")
+    c.setFont("Courier-Oblique", 9)
+    c.drawString(x + 17 * mm, y + 14 * mm, "Nicht laut lesen, wenn Gruber im Raum ist.")
+
+
 def draw_handout(c: canvas.Canvas, hid: str, title: str, spoiler: bool = False) -> None:
     width, height = A4
     c.setFillColor(PAPER if not spoiler else colors.HexColor("#25191D"))
@@ -244,64 +433,55 @@ def draw_handout(c: canvas.Canvas, hid: str, title: str, spoiler: bool = False) 
     c.drawString(18 * mm, height - 31 * mm, title)
     c.setStrokeColor(RUST if spoiler else PAPER_DARK)
     c.line(18 * mm, height - 37 * mm, width - 18 * mm, height - 37 * mm)
+    groups = {
+        "H01": "FUNDORT · KUTSCHE  /  SPUR A",
+        "H02": "FUNDORT · GASTHAUS  /  SPUR B",
+        "H03": "FUNDORT · GASTHAUS  /  SPUR B",
+        "H04": "FUNDORT · KIRCHE  /  SPUR C",
+        "H05": "FUNDORT · RATHAUS  /  SPUR C",
+        "H06": "FUNDORT · SCHMIEDE  /  SPUR D",
+        "H07": "FUNDORT · DACHFENSTER  /  SPUR D",
+        "H08": "FUNDORT · WALDRAND  /  SPUR D",
+        "H09": "SL-ARCHIV · SPOILER  /  SPUR D",
+        "H10": "FUNDORT · FORSTWEG  /  ORIENTIERUNG",
+    }
+    c.setFillColor(RUST if spoiler else COBALT)
+    c.setFont("Helvetica-Bold", 7.5)
+    c.drawString(18 * mm, height - 45 * mm, groups.get(hid, "KRÄHENFELS · BEWEISARCHIV"))
     x, y, w, h = 22 * mm, 25 * mm, width - 44 * mm, height - 72 * mm
-    if hid == "H02":
+    if hid == "H01":
+        draw_order(c, x, y, w, h)
+    elif hid == "H02":
         draw_newspaper(c, x, y, w, h)
     elif hid == "H03":
         draw_guestbook(c, x, y, w, h)
     elif hid == "H05":
         draw_ledger(c, x, y, w, h)
     elif hid == "H07":
-        c.setFillColor(colors.HexColor("#F5EEDA"))
-        c.rect(x, y, w, h, fill=1, stroke=0)
-        c.setStrokeColor(colors.HexColor("#5D5145"))
-        c.setLineWidth(3)
-        c.circle(x + w / 2, y + h / 2 + 10 * mm, 58 * mm, fill=0, stroke=1)
-        c.line(x + w / 2, y + h / 2 + 10 * mm, x + w / 2 - 45 * mm, y + h / 2 - 45 * mm)
-        c.line(x + w / 2, y + h / 2 + 10 * mm, x + w / 2 + 45 * mm, y + h / 2 - 45 * mm)
-        for angle in range(0, 360, 60):
-            xx = x + w / 2 + math.cos(math.radians(angle)) * 84 * mm
-            yy = y + h / 2 + 10 * mm + math.sin(math.radians(angle)) * 84 * mm
-            c.line(x + w / 2, y + h / 2 + 10 * mm, xx, yy)
-        c.setFont("Courier", 13)
-        c.drawCentredString(x + w / 2, y + 25 * mm, "öffnen   erinnern   brechen")
-    elif hid == "H08":
-        c.setFillColor(colors.HexColor("#D5C7AA"))
-        c.rect(x, y, w, h, fill=1, stroke=0)
-        c.setStrokeColor(CHARCOAL)
-        c.setLineWidth(4)
-        c.circle(x + w / 2, y + h / 2, 70 * mm, fill=0, stroke=1)
-        c.line(x + w / 2 - 55 * mm, y + h / 2, x + w / 2 + 35 * mm, y + h / 2 + 25 * mm)
-        c.line(x + w / 2 + 35 * mm, y + h / 2 + 25 * mm, x + w / 2 + 70 * mm, y + h / 2 - 10 * mm)
-        c.setFont("Courier-Bold", 19)
-        c.drawString(x + 18 * mm, y + 25 * mm, "ÖFFNEN · ERINNERN · BRECHEN")
-    elif hid == "H06":
-        c.setFillColor(colors.HexColor("#E3D4B8"))
-        c.rect(x, y, w, h, fill=1, stroke=0)
-        c.setStrokeColor(CHARCOAL)
-        c.setLineWidth(2)
-        c.line(x + 30 * mm, y + 55 * mm, x + w - 30 * mm, y + 55 * mm)
-        c.line(x + w / 2, y + 55 * mm, x + w / 2, y + h - 40 * mm)
+        image_contain(c, ASSETS / "ai_handouts" / "h07-child.png", x, y, w, h, colors.HexColor("#F4EBD6"))
         c.setFillColor(CHARCOAL)
-        c.setFont("Helvetica-Bold", 19)
-        c.drawString(x + 28 * mm, y + h - 32 * mm, "GEWEIHRELIQUIE")
-        c.setFont("Helvetica", 12)
-        c.drawString(x + 28 * mm, y + h - 48 * mm, "drei schwarze Nägel · Eisenstange · Feuer")
+        c.setFont("Helvetica-Bold", 13)
+        c.drawCentredString(x + w / 2, y + 17 * mm, "ER KOMMT, WENN DAS FEUER ERLISCHT")
+    elif hid == "H08":
+        image_contain(c, ASSETS / "ai_handouts" / "h08-rubbing.png", x, y, w, h, colors.HexColor("#CFC0A3"))
+        c.setFillColor(CHARCOAL)
+        c.setFont("Courier-Bold", 16)
+        c.drawCentredString(x + w / 2, y + 17 * mm, "ÖFFNEN · ERINNERN · BRECHEN")
+    elif hid == "H06":
+        image_contain(c, ASSETS / "ai_handouts" / "h06-smithy.png", x, y, w, h, colors.HexColor("#D6C4A2"))
+        c.setFillColor(CHARCOAL)
         c.setFont("Courier", 10)
-        c.drawString(x + 28 * mm, y + 34 * mm, "Feuer löst die Bindung. Ein Eid kann sie wenden.")
+        c.drawString(x + 20 * mm, y + 17 * mm, "Drei schwarze Nägel · altes Eisen · Feuer")
+    elif hid == "H04":
+        draw_oath(c, x, y, w, h)
     elif hid == "H10":
-        image_cover(c, ASSETS / "map-v3-oak-player.png", x, y, w, h)
-        c.setFillColor(colors.white)
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(x + 12 * mm, y + 12 * mm, "Alter Forstweg zur Alten Eiche")
+        image_contain(c, ASSETS / "map-v3-oak-player.png", x, y, w, h, colors.HexColor("#E2D4B8"))
     else:
         c.setFillColor(colors.HexColor("#E7DDC8"))
         c.rect(x, y, w, h, fill=1, stroke=0)
         c.setFillColor(CHARCOAL)
         c.setFont("Times-Roman", 11)
         body = {
-            "H01": "<b>POST- UND FRACHTAUFTRAG</b><br/><br/>Umleitung über Krähenfels. Zahlung bestätigt durch K. Gruber.<br/><br/>Gäste vor Mitternacht unter Dach bringen.<br/><br/>Die Achse ist vor Abfahrt geprüft worden.<br/><br/><font name='Courier'>Stempel: K. GRUBER · 28. NOVEMBER 1890</font>",
-            "H04": "<b>KIRCHENBUCH · AUSZUG</b><br/><br/>Wer unter Dach aufgenommen ist, bleibt bis zum ersten Hahnenschrei Gast.<br/><br/>Kein Messer, kein Seil und kein Name soll ihn an den Wald zurückgeben.",
             "H09": "<b>FRAGMENT DES ALTEN RITUALS</b><br/><br/><b>ÖFFNEN:</b> Das Dorf verweigert dem Eidbrecher seine Stimmen.<br/><br/><b>ERINNERN:</b> Die Namen der Gäste werden an der Eiche zurückgegeben.<br/><br/><b>BRECHEN:</b> Feuer und altes Eisen lösen die Geweihreliquie.",
         }.get(hid, "Ein Beweisstück aus Krähenfels.")
         paragraph(c, body, x + 18 * mm, y + 32 * mm, w - 36 * mm, h - 58 * mm, text_style(f"handout-{hid}", 11, 15, CHARCOAL, "Times-Roman"))
@@ -310,7 +490,7 @@ def draw_handout(c: canvas.Canvas, hid: str, title: str, spoiler: bool = False) 
         c.line(x + 18 * mm, y + 24 * mm, x + w - 18 * mm, y + 24 * mm)
         c.setFont("Helvetica-Oblique", 7)
         c.setFillColor(RUST if spoiler else QUIET)
-        c.drawString(x + 18 * mm, y + 15 * mm, "Ausschneiden an der gestrichelten Außenlinie · als Beweisstück ausgeben")
+        c.drawString(x + 18 * mm, y + 15 * mm, f"Ausschneiden an der gestrichelten Außenlinie · {groups.get(hid, 'Beweisstück')}" )
     c.setFillColor(RUST if spoiler else QUIET)
     c.setFont("Helvetica", 7)
     c.drawRightString(width - 18 * mm, 15 * mm, "Krähenfels · Die letzte Kutsche")
@@ -332,7 +512,7 @@ def build_maps(data: dict) -> None:
         filename = OUTPUT / ("01_Karte_SL.pdf" if gm else "01_Karte_Spieler.pdf")
         c = canvas.Canvas(str(filename), pagesize=landscape(A4))
         width, height = landscape(A4)
-        for map_id in ("MAP01", "MAP02", "MAP03", "MAP04"):
+        for map_id in ("MAP01", "MAP02", "MAP03", "MAP04", "MAP05", "MAP06"):
             entry = map_entries[map_id]
             page_title(c, entry["title"], "SL-Karte · Spoiler" if gm else "Spielerkarte · ohne Spoiler")
             image_name = entry["gmAsset"] if gm else entry["playerAsset"]
@@ -348,7 +528,7 @@ def build_detail_maps(data: dict) -> None:
     path = OUTPUT / "01_Karten_Detail.pdf"
     c = canvas.Canvas(str(path), pagesize=landscape(A4))
     width, height = landscape(A4)
-    for title, name in [("Gasthaus", "map-v3-inn-player.png"), ("Kirche und Friedhof", "map-v3-church-player.png"), ("Alte Eiche", "map-v3-oak-player.png")]:
+    for title, name in [("Gasthaus", "map-v3-inn-player.png"), ("Kirche und Friedhof", "map-v3-church-player.png"), ("Schmiede", "map-v3-smithy-player.png"), ("Rathaus und Archiv", "map-v3-archive-player.png"), ("Waldheiligtum", "map-v3-oak-player.png")]:
         page_title(c, title, "Detailkarte · Spielerfassung")
         image_cover(c, ASSETS / name, 18 * mm, 18 * mm, width - 36 * mm, height - 78 * mm)
         c.showPage()

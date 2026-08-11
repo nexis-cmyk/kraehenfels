@@ -1,4 +1,4 @@
-const CACHE = "kraehenfels-web-v3";
+const CACHE = "kraehenfels-web-v3.1";
 const CORE = ["./", "./index.html", "./styles.css", "./js/app.js", "./js/audio-engine.js", "./data/manifest.json", "./assets/icon.png"];
 
 self.addEventListener("install", (event) => {

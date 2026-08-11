@@ -64,13 +64,13 @@ Ein Tag wie `v3.0.0` oder der Button **Run workflow** mit einer Versionsnummer s
 
 ## Druckpaket
 
-Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: kaltes Nachtblau, Rostrot, Schnee, Tannen und klare Beweisstück-Rahmen. Die Dorfkarte ist eine realistische Luftansicht mit sichtbarem Gelände, Bach, Gebäuden und Prozessionsweg. Jede Spielerinformation ist als eigenes ausschneidbares Beweisstück gestaltet und trägt ihre Ausgabe-ID.
+Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: kaltes Nachtblau, Rostrot, Schnee, Tannen und klare Beweisstück-Rahmen. Die Kartenplatten wurden mit GPT-Bildgenerierung als textfreie, realistische Top-down-Illustrationen angelegt. Die exakten Titel, Hinweis-IDs und SL-Markierungen liegen als sauber gesetzte Typografie darüber. Jede Spielerinformation ist als eigenes ausschneidbares Beweisstück gestaltet und trägt ihre Ausgabe-ID.
 
 - `00_Spielstart.pdf`: kurze Vorbereitung für die erste Spielleitung
 - `Einladung_Kraehenfels.pdf` und `Einladung_Kraehenfels.png`: druckbare Spieleinladung mit Abenteuerteaser und Charaktervorbereitung
 - `01_Karte_Spieler.pdf`: spoilerfreie Tischkarte
 - `01_Karte_SL.pdf`: geheime Karte mit Routen, Eichenplatz und Prozessionsspur
-- `01_Karten_Detail.pdf`: Gasthaus, Kirche und Alte Eiche als separate Tischkarten
+- `01_Karten_Detail.pdf`: Gasthaus, Kirche, Schmiede, Rathausarchiv und Alte Eiche als separate Tischkarten
 - `02_Handouts.pdf`: nur spielersichere, ausschneidbare Hinweise mit Kennung, Schnittlinie und Ausgabezeitpunkt
 - `03_Figurenbau.pdf`: ausfüllbare Reiseakte mit Porträtfeld, Passdaten, Rollenfragen, drei Begabungen, 400 Punkten und HTBAH-Schnellregeln (Spielerseite dreimal drucken)
 - `10_SL_Abenteuer.pdf`: vorlesbare Szenen, NPCs und Enden

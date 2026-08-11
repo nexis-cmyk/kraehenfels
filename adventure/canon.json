@@ -45,7 +45,9 @@
     {"id": "MAP01", "title": "Krähenfels, Übersicht", "playerAsset": "map-v3-village-player.png", "gmAsset": "map-v3-village-gm.png", "spoiler": false},
     {"id": "MAP02", "title": "Gasthaus Zum schwarzen Keiler", "playerAsset": "map-v3-inn-player.png", "gmAsset": "map-v3-inn-gm.png", "spoiler": false},
     {"id": "MAP03", "title": "Kirche und Friedhof", "playerAsset": "map-v3-church-player.png", "gmAsset": "map-v3-church-gm.png", "spoiler": false},
-    {"id": "MAP04", "title": "Alte Eiche", "playerAsset": "map-v3-oak-player.png", "gmAsset": "map-v3-oak-gm.png", "spoiler": false}
+    {"id": "MAP04", "title": "Schmiede Kern", "playerAsset": "map-v3-smithy-player.png", "gmAsset": "map-v3-smithy-gm.png", "spoiler": false},
+    {"id": "MAP05", "title": "Rathaus und Gemeindearchiv", "playerAsset": "map-v3-archive-player.png", "gmAsset": "map-v3-archive-gm.png", "spoiler": false},
+    {"id": "MAP06", "title": "Waldheiligtum und Alte Eiche", "playerAsset": "map-v3-oak-player.png", "gmAsset": "map-v3-oak-gm.png", "spoiler": false}
   ],
   "npcs": [
     {"id": "N01", "name": "Konrad Gruber", "role": "Bürgermeister und Gastgeber", "description": "Ein ruhiger Mann mit sauberem Mantel, warmer Stimme und der Gewohnheit, Türen selbst abzuschließen.", "knows": ["Die Kutsche wurde auf seine Umleitung gelenkt.", "Die Alte Eiche steht auf altem Gemeindeland."], "hides": ["Er führt das Opferbuch.", "Er trägt den Schlüssel zum Geweihschrein."], "givesHandoutIds": ["H01", "H05"], "prompts": ["Lobt das Gastrecht, während er die Gästezimmer verriegelt.", "Bietet Hilfe an, sobald die Gruppe zu viel über frühere Reisende weiß."], "cueIds": ["SFX03", "SFX07"], "states": ["freundlich", "prüfend", "entlarvt"], "portrait": "npc-gruber.png"},
@@ -94,9 +96,9 @@
     {"id": "LOC_ROAD", "title": "Kutschenstraße", "mapId": "MAP01", "sceneIds": ["S01"], "npcIds": [], "clueIds": ["C01", "C02"]},
     {"id": "LOC_INN", "title": "Zum schwarzen Keiler", "mapId": "MAP02", "sceneIds": ["S02"], "npcIds": ["N01", "N02", "N06"], "clueIds": ["C03", "C04", "C08"]},
     {"id": "LOC_CHURCH", "title": "Kirche und Friedhof", "mapId": "MAP03", "sceneIds": ["S03"], "npcIds": ["N04"], "clueIds": ["C05"]},
-    {"id": "LOC_SMITHY", "title": "Schmiede", "mapId": "MAP01", "sceneIds": ["S04"], "npcIds": ["N05"], "clueIds": ["C07"]},
-    {"id": "LOC_WOODS", "title": "Wald und Alte Eiche", "mapId": "MAP04", "sceneIds": ["S05", "S07", "S08"], "npcIds": ["N03", "N06"], "clueIds": ["C08", "C09", "C10", "C11"]},
-    {"id": "LOC_ARCHIVE", "title": "Rathausarchiv", "mapId": "MAP01", "sceneIds": ["S06"], "npcIds": ["N01", "N04"], "clueIds": ["C06", "C10"]}
+    {"id": "LOC_SMITHY", "title": "Schmiede", "mapId": "MAP04", "sceneIds": ["S04"], "npcIds": ["N05"], "clueIds": ["C07"]},
+    {"id": "LOC_WOODS", "title": "Wald und Alte Eiche", "mapId": "MAP06", "sceneIds": ["S05", "S07", "S08"], "npcIds": ["N03", "N06"], "clueIds": ["C08", "C09", "C10", "C11"]},
+    {"id": "LOC_ARCHIVE", "title": "Rathausarchiv", "mapId": "MAP05", "sceneIds": ["S06"], "npcIds": ["N01", "N04"], "clueIds": ["C06", "C10"]}
   ],
   "audioCues": [
     {"id": "A01", "title": "Kutschenstraße im Schneesturm", "scene": "S01", "category": "ambient", "file": "V3_A01_Kutschenstrasse.m4a", "mode": "loop", "gain": -0.22, "fadeMs": 2200, "isClue": false, "printFallbackId": null, "description": "Wind, Holz, entfernte Pferde und gedämpfte Räder."},

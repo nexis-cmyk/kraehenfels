@@ -42,7 +42,7 @@ def main() -> None:
     if len(cue_ids) != len(cues): fail("Duplicate audio cue id")
     if len(npc_ids) != len(npcs): fail("Duplicate NPC id")
     if len(clue_ids) != len(clues): fail("Duplicate clue id")
-    if map_ids != {"MAP01", "MAP02", "MAP03", "MAP04"}: fail("V3 map set is incomplete")
+    if map_ids != {"MAP01", "MAP02", "MAP03", "MAP04", "MAP05", "MAP06"}: fail("V3 map set is incomplete")
     if phase_ids != {"P01", "P02", "P03", "P04", "P05"}: fail("V3 phase set is incomplete")
     if len(manifest.get("endings", [])) != 3: fail("V3 must expose exactly three endings")
 

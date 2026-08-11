@@ -218,7 +218,21 @@
     },
     {
       "id": "MAP04",
-      "title": "Alte Eiche",
+      "title": "Schmiede Kern",
+      "playerAsset": "map-v3-smithy-player.png",
+      "gmAsset": "map-v3-smithy-gm.png",
+      "spoiler": false
+    },
+    {
+      "id": "MAP05",
+      "title": "Rathaus und Gemeindearchiv",
+      "playerAsset": "map-v3-archive-player.png",
+      "gmAsset": "map-v3-archive-gm.png",
+      "spoiler": false
+    },
+    {
+      "id": "MAP06",
+      "title": "Waldheiligtum und Alte Eiche",
       "playerAsset": "map-v3-oak-player.png",
       "gmAsset": "map-v3-oak-gm.png",
       "spoiler": false
@@ -1075,7 +1089,7 @@
     {
       "id": "LOC_SMITHY",
       "title": "Schmiede",
-      "mapId": "MAP01",
+      "mapId": "MAP04",
       "sceneIds": [
         "S04"
       ],
@@ -1089,7 +1103,7 @@
     {
       "id": "LOC_WOODS",
       "title": "Wald und Alte Eiche",
-      "mapId": "MAP04",
+      "mapId": "MAP06",
       "sceneIds": [
         "S05",
         "S07",
@@ -1109,7 +1123,7 @@
     {
       "id": "LOC_ARCHIVE",
       "title": "Rathausarchiv",
-      "mapId": "MAP01",
+      "mapId": "MAP05",
       "sceneIds": [
         "S06"
       ],

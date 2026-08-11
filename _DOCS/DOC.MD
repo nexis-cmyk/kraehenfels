@@ -6,7 +6,7 @@
 
 ## Kanonische Quelle
 
-Die verbindliche Quelle liegt in [`adventure/canon.json`](../adventure/canon.json). Sie enthält Phasen, Reisehaken, Eskalation, Fakten, drei Enden, Orte, Szenen, NPCs, Hinweise, Handouts und Audio-Cues. Die Dateien unter `content/`, in `app/.../Resources/` und unter `web/data/` werden mit `python tools/build_content_v3.py` daraus erzeugt. Ortsakten, Beweismatrix und Run-Sheet liegen in `adventure/locations/`, `adventure/evidence/`, `adventure/indexes/` und `adventure/session/`.
+Die verbindliche Quelle liegt in [`adventure/canon.json`](../adventure/canon.json). Sie enthält Phasen, Figuren-Verbindungen (technisch weiterhin `travelHooks`), Eskalation, Fakten, drei Enden, Orte, Szenen, NPCs, Hinweise, Handouts und Audio-Cues. Die Dateien unter `content/`, in `app/.../Resources/` und unter `web/data/` werden mit `python tools/build_content_v3.py` daraus erzeugt. Ortsakten, Beweismatrix und Run-Sheet liegen in `adventure/locations/`, `adventure/evidence/`, `adventure/indexes/` und `adventure/session/`.
 
 ## Geschichte
 
@@ -23,7 +23,7 @@ Die drei Reisenden stranden nach einer manipulierten Kutschenpanne im Schwarzwal
 - `tools/`: reproduzierbare Build- und Validierungsskripte
 - `outputs/`: finale PDFs, ZIP-Archive und Einladung
 
-Die App bleibt frei navigierbar. Sie zeigt Vorlesetext, SL-Notizen, NPC-Zustände, Pflichtspuren, Fakten, Reisehaken, Karten, Sound-Presets und Stillstandshilfen. Sie entscheidet keine Handlung automatisch. Hinweise werden nie durch einen einzelnen misslungenen Wurf blockiert.
+Die App bleibt frei navigierbar. Sie zeigt Vorlesetext, SL-Notizen, NPC-Zustände, Pflichtspuren, Fakten, Figuren-Verbindungen, Karten, Sound-Presets und Stillstandshilfen. Sie entscheidet keine Handlung automatisch. Hinweise werden nie durch einen einzelnen misslungenen Wurf blockiert.
 
 ## Audio
 
@@ -31,7 +31,7 @@ Der aktive Satz besteht aus 18 unterscheidbaren Dateien: sechs Atmosphären, zwe
 
 ## Druckpaket
 
-`tools/build_print_pack.py` ruft den V3-Generator auf. Die Handouts tragen IDs, eigene Requisitenlayouts und eine gestrichelte Außenlinie mit Ausschneidehinweis. Das Spielerpaket enthält keine H09-Ritualspoiler. Die Kartensätze sind in Spieler- und SL-Ansicht getrennt; Gasthaus, Kirche und Alte Eiche liegen zusätzlich als Detailkarten bei.
+`tools/build_print_pack_v3.py` ruft den V3-Generator auf. Die Handouts tragen IDs, eigene Requisitenlayouts und eine gestrichelte Außenlinie mit Ausschneidehinweis. Das Spielerpaket enthält keine H09-Ritualspoiler. Die Kartensätze sind in Spieler- und SL-Ansicht getrennt. Die textfreien GPT-Bildplatten werden erst im Build mit Titeln, Hinweis-IDs und Spoilerrahmen versehen. Gasthaus, Kirche, Schmiede, Rathausarchiv und Alte Eiche liegen zusätzlich als Detailkarten bei.
 
 Geliefert werden:
 
@@ -55,7 +55,7 @@ python tools/build_archives_v3.py
 python tools/validate_project.py
 ```
 
-`tools/validate_project.py` prüft IDs und Querverweise, Manifest-Synchronität, Szene- und Kartenbilder, alle 18 Audio-Dateien, Duplikate innerhalb einer Szene, PDF-Lesbarkeit und die Spoilertrennung der Spielerunterlagen.
+`tools/validate_project.py` prüft IDs und Querverweise, Manifest-Synchronität, Szene- und Kartenbilder, alle 18 Audio-Dateien, Duplikate innerhalb einer Szene, PDF-Lesbarkeit und die Spoilertrennung der Spielerunterlagen. Der Kartensatz umfasst MAP01 bis MAP06.
 
 ## Qualitätsregeln
 
