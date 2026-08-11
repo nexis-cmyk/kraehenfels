@@ -16,6 +16,11 @@ Die technische Audio-Bibliothek bleibt aus Kompatibilitätsgründen bei 46 Datei
 
 `python tools/build_web_preview.py`, `python tools/build_print_pack.py`, `python tools/validate_project.py` und `node --check web/js/app.js` sind erfolgreich durchgelaufen. `outputs/14_Soundboard-Cues.pdf` wurde als PNG gerendert und visuell kontrolliert.
 
-## Nächster Schritt
+## Release
 
-Nach Commit und Push: iOS-CI abwarten, Tag `v2.0.6` auslösen, die erstellte IPA herunterladen und deren Größe/Checksumme in `altstore/source.json` übernehmen. Erst danach darf der Feed 2.0.6 anbieten.
+Der iOS-Compile-Check für Commit `35a58eb` und der Release-Workflow für Tag `v2.0.6` sind erfolgreich. Die veröffentlichte IPA wurde heruntergeladen und geprüft:
+
+- Größe: `66060736` Bytes
+- SHA-256: `eee2270d1a269b738c24e527d5178649a551439c4b913d433dd545fbadc21de0`
+
+`altstore/source.json` verweist auf genau diese Datei. Nach dem folgenden Push kann AltStore 2.0.6 laden.

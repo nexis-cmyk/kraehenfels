@@ -1,6 +1,6 @@
 # AltStore-Feed
 
-Der fertige Feed liegt als [`source.json`](source.json) im Repository. Die aktuelle IPA ist Version 2.0.5; die Datei enthält Download-URL, Größe und SHA-256-Prüfsumme.
+Der fertige Feed liegt als [`source.json`](source.json) im Repository. Die aktuelle IPA ist Version 2.0.6; die Datei enthält Download-URL, Größe und SHA-256-Prüfsumme.
 
 In AltStore Classic: `Sources` öffnen, `+` wählen und diese Feed-URL eintragen:
 
