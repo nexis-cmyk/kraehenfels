@@ -28,6 +28,8 @@ Die Druckunterlagen entstehen mit ReportLab. `print/assets/` enthält eigens erz
 
 Die iPhone-App nutzt `SessionStore` für dieselben Arbeitsnotizen. Die Daten bleiben ausschließlich in den lokalen App-Einstellungen: drei frei benennbare Reisende, eine Notiz für die Vorbereitung und jeweils eine kurze Notiz pro Szene. Ein separater Bereich "Am Tisch" löscht nur diese Eingaben. Fortschritt, Hinweise und Audio-Einstellungen bleiben davon unberührt.
 
+Die einseitige SL-Referenz `12_SL_Am_Tisch.pdf` führt für jede Szene nicht nur Handout, Sound und Eskalation, sondern auch die konkrete Fundstelle oder den NSC auf, der den Hinweis geben kann. Sie ist die verbindliche Tisch-Navigation für eine unerfahrene Spielleitung.
+
 ## Gelieferte Artefakte
 
 - `outputs/01_Karte_Spieler.pdf` und `outputs/01_Karte_SL.pdf`

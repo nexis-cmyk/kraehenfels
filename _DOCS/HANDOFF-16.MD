@@ -24,3 +24,7 @@ Der iOS-Compile-Check für Commit `35a58eb` und der Release-Workflow für Tag `v
 - SHA-256: `eee2270d1a269b738c24e527d5178649a551439c4b913d433dd545fbadc21de0`
 
 `altstore/source.json` verweist auf genau diese Datei. Nach dem folgenden Push kann AltStore 2.0.6 laden.
+
+## Nachträglicher Tisch-Check
+
+Die große SL-Fassung enthielt nach der Cue-Reduktion noch zwei alte Verweise. S01 nennt jetzt ausschließlich `A01`, `SFX01` und `SFX04`; S04 ausschließlich `A03` und `SFX10`. Die Ein-Seiten-Referenz nennt außerdem für jede Ausgabe direkt den NSC oder die Fundstelle des jeweiligen Handouts.

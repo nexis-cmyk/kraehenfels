@@ -1094,16 +1094,16 @@ def build_sl_reference(path: Path) -> None:
 
 
 def build_at_table_reference(path: Path) -> None:
-    rows = [[p(text, styles["TableHeader"]) for text in ["Szene", "Jetzt zeigen / geben", "Nächster Impuls", "Sound", "Eskalation"]]]
+    rows = [[p(text, styles["TableHeader"]) for text in ["Szene", "Wer gibt / was kommt", "Nächster Impuls", "Sound", "Stufe"]]]
     reference_rows = [
-        ("S01 Panne", "H01 · C01/C02", "Laterne führt nach Krähenfels", "Preset Panne · SFX01", "0"),
-        ("S02 Dorf", "H02/H03 · C03", "Rosa oder Jakob bietet einen Ort an", "Preset Dorf · SFX23", "1"),
-        ("S03 Kirche", "H04/H06 · C04/C05", "Martin zählt 3-1-2-4", "Preset Kirche · SFX08", "2"),
-        ("S04 Schmiede", "H07 · C06", "Klöppel vibriert am Amboss", "Preset Schmiede · SFX10", "2"),
-        ("S05 Grube", "H08/H09 · C07/C08", "Klopfen antwortet auf drei Schläge", "Preset Grube · A09/SFX14", "3"),
-        ("S06 Erscheinung", "H05 · C09", "Hand zeigt auf Turm und Klöppel", "Preset Erscheinung · SFX16", "4"),
-        ("S07 Wahrheit", "H10 · C10/C11", "Drei Finale nennen", "Frost / Resonanz · SFX18", "4"),
-        ("S08 Finale", "H11 · alle Kernspuren", "Ein Preis, kein Sackgassenwurf", "Preset Finale · M05/SFX20", "5"),
+        ("S01 Panne", "Fund in der Kiste: H01 · C01/C02", "Laterne führt nach Krähenfels", "Preset Panne · SFX01", "0"),
+        ("S02 Dorf", "Rosa: H02/H03 · C03", "Rosa oder Jakob bietet einen Ort an", "Preset Dorf · SFX23", "1"),
+        ("S03 Kirche", "Martin: H04/H06 · C04/C05", "Martin zählt 3-1-2-4", "Preset Kirche · SFX08", "2"),
+        ("S04 Schmiede", "Emil: H07 · C06", "Klöppel vibriert am Amboss", "Preset Schmiede · SFX10", "2"),
+        ("S05 Grube", "Lorenz: H08/H09 · C07/C08", "Klopfen antwortet auf drei Schläge", "Preset Grube · A09/SFX14", "3"),
+        ("S06 Erscheinung", "Elisabeth zeigt H05 · C09", "Hand zeigt auf Turm und Klöppel", "Preset Erscheinung · SFX16", "4"),
+        ("S07 Wahrheit", "Rosa: H10 · C10/C11", "Drei Finale nennen", "Frost / Resonanz · SFX18", "4"),
+        ("S08 Finale", "SL legt H11 bereit", "Ein Preis, kein Sackgassenwurf", "Preset Finale · M05/SFX20", "5"),
         ("S09 Epilog", "Folgen der Wahl", "Jede Figur bekommt einen Nachhall", "Bewusst still", "0"),
     ]
     for row in reference_rows:

@@ -48,7 +48,7 @@ Die Spieler dürfen helfen, die Kutsche zu verlassen, die Pferde zu beruhigen od
 
 Bei einem Fehlschlag findet die Gruppe Jakob nicht. Eine Spur aus einzelnen Fußabdrücken führt zum Waldweg. Der Bergrutsch trennt die Rückkehr ab. Die Figuren müssen nach Krähenfels gehen. Jakob taucht in S05 wieder auf, benommen und mit fremder Stimme.
 
-**Sound:** A01 leise unterlegen. Nach dem Vorlesetext SFX01, danach SFX02. Wenn die Gruppe die Spur entdeckt, SFX03 oder SFX04.
+**Sound:** A01 leise unterlegen. Nach dem Vorlesetext SFX01. Wenn die Gruppe die Spur entdeckt, SFX04 einmal auslösen.
 
 ### S02: Zur Krähe
 
@@ -85,7 +85,7 @@ Das Buch nennt eine Lieferung Grubeneisen aus dem Jahr 1848. Daneben steht: "Nic
 
 Emil kann den Klöppel einschmelzen, braucht dafür aber Zeit und ein Feuer, das bis nach Mitternacht brennt. Das ist später eine vollständige Lösung. Wenn die Figuren ihn nach der Weißen Frau fragen, sagt er: "Sie hat mir einmal das Leben gerettet. Ich würde ihr gerne danken, aber sie redet ja nicht."
 
-SFX09 läuft leise im Hintergrund. Wenn der Klöppel in der Nähe des Ambosses liegt, spielt SFX10.
+A03 läuft leise im Hintergrund. Wenn der Klöppel in der Nähe des Ambosses liegt, spielt SFX10.
 
 ### S05: Die verlassene Grube
 
