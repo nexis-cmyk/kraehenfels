@@ -18,7 +18,8 @@ Die V3-Projektdatei und der AltStore-Feed sind vorbereitet. Der IPA-Build läuft
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
 - [Release-Übersicht](https://github.com/nexis-cmyk/kraehenfels/releases)
-- [AltStore-Feed](https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/source.json)
+- [AltStore-Feed für v3.0.0](https://github.com/nexis-cmyk/kraehenfels/releases/download/v3.0.0/source.generated.json)
+- [Dauerhafter AltStore-Feed](https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json)
 
 Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-Account signiert. Eine kurze Windows-Anleitung steht in [`altstore/README.md`](altstore/README.md).
 
@@ -59,7 +60,7 @@ xcodebuild -project Kraehenfels.xcodeproj -scheme Kraehenfels \
   -destination 'generic/platform=iOS Simulator' test
 ```
 
-Ein Tag wie `v2.0.0` oder der Button **Run workflow** mit einer Versionsnummer startet `.github/workflows/release.yml`. Der Workflow erzeugt eine unsignierte `Kraehenfels.ipa` und zusätzlich einen ausgefüllten `altstore/source.generated.json` als Release-Asset. Die aktuell gepflegte dauerhafte Feed-URL ist `https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/source.json`.
+Ein Tag wie `v3.0.0` oder der Button **Run workflow** mit einer Versionsnummer startet `.github/workflows/release.yml`. Der Workflow erzeugt eine unsignierte `Kraehenfels.ipa` und zusätzlich einen ausgefüllten `altstore/source.generated.json` als Release-Asset. Für die aktuelle Installation ist der unveränderliche Release-Feed am zuverlässigsten; die dauerhaft gepflegte Feed-URL zeigt auf `https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json`.
 
 ## Druckpaket
 

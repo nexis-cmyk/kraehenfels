@@ -1,10 +1,16 @@
 # AltStore-Feed
 
-Der Feed liegt als [`source.json`](source.json) im Repository. Die V3-Vorlage zeigt auf den Release-Tag `v3.0.0`; Größe und SHA-256 werden beim macOS-Release-Workflow in `source.generated.json` ergänzt. Bis der Workflow durchgelaufen ist, bleibt der letzte öffentliche IPA-Release `v2.0.7`.
+Der Feed liegt als [`source.json`](source.json) im Repository und ist aktuell auf den geprüften Release-Tag `v3.0.0` gepinnt. Der macOS-Release-Workflow erzeugt bei weiteren Versionen zusätzlich eine ausgefüllte `source.generated.json` mit Größe und SHA-256.
 
 In AltStore Classic: `Sources` öffnen, `+` wählen und diese Feed-URL eintragen:
 
-`https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/source.json`
+Aktueller Release-Feed (für die Installation von V3):
+
+`https://github.com/nexis-cmyk/kraehenfels/releases/download/v3.0.0/source.generated.json`
+
+Dauerhafter Feed:
+
+`https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json`
 
 Danach **Krähenfels** auswählen und **Install** drücken. Alternativ kannst du auf dem Release die IPA laden und in AltStore über `+` bzw. die Teilen-Funktion öffnen. AltStore signiert die unsignierte IPA mit deinem eigenen Apple-Account; ohne diese Signierung lässt iOS die App nicht starten.
 
