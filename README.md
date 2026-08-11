@@ -14,11 +14,11 @@ Das Repository enthält:
 
 ## iPhone-Build und AltStore
 
-Der V3-IPA-Build ist erfolgreich über macOS/GitHub Actions veröffentlicht. Release `v3.0.0` enthält die unsignierte IPA und den ausgefüllten AltStore-Feed.
+Der V3.1-IPA-Build wird über macOS/GitHub Actions veröffentlicht. Release `v3.1.0` enthält die unsignierte IPA und den ausgefüllten AltStore-Feed.
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
 - [Release-Übersicht](https://github.com/nexis-cmyk/kraehenfels/releases)
-- [AltStore-Feed für v3.0.0](https://github.com/nexis-cmyk/kraehenfels/releases/download/v3.0.0/source.generated.json)
+- [AltStore-Feed für v3.1.0](https://github.com/nexis-cmyk/kraehenfels/releases/download/v3.1.0/source.generated.json)
 - [Dauerhafter AltStore-Feed](https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json)
 
 Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-Account signiert. Eine kurze Windows-Anleitung steht in [`altstore/README.md`](altstore/README.md).
