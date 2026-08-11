@@ -76,6 +76,18 @@ Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.z
 
 Die Browser-Version lässt sich vor dem Sideloaden lokal testen. Sie verwendet dieselben Szenen, NPCs, Handouts und Audiodateien wie die iPhone-App. Die genaue Startanleitung steht in [`web/README.md`](web/README.md).
 
+## Audio ersetzen
+
+Die aktuellen Audios sind Platzhalter. Der Master-Prompt fuer eine komplette Neuerzeugung liegt in [`_DOCS/AUDIO-REBUILD-MASTER-PROMPT.md`](_DOCS/AUDIO-REBUILD-MASTER-PROMPT.md). Wenn neue Dateien vorliegen, muessen ihre Dateinamen den vorhandenen Cue-Dateien entsprechen. WAV-Dateien mit gleichem Basisnamen sind ebenfalls okay, das Import-Skript wandelt sie passend um.
+
+```powershell
+python tools/import_audio_replacements.py "C:\Pfad\zu\neuen-sounds" --sync-web
+python tools/build_web_preview.py
+python tools/validate_project.py
+```
+
+Das Skript schreibt nach `audio/generated/`, `app/Kraehenfels/Resources/Audio/` und mit `--sync-web` auch nach `web/assets/audio/`.
+
 ## Lizenzhinweise
 
 Die Abenteuertexte und Medien dieses Projekts sind eigenständig erstellt. How to be a Hero ist ein separates Regelwerk. Die Kurzregeln im Spielpaket fassen nur die am Tisch benötigten Mechaniken zusammen und verweisen auf das offizielle Regelwerk.
