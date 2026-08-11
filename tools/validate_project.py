@@ -70,6 +70,9 @@ def main() -> None:
     app_manifest_path = ROOT / "app" / "Kraehenfels" / "Resources" / "manifest.json"
     if app_manifest_path.read_text(encoding="utf-8") != manifest_path.read_text(encoding="utf-8"):
         fail("App manifest is out of sync with content manifest")
+    web_manifest_path = ROOT / "web" / "data" / "manifest.json"
+    if web_manifest_path.read_text(encoding="utf-8") != manifest_path.read_text(encoding="utf-8"):
+        fail("Web manifest is out of sync with content manifest")
 
     generated = ROOT / "audio" / "generated"
     bundled = ROOT / "app" / "Kraehenfels" / "Resources" / "Audio"
@@ -80,19 +83,31 @@ def main() -> None:
         if cue.get("isClue") and fallback not in handout_ids:
             fail(f"Clue {cue['id']} has invalid printed fallback")
 
-    for name in ("01_Karte_Spieler.pdf", "01_Karte_SL.pdf", "01_Grubenplan_H08.pdf", "01_Grubenplan_SL.pdf", "02_Handouts.pdf", "03_Figurenbau.pdf", "10_SL_Abenteuer.pdf", "11_SL_Schnellreferenz.pdf", "12_SL_Am_Tisch.pdf", "14_Soundboard-Cues.pdf"):
+    for name in ("01_Karte_Spieler.pdf", "01_Karte_SL.pdf", "01_Grubenplan_H08.pdf", "01_Grubenplan_SL.pdf", "02_Handouts.pdf", "03_Figurenbau.pdf", "10_SL_Abenteuer.pdf", "11_SL_Schnellreferenz.pdf", "12_SL_Am_Tisch.pdf", "13_SL_Spoiler-Handouts.pdf", "14_Soundboard-Cues.pdf"):
         path = ROOT / "outputs" / name
         if not path.exists(): fail(f"Missing PDF: {name}")
         pages = len(PdfReader(str(path)).pages)
         if pages < 1: fail(f"PDF has no pages: {name}")
         print(f"OK: {name} ({pages} pages)")
 
+    player_handouts_text = "\n".join(page.extract_text() or "" for page in PdfReader(str(ROOT / "outputs" / "02_Handouts.pdf")).pages)
+    if "H10" in player_handouts_text or "H11" in player_handouts_text:
+        fail("Player handouts contain a spoiler handout")
+    player_map_text = "\n".join(page.extract_text() or "" for page in PdfReader(str(ROOT / "outputs" / "01_Karte_Spieler.pdf")).pages)
+    if "H02" not in player_map_text:
+        fail("Player map is missing its handout id")
+
     for path in [ROOT / "content" / "scenario.md", ROOT / "content" / "handouts.md", ROOT / "content" / "character_creation.md"]:
         path.read_text(encoding="utf-8")
     art_dir = ROOT / "app" / "Kraehenfels" / "Resources" / "Art"
+    web_art_dir = ROOT / "web" / "assets" / "art"
     for scene in scenes:
         art = scene.get("art")
         if art and not (art_dir / art).exists(): fail(f"Missing scene art: {art}")
+        if art and not (web_art_dir / art).exists(): fail(f"Missing web scene art: {art}")
+    web_audio_dir = ROOT / "web" / "assets" / "audio"
+    for cue in cues:
+        if not (web_audio_dir / cue["file"]).exists(): fail(f"Missing web audio: {cue['file']}")
     print(f"OK: {len(scenes)} scenes, {len(handouts)} handouts, {len(npcs)} NPCs, {len(clues)} clues, {len(cues)} audio cues")
 
 

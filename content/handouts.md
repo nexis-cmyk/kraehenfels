@@ -58,13 +58,13 @@ Die letzte Zeile ist herausgerissen. Am Falz sind nur noch die Wörter zu lesen:
 
 ## H05 Kabinettfoto von 1848
 
-Auf dem Foto steht eine junge Frau neben einer kleinen Glocke. Auf der Rückseite:
+Auf dem Foto steht eine junge Frau neben einer kleinen Glocke. Unter dem Foto:
 
-**Elisabeth Abele, Krähenfels, Winter 1848.**
+**Elisabeth Abele, Kantorin, Krähenfels, Winter 1848.**
 
 Jemand hat später mit Bleistift ergänzt:
 
-*Sie hat uns herausgeführt. Warum erinnert sich niemand?*
+*Sie hat uns herausgeführt. Nicht die Hexe.*
 
 ## H06 Liedblatt ohne letzte Strophe
 
@@ -135,4 +135,3 @@ Wenn niemand antwortet, schmilzt das Eisen. Wenn ihr schweigt, hört der Berg au
 4. Entscheiden, ob die Glocke, die Grube oder das Eisen das Ende trägt.
 
 Die Weiße Frau greift niemanden an. Sie wartet auf eine Antwort, die nicht aus dem Berg kommt.
-

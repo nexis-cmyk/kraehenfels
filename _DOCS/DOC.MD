@@ -18,17 +18,19 @@ Das Projekt liefert ein vollständiges Spielpaket für `Die Weiße Frau schweigt
 
 ## Architektur
 
-`content/manifest.json` ist die maschinenlesbare Quelle für Szenen, Handouts, Cues, NPCs, Pflichtspuren und Verknüpfungen. Lange Spieltexte liegen daneben in klar getrennten Inhaltsdateien. Der PDF-Generator und die SwiftUI-App prüfen dieselben IDs gegen das Manifest.
+`content/manifest.json` ist die maschinenlesbare Quelle für Szenen, Handouts, Cues, NPCs, Pflichtspuren und Verknüpfungen. Lange Spieltexte liegen daneben in klar getrennten Inhaltsdateien. Der PDF-Generator, die SwiftUI-App und die Web-Testversion prüfen dieselben IDs gegen das Manifest.
 
 Die Audioerzeugung ist deterministisch. Python und NumPy erzeugen die Rohsignale, FFmpeg normalisiert und exportiert die Dateien. Es werden keine fremden Samples eingebunden.
 
-Die Druckunterlagen entstehen mit ReportLab. `print/assets/` enthält eigens erzeugte Rasterbilder: das Titelmotiv, eine beschriftete Luftansicht des Dorfes, Elisabeth Abeles Kabinettfoto, eine Glockenradierung, einen Holzstich für das Wochenblatt, eine technische Stellmacher-Zeichnung, einen gefalteten Vermessungsplan der Grube und sieben Graphic-Novel-Szenenbilder. Die Handouts haben voneinander abweichende Requisitenformen: Ticket, Zeitung, Kirchenregister, Foto, Liedblatt, Werkbuch, Feldnotiz, handschriftliche Aussage, Brief und Ritualkarte. Der Generator bettet sie gezielt in Titel, Karte, Handouts und die SL-Bildstrecke ein. Die PDFs werden mit `pypdf` und per Poppler-Render geprüft.
+Die Druckunterlagen entstehen mit ReportLab. `print/assets/` enthält eigens erzeugte Rasterbilder: das Titelmotiv, eine beschriftete Luftansicht des Dorfes, Elisabeth Abeles Kabinettfoto, eine Glockenradierung, einen Holzstich für das Wochenblatt, eine technische Stellmacher-Zeichnung, einen gefalteten Vermessungsplan der Grube und sieben Graphic-Novel-Szenenbilder. Die Handouts haben voneinander abweichende Requisitenformen: Ticket, Zeitung, Kirchenregister, Foto, Liedblatt, Werkbuch, Feldnotiz, handschriftliche Aussage, Brief und Ritualkarte. Der Generator bettet sie gezielt in Titel, Karte, Handouts und die SL-Bildstrecke ein. Spielerhinweise und H10/H11 sind nun in getrennten PDFs, damit das Spielpaket keine Spoiler mitliefert. Jede Druckseite führt Handout-ID, Ausgabehinweis, Schnittmarken und eine Scherenlinie. Die PDFs werden mit `pypdf` und per Poppler-Render geprüft.
+
+`web/` ist eine statische, lokal gestartete PWA für den Test vor dem Sideload. `tools/build_web_preview.py` synchronisiert Manifest, sieben Szenenbilder, Icon und alle 46 Audio-Dateien aus den App-Ressourcen. Die Browser-Oberfläche speichert Fortschritt und Häkchen im lokalen Browser, hat einen Audio-Selbsttest, getrennte Lautstärken, Szenen-Presets, einzelne Effekte und einen globalen Stopp. Der Validator erzwingt, dass Manifest, Szenenbilder und Audiodateien in SwiftUI-App und Web-Testversion übereinstimmen.
 
 ## Gelieferte Artefakte
 
 - `outputs/01_Karte_Spieler.pdf` und `outputs/01_Karte_SL.pdf`
 - `outputs/01_Grubenplan_H08.pdf` und `outputs/01_Grubenplan_SL.pdf`
-- `outputs/02_Handouts.pdf`, `outputs/03_Figurenbau.pdf`, `outputs/10_SL_Abenteuer.pdf`, `outputs/11_SL_Schnellreferenz.pdf`, `outputs/12_SL_Am_Tisch.pdf`
+- `outputs/02_Handouts.pdf`, `outputs/03_Figurenbau.pdf`, `outputs/10_SL_Abenteuer.pdf`, `outputs/11_SL_Schnellreferenz.pdf`, `outputs/12_SL_Am_Tisch.pdf`, `outputs/13_SL_Spoiler-Handouts.pdf`
 - `outputs/14_Soundboard-Cues.pdf`
 - vierzehn Druckgrafiken in `print/assets/`
 - 46 originale Audios in `audio/generated/` und im iOS-Bundle

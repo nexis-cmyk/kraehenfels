@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#090e17" />
+    <meta name="description" content="Krähenfels: offlinefähiger Spielleiter-Leitstand zum Testen." />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./assets/icon.png" />
+    <link rel="apple-touch-icon" href="./assets/icon.png" />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>Krähenfels · Leitstand</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#scene-content">Zum Szeneninhalt springen</a>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Szenensteuerung">
+        <div class="brand-lockup">
+          <img src="./assets/icon.png" alt="" class="brand-icon" />
+          <div>
+            <p class="brand-kicker">Spielleitung</p>
+            <h1>Krähenfels</h1>
+            <p class="brand-subtitle">Die Weiße Frau schweigt</p>
+          </div>
+        </div>
+
+        <section class="progress-block" aria-labelledby="progress-title">
+          <div class="section-heading">
+            <h2 id="progress-title">Fortschritt</h2>
+            <span id="progress-count" class="counter" aria-live="polite">0 / 9</span>
+          </div>
+          <div class="progress-track" aria-hidden="true"><span id="progress-fill"></span></div>
+        </section>
+
+        <nav id="scene-nav" class="scene-nav" aria-label="Szenen"></nav>
+
+        <div class="sidebar-actions">
+          <button id="audio-test" class="button button-quiet" type="button">Audio testen</button>
+          <button id="reset-progress" class="text-button" type="button">Fortschritt zurücksetzen</button>
+        </div>
+      </aside>
+
+      <main id="scene-content" class="main-content" tabindex="-1">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Offline-Testversion</p>
+            <p id="audio-status" class="audio-status" role="status">Audio bereit. Starte den Test vor der Runde.</p>
+          </div>
+          <button id="stop-all" class="button button-stop" type="button">Alle Sounds stoppen</button>
+        </header>
+
+        <div id="app" aria-live="polite"></div>
+      </main>
+    </div>
+
+    <template id="loading-template">
+      <section class="loading-state" aria-busy="true">
+        <p>Lade den Leitstand …</p>
+      </section>
+    </template>
+
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

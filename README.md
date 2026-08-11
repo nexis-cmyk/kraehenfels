@@ -10,13 +10,14 @@ Das Repository enthält:
 - selbst erzeugte Musik, Atmosphären und Soundeffekte
 - eine native iOS-Begleitapp ab iOS 17 mit Szenenleitstand, NPCs, Pflichtspuren, Vorlesetexten und Audio-Selbsttest
 - GitHub Actions für Tests, IPA-Build und AltStore-Feed
+- eine offlinefähige Web-Testversion für Leitstand und Soundboard
 
 ## Fertiger iPhone-Build
 
-Die öffentliche Release-Version 2.0.0 ist hier verfügbar:
+Die öffentliche Release-Version 2.0.1 ist hier verfügbar:
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
-- [Kraehenfels.ipa herunterladen](https://github.com/nexis-cmyk/kraehenfels/releases/download/v2.0.0/Kraehenfels.ipa)
+- [Kraehenfels.ipa herunterladen](https://github.com/nexis-cmyk/kraehenfels/releases/download/v2.0.1/Kraehenfels.ipa)
 - [AltStore-Feed](https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/source.json)
 
 Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-Account signiert. Eine kurze Windows-Anleitung steht in [`altstore/README.md`](altstore/README.md).
@@ -27,6 +28,7 @@ Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-
 - `print/`: Quellen und Generator für die Druckunterlagen
 - `audio/`: prozedurale Audioerzeugung und Metadaten
 - `app/`: SwiftUI-App und Tests
+- `web/`: offlinefähige Browser-Testversion und lokale Startanleitung
 - `altstore/`: Vorlage für den AltStore-Feed
 - `_DOCS/`: Architektur und Übergabenotizen
 - `_TMP/`: lokale Prüfskripte und temporäre Dateien
@@ -50,7 +52,7 @@ xcodebuild -project Kraehenfels.xcodeproj -scheme Kraehenfels \
   -destination 'generic/platform=iOS Simulator' test
 ```
 
-Ein Tag wie `v1.0.0` oder der Button **Run workflow** mit einer Versionsnummer startet `.github/workflows/release.yml`. Der Workflow erzeugt eine unsignierte `Kraehenfels.ipa` und zusätzlich einen ausgefüllten `altstore/source.generated.json` als Release-Asset. Die aktuell gepflegte dauerhafte Feed-URL ist `https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/source.json`.
+Ein Tag wie `v2.0.0` oder der Button **Run workflow** mit einer Versionsnummer startet `.github/workflows/release.yml`. Der Workflow erzeugt eine unsignierte `Kraehenfels.ipa` und zusätzlich einen ausgefüllten `altstore/source.generated.json` als Release-Asset. Die aktuell gepflegte dauerhafte Feed-URL ist `https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/source.json`.
 
 ## Druckpaket
 
@@ -60,14 +62,19 @@ Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: Schnee, Tannen, K
 - `01_Karte_Spieler.pdf`: spoilerfreie Tischkarte
 - `01_Karte_SL.pdf`: geheime Karte mit Flutstollen, Kammer und Wahrheit
 - `01_Grubenplan_H08.pdf` und `01_Grubenplan_SL.pdf`: beschädigter Vermessungsplan mit optionalem SL-Overlay
-- `02_Handouts.pdf`: Kutschschein, Zeitung, Kirchenbuch, Liedblatt, Brief und weitere Spuren
+- `02_Handouts.pdf`: nur spielersichere, ausschneidbare Hinweise mit Kennung, Schnittlinie und Ausgabezeitpunkt
 - `03_Figurenbau.pdf`: drei Begabungen, 400 Punkte und HTBAH-Schnellregeln
 - `10_SL_Abenteuer.pdf`: vorlesbare Szenen, NPCs und Enden
 - `11_SL_Schnellreferenz.pdf`: Wahrheit, Pflichtspuren und Improvisationshilfe
 - `12_SL_Am_Tisch.pdf`: einseitiger Ablaufzettel mit Hinweisen, Sounds und Eskalation pro Szene
+- `13_SL_Spoiler-Handouts.pdf`: H10 und H11 getrennt für die Spielleitung, erst zum passenden Moment austeilen
 - `14_Soundboard-Cues.pdf`: konkrete Cue-Momente mit Papier-Fallbacks
 
 Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.zip` und `outputs/Kraehenfels-Audio.zip` bereit.
+
+## Web-Testversion
+
+Die Browser-Version lässt sich vor dem Sideloaden lokal testen. Sie verwendet dieselben Szenen, NPCs, Handouts und Audiodateien wie die iPhone-App. Die genaue Startanleitung steht in [`web/README.md`](web/README.md).
 
 ## Lizenzhinweise
 

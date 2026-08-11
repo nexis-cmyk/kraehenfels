@@ -117,7 +117,7 @@ Die Weiße Frau deutet zuerst auf die Kiste mit dem Klöppel, dann auf die Grube
 
 Spielt SFX15, dann SFX16. Nach der Warnung spielt SFX17 genau einmal. Der Klöppel schlägt, obwohl niemand ihn berührt.
 
-H05 zeigt Elisabeth in ihrem Hochzeitskleid. Auf der Rückseite steht: "Elisabeth Abele, Kantorin. 1848. Nicht die Hexe."
+H05 zeigt Elisabeth in ihrem Hochzeitskleid. Unter dem Foto stehen ihr Name, ihre Rolle als Kantorin und das Jahr 1848. Die handschriftliche Notiz sagt: "Sie hat uns herausgeführt."
 
 ### S07: Vor Mitternacht
 
@@ -217,4 +217,3 @@ Wenn eine Figur eine passende Fähigkeit besitzt, würfelt sie mit dem W100 gege
 Ein Geistesblitzpunkt erlaubt eine Wiederholung einer misslungenen Probe, sofern der erste Wurf kein kritischer Misserfolg war. Der Punkt muss zur Begabung der Probe gehören.
 
 Verlange nur dann einen Wurf, wenn ein Fehlschlag die Situation verändert. Für das Finden eines Pflicht-Hinweises reicht eine plausible Untersuchung.
-

@@ -367,7 +367,7 @@ def draw_map(path: Path, gm: bool = False) -> None:
     c.roundRect(width - 63 * mm, height - 28 * mm, 48 * mm, 14 * mm, 2 * mm, stroke=0, fill=1)
     c.setFillColor(RED if gm else UMBER)
     c.setFont(FONT_BOLD, 8)
-    c.drawCentredString(width - 39 * mm, height - 21.5 * mm, "SL-KARTE / SPOILER" if gm else "SPIELERKARTE")
+    c.drawCentredString(width - 39 * mm, height - 21.5 * mm, "SL-KARTE / SPOILER" if gm else "H02 · SPIELERKARTE")
 
     def map_tag(label: str, tx: float, ty: float, px: float, py: float) -> None:
         c.saveState()
@@ -537,7 +537,7 @@ HANDOUTS = {
     "H01": ("Kutschschein und Frachtzettel", "POSTKUTSCHE FREIBURG – FREUDENSTADT<br/>17. November 1890, Abfahrt 16:10 Uhr<br/><br/>Fahrgäste: drei Reisende, Namen nicht eingetragen.<br/>Fracht: ein verschnürtes Eisenstück, Absender <b>W. Abele, Krähenfels</b>.<br/><br/><i>Nicht öffnen. Nicht läuten. Bei Frost nicht berühren.</i><br/><br/>Umleitung über Krähenfels wegen Schnee auf der Passstraße."),
     "H03": ("Krähenfelser Wochenblatt", "<b>Winterdienst verschoben</b><br/><br/>Der neue Klöppel für die obere Kirchenglocke ist eingetroffen. Die Montage wird bis zum Ende des Frostes verschoben. Die Glocke wird seit dem Unglück von 1848 nicht mehr nach Einbruch der Dunkelheit geläutet.<br/><br/><b>Vermisster Holzsammler</b><br/><br/>Wilhelm Abele, 42, wurde am alten Grubenweg zuletzt gesehen.<br/><br/><b>Aus dem Gemeinderat</b><br/><br/>Besucher sollen sich nach Sonnenuntergang in ihren Unterkünften aufhalten."),
     "H04": ("Kirchenbuchauszug", "<b>Krähenfels, 3. Dezember 1848</b><br/><br/>Heute wurde Elisabeth Abele, Kantorin und Lehrerin, im Schnee oberhalb der Grube gefunden. Sie hatte drei Kinder aus dem eingestürzten Stollen geführt. Der Rückweg blieb ihr versperrt.<br/><br/>Die Glocke schlug danach viermal, obwohl niemand im Turm war.<br/><br/><i>... nicht die Frau ...<br/>... was unter dem Stein ...<br/>... die Stimme ...</i>"),
-    "H05": ("Kabinettfoto von 1848", "<br/><br/><b>ELISABETH ABELE</b><br/><br/>Krähenfels, Winter 1848<br/><br/>[Auf der Druckseite ist Platz für eine kleine gezeichnete Glocke.]<br/><br/><i>Sie hat uns herausgeführt. Warum erinnert sich niemand?</i>"),
+    "H05": ("Kabinettfoto von 1848", "<br/><br/><b>ELISABETH ABELE</b><br/><br/>Kantorin · Krähenfels · Winter 1848<br/><br/><i>Sie hat uns herausgeführt. Nicht die Hexe.</i>"),
     "H06": ("Liedblatt ohne letzte Strophe", "<b>Lied für den Heimweg</b><br/><br/>Wenn der erste Schnee fällt,<br/>wenn der zweite Weg schweigt,<br/>wenn der dritte Ton ruft,<br/>bleibt der vierte Stein.<br/><br/><font size='18'>3   1   2   4</font><br/><br/><i>Nicht die Glocke antwortet. Das Echo tut es.</i>"),
     "H07": ("Werkbuch der Stellmacherei", "<b>Eintrag vom 15. November 1890, Emil Bopp</b><br/><br/>Die Kutschenachse aus Freiburg ist sauber gearbeitet. Der Bruch sitzt nicht an der schwächsten Stelle. Metallstaub liegt im Holz, als hätte etwas von innen dagegen geschlagen.<br/><br/>Der neue Glockenklöppel besteht aus altem Grubeneisen. Beim Anschlagen summt er, auch wenn die Glocke gedämpft wird.<br/><br/><b>Nicht zusammen mit der Glocke lagern.</b>"),
     "H08": ("Alter Flur- und Grubenplan", "<b>Drei Wege vom Dorf zur verlassenen Grube</b><br/><br/>1. Försterweg, endet am verschütteten Mundloch<br/>2. Bachlauf, führt zu einem niedrigen Flutstollen<br/>3. alter Seilzugweg, führt zu einer Kammer unter der Kapelle<br/><br/>Kreis am Rand: <b>Abele, Werkzeug und Liedblatt</b>."),
@@ -768,8 +768,8 @@ def draw_handout_card(
         c.setFillColor(colors.HexColor("#261F1B"))
         c.setFont(SERIF_BOLD, 11)
         c.drawCentredString(x + width / 2, y + 23 * mm, "ELISABETH ABELE")
-        c.setFont(SERIF, 7.8)
-        c.drawCentredString(x + width / 2, y + 16 * mm, "Krähenfels · Winter 1848")
+        c.setFont(SERIF, 7.4)
+        c.drawCentredString(x + width / 2, y + 16 * mm, "Kantorin · Krähenfels · Winter 1848")
         c.setFont(SERIF, 6.5)
         c.drawCentredString(x + width / 2, y + 11 * mm, "Atelieraufnahme auf nassem Kollodium")
         c.saveState()
@@ -779,6 +779,9 @@ def draw_handout_card(
         c.setFillColor(colors.HexColor("#5F4A36"))
         c.drawString(0, 0, "Sie hat uns herausgeführt.")
         c.restoreState()
+        c.setFillColor(colors.HexColor("#5F4A36"))
+        c.setFont(SCRIPT, 7.0)
+        c.drawRightString(x + width - 17 * mm, y + 18 * mm, "Nicht die Hexe.")
 
     elif hid == "H06":
         # A hymn sheet: centred title, staffs and the indispensable sequence.
@@ -923,19 +926,26 @@ def draw_handout_card(
     c.restoreState()
 
 
-def build_handouts(path: Path) -> None:
+def build_handouts(
+    path: Path,
+    handout_ids: list[str],
+    *,
+    heading: str = "Krähenfels · Spielerhinweise",
+    instruction: str = "ZWEI GETRENNTE A5-HANDOUTS · AN DER MITTELLINIE SCHNEIDEN",
+    reserved: bool = False,
+) -> None:
     width, height = landscape(A4)
     c = canvas.Canvas(str(path), pagesize=(width, height), pageCompression=1)
-    c.setTitle("Kraehenfels Spielerhinweise")
-    entries = list(HANDOUTS.items())
+    c.setTitle("Kraehenfels SL-Reservierung" if reserved else "Kraehenfels Spielerhinweise")
+    entries = [(handout_id, HANDOUTS[handout_id]) for handout_id in handout_ids]
     for page_index in range(0, len(entries), 2):
         draw_parchment(c, width, height)
         c.setFillColor(INK)
         c.setFont(SERIF_BOLD, 16)
-        c.drawString(10 * mm, height - 11 * mm, "Krähenfels · Spielerhinweise")
-        c.setFillColor(UMBER)
+        c.drawString(10 * mm, height - 11 * mm, heading)
+        c.setFillColor(RED if reserved else UMBER)
         c.setFont(FONT_BOLD, 6.8)
-        c.drawRightString(width - 10 * mm, height - 10 * mm, "ZWEI GETRENNTE A5-HANDOUTS · AN DER MITTELLINIE SCHNEIDEN")
+        c.drawRightString(width - 10 * mm, height - 10 * mm, instruction)
         draw_ornament(c, 105 * mm, height - 11 * mm, 32 * mm)
         card_width = (width - 28 * mm) / 2
         card_height = height - 29 * mm
@@ -947,7 +957,7 @@ def build_handouts(path: Path) -> None:
             draw_crop_marks(c, card_x, 9 * mm, card_width, card_height)
             draw_handout_card(c, card_x, 9 * mm, card_width, card_height, hid, title, body)
         cut_x = width / 2
-        c.setStrokeColor(UMBER)
+        c.setStrokeColor(RED if reserved else UMBER)
         c.setLineWidth(0.55)
         c.setDash(2.2, 2.2)
         c.line(cut_x, 7 * mm, cut_x, height - 20 * mm)
@@ -955,7 +965,7 @@ def build_handouts(path: Path) -> None:
         c.setFillColor(PARCHMENT)
         c.roundRect(cut_x - 13 * mm, height / 2 - 6 * mm, 26 * mm, 12 * mm, 1.5 * mm, stroke=0, fill=1)
         draw_scissors(c, cut_x, height / 2 + 1 * mm)
-        c.setFillColor(UMBER)
+        c.setFillColor(RED if reserved else UMBER)
         c.setFont(FONT_BOLD, 5.8)
         c.drawCentredString(cut_x, height / 2 - 3 * mm, "HIER SCHNEIDEN")
         c.showPage()
@@ -1146,7 +1156,14 @@ def main() -> None:
     draw_map(OUTPUT / "01_Karte_SL.pdf", gm=True)
     draw_mine_plan(OUTPUT / "01_Grubenplan_H08.pdf", gm=False)
     draw_mine_plan(OUTPUT / "01_Grubenplan_SL.pdf", gm=True)
-    build_handouts(OUTPUT / "02_Handouts.pdf")
+    build_handouts(OUTPUT / "02_Handouts.pdf", ["H01", "H03", "H04", "H05", "H06", "H07", "H08", "H09"])
+    build_handouts(
+        OUTPUT / "13_SL_Spoiler-Handouts.pdf",
+        ["H10", "H11"],
+        heading="Krähenfels · SL-Reservierung",
+        instruction="SPOILER-HANDOUTS · ERST ZUM PASSENDEN MOMENT AUSTEILEN",
+        reserved=True,
+    )
     build_character_sheet(OUTPUT / "03_Figurenbau.pdf")
     build_start_pdf(OUTPUT / "00_Spielstart.pdf")
     build_sl_adventure(OUTPUT / "10_SL_Abenteuer.pdf")
