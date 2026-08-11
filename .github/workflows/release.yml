@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install XcodeGen
-        run: brew install xcodegen
+        run: HOMEBREW_NO_REQUIRE_TAP_TRUST=1 brew install xcodegen
       - name: Generate project
         run: cd app && xcodegen generate
       - name: Resolve release tag

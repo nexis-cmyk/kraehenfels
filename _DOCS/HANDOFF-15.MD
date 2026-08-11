@@ -16,3 +16,5 @@
 ## Nächster iPhone-Build
 
 Die Swift-Dateien liegen unter `app/Kraehenfels/` und werden von XcodeGen automatisch aufgenommen. Ein neuer IPA-Release braucht einen macOS-GitHub-Action-Lauf oder einen Tag über den vorhandenen Workflow.
+
+Die iOS-Action lief nach dem Fast-forward auf `main` erstmals wieder an. Ihr erster Fehler lag vor dem Swift-Build: Homebrew verweigerte das Installieren von XcodeGen wegen der Tap-Trust-Abfrage. Beide iOS-Workflows setzen deshalb jetzt für diesen einen Installationsbefehl `HOMEBREW_NO_REQUIRE_TAP_TRUST=1`.
