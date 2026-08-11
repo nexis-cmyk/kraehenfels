@@ -19,7 +19,7 @@ Die Swift-Dateien liegen unter `app/Kraehenfels/` und werden von XcodeGen automa
 
 Die iOS-Action lief nach dem Fast-forward auf `main` erstmals wieder an. Ihr erster Fehler lag vor dem Swift-Build: Homebrew verweigerte das Installieren von XcodeGen wegen der Tap-Trust-Abfrage. Beide iOS-Workflows setzen deshalb jetzt für diesen einen Installationsbefehl `HOMEBREW_NO_REQUIRE_TAP_TRUST=1`. Der reguläre Check kompiliert die iPhone-App mit dem Simulator-SDK, startet aber keinen Simulator. So prüft er die Swift-Quellen verlässlich, ohne an einem Simulatorstart hängen zu bleiben.
 
-Die Web-Testversion wird über `.github/workflows/pages.yml` nach GitHub Pages veröffentlicht. Die erwartete Adresse lautet `https://nexis-cmyk.github.io/kraehenfels/`.
+Die Web-Testversion wird über `.github/workflows/pages.yml` nach GitHub Pages veröffentlicht. Die erwartete Adresse lautet `https://nexis-cmyk.github.io/kraehenfels/`. Das Repository hatte Pages zuvor nicht aktiviert, und der GitHub-Token darf diese Einstellung nicht selbst setzen. Ein Eigentümer muss daher einmal in **Settings → Pages → Build and deployment** als Quelle **GitHub Actions** auswählen und speichern. Der nächste Push auf `main` startet die Veröffentlichung dann automatisch.
 
 ## Release 2.0.5
 

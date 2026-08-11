@@ -78,7 +78,7 @@ Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.z
 
 Die Browser-Version lässt sich vor dem Sideloaden lokal testen. Sie verwendet dieselben Szenen, NPCs, Handouts und Audiodateien wie die iPhone-App. Die genaue Startanleitung steht in [`web/README.md`](web/README.md).
 
-Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `https://nexis-cmyk.github.io/kraehenfels/`. Dort kannst du sie unterwegs als Web-App ausprobieren.
+Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `https://nexis-cmyk.github.io/kraehenfels/`. Dafür muss Pages einmal im Repository freigeschaltet werden: **Settings → Pages → Build and deployment → Source: GitHub Actions → Save**. Danach kannst du sie unterwegs als Web-App ausprobieren.
 
 ## Audio
 
