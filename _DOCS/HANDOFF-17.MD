@@ -22,4 +22,4 @@ Die Spielleitung setzt ihn bewusst selbst. Der Stand startet keine Szenen, verä
 
 ## Prüfung und Release
 
-`python tools/build_web_preview.py`, `python tools/validate_project.py` und `node --check web/js/app.js` sind erfolgreich. Vor dem Tag `v2.0.7` muss der iOS-Compile-Check auf GitHub erfolgreich sein; danach die erzeugte IPA herunterladen und `altstore/source.json` mit realer Größe und SHA-256 aktualisieren.
+`python tools/build_web_preview.py`, `python tools/validate_project.py` und `node --check web/js/app.js` sind erfolgreich. Der iOS-Compile-Check und Release-Workflow für Tag `v2.0.7` sind erfolgreich. Die veröffentlichte IPA ist geprüft: `66069214` Bytes, SHA-256 `2c14c2eb07a30ac730132046db548c4fab9ef37e9c71e3a07c7dfe84afe96e1e`. `altstore/source.json` verweist auf genau diese Datei.
