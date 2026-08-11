@@ -31,6 +31,6 @@ node --check web/js/app.js
 
 Die PDF-Stichproben `00_Spielstart.pdf`, `01_Karte_Spieler.pdf`, `02_Handouts.pdf` und `10_SL_Abenteuer.pdf` wurden mit Poppler gerendert und visuell geprüft. Die Handouts verwenden gestrichelte Außenlinien und eigene layoutspezifische Beweisstücke.
 
-## Nächster Schritt auf macOS
+## Release-Abschluss
 
-Auf macOS mit XcodeGen das Projekt aus `app/project.yml` erzeugen und den iOS-Test ausführen. Danach kann ein Release-Tag `v3.0.0` den bestehenden GitHub-Workflow für IPA und AltStore-Feed anstoßen. Vor dem Sideload die App-Version im Feed auf den neuen Release-Tag prüfen.
+Der Tag `v3.0.0` wurde veröffentlicht. Der macOS-GitHub-Workflow hat die unsignierte `Kraehenfels.ipa` und `source.generated.json` erzeugt; die IPA ist 108140877 Bytes groß und hat SHA-256 `c30c4b5019570f1a50e37b8837afdb1d721f0acd5d9922c88a463d4e1e176907`. GitHub Pages ist auf GitHub Actions gestellt und der öffentliche Web-Leitstand unter `https://nexis-cmyk.github.io/kraehenfels/` erreichbar. Vor dem Sideload den Release-Feed in AltStore aktualisieren.

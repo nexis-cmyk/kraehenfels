@@ -14,7 +14,7 @@ Das Repository enthält:
 
 ## iPhone-Build und AltStore
 
-Die V3-Projektdatei und der AltStore-Feed sind vorbereitet. Der IPA-Build läuft auf macOS über den GitHub-Workflow; bis dieser abgeschlossen ist, bleibt der letzte öffentliche IPA-Release `v2.0.7`.
+Der V3-IPA-Build ist erfolgreich über macOS/GitHub Actions veröffentlicht. Release `v3.0.0` enthält die unsignierte IPA und den ausgefüllten AltStore-Feed.
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
 - [Release-Übersicht](https://github.com/nexis-cmyk/kraehenfels/releases)
