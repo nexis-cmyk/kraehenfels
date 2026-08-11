@@ -135,7 +135,7 @@ Wenn die Spieler keine Idee haben, fragt Rosa sie, ob sie lieber den Klöppel ze
 
 ### S08: Die letzte Strophe
 
-Um Mitternacht beginnt der Glockenklöppel zu schwingen. Die Temperatur fällt. SFX18 startet. Von diesem Moment an kann die Gruppe noch handeln, aber jede lange Diskussion lässt den Widerhall eine neue Stimme lernen.
+Um Mitternacht beginnt der Glockenklöppel zu schwingen. Die Temperatur fällt. Starte das Finale-Preset erst, wenn die Gruppe ihren Weg gewählt hat. Von diesem Moment an kann sie noch handeln, aber jede lange Diskussion lässt den Widerhall eine neue Stimme lernen.
 
 #### Ende A: Elisabeths Gegenlied
 
@@ -143,7 +143,7 @@ Die Gruppe benutzt H06 und H10. Eine Figur singt, summt oder klopft die Gegenmel
 
 Es ist kein Gesangstalent nötig. Beschreibt den Versuch und lasst höchstens eine passende Probe auf Wissen, Handeln oder Soziales zu. Bei einem Erfolg bricht der Widerhall auseinander. Bei einem Fehlschlag lernt er die Stimme einer Figur und die Gruppe darf es ein zweites Mal versuchen.
 
-Spielt M04 leise, SFX19 während des Versuchs und SFX21 beim Erfolg. Elisabeth erhält für einen Moment ihre eigene Stimme zurück und sagt: "Jetzt weißt du, wer ich war."
+Spielt M05 nur während des Versuchs und SFX20 in dem Moment, in dem der Widerhall bricht. Elisabeth erhält für einen Moment ihre eigene Stimme zurück und sagt: "Jetzt weißt du, wer ich war."
 
 #### Ende B: Die Grube fluten
 
@@ -151,7 +151,7 @@ Die Gruppe öffnet den Flutstollen nach H08. Dafür braucht sie eine körperlich
 
 Wasser stürzt in den Hohlraum. Der Widerhall ruft mit den Stimmen der Figuren und versucht, sie in die Kammer zu locken. Wenn sie widerstehen, verschwindet die Stimme. Die Mühle und die unteren Felder werden beschädigt, Krähenfels bleibt bewohnbar.
 
-Spielt M05 und SFX20. Beim Einsturz SFX21, aber nur gedämpft. Elisabeth bleibt verschwunden. Niemand weiß, ob sie frei ist.
+Spielt M05 und SFX20 beim Einsturz. Elisabeth bleibt verschwunden. Niemand weiß, ob sie frei ist.
 
 #### Ende C: Den Resonanzweg kappen
 
@@ -159,13 +159,13 @@ Die Gruppe bringt den Klöppel zu Emil und hält die Schmiede während des Einsc
 
 Bei einer gelungenen Probe auf Selbstbeherrschung oder Soziales hält die Gruppe die Stille. Bei einem Fehlschlag bricht jemand kurz das Schweigen, aber Emil kann weiterarbeiten. Das Wesen bleibt eingeschlossen. Elisabeth bleibt als stumme Wächterin zurück.
 
-Spielt M05 sehr leise, dann SFX22 bei einem Fehlschlag oder SFX21 beim Abschluss.
+Spielt M05 sehr leise. Beim Abschluss SFX20 einmal auslösen; bei einem Fehlschlag die Musik stattdessen abrupt stoppen.
 
 ### S09: Tauwetter
 
 Bei Ende A wird Elisabeths Name wieder in das Kirchenbuch geschrieben. Bei Ende B bleibt die Grube geschlossen und die Mühle beschädigt. Bei Ende C hängt an der Schmiede ein Stück weißer Stoff, obwohl niemand es dort abgelegt hat.
 
-Spielt M06. Lass jede Figur in einem Satz sagen, was sie Freiburg später erzählen wird. Dann endet das Abenteuer.
+Lass nach dem Finale bewusst Stille. Jede Figur sagt in einem Satz, was sie Freiburg später erzählen wird. Dann endet das Abenteuer.
 
 ## NSC-Karten
 

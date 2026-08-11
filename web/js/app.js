@@ -137,6 +137,18 @@ function render() {
   const handouts = scene.handoutIds.map(handoutById).filter(Boolean);
   const checklistCount = scene.checklist.filter((_, index) => state.checklist.has(`${scene.id}-${index}`)).length;
   const nextScene = scene.nextSceneIds[0] ? sceneById(scene.nextSceneIds[0]) : null;
+  const soundboard = cues.length ? `
+    <section class="soundboard" aria-labelledby="soundboard-title">
+      <div class="section-heading soundboard-heading"><div><h2 id="soundboard-title">Soundboard</h2><p>Preset für die Stimmung. Effekte bleiben bewusst einzeln.</p></div><button class="button button-primary" data-action="preset" type="button">Szene starten</button></div>
+      <div class="audio-mix" aria-label="Lautstärken">
+        ${[["master", "Gesamt"], ["ambient", "Atmosphäre"], ["music", "Musik"], ["sfx", "Effekte"]].map(([key, label]) => `<label>${label}<input data-volume="${key}" type="range" min="0" max="1" step="0.01" value="${audio.settings[key]}"></label>`).join("")}
+      </div>
+      <div class="cue-list">${cues.map(renderCue).join("")}</div>
+    </section>` : `
+    <section class="soundboard soundboard--silent" aria-labelledby="soundboard-title">
+      <div class="section-heading"><div><h2 id="soundboard-title">Soundboard</h2><p>Der letzte Cue ist die Stille.</p></div></div>
+      <p class="quiet-copy">Für den Epilog keine neue Tonspur starten. Lass nach der Entscheidung einen Moment Raum, bevor ihr erzählt, was von Krähenfels bleibt.</p>
+    </section>`;
 
   renderNavigation();
   app.innerHTML = `
@@ -181,13 +193,7 @@ function render() {
       <div class="npc-list">${npcs.length ? npcs.map(renderNPC).join("") : `<p class="quiet-copy">Die Weiße Frau reagiert auf die Gruppe und spricht nicht mit Worten.</p>`}</div>
     </section>
 
-    <section class="soundboard" aria-labelledby="soundboard-title">
-      <div class="section-heading soundboard-heading"><div><h2 id="soundboard-title">Soundboard</h2><p>Preset für die Stimmung. Effekte bleiben bewusst einzeln.</p></div><button class="button button-primary" data-action="preset" type="button">Szene starten</button></div>
-      <div class="audio-mix" aria-label="Lautstärken">
-        ${[["master", "Gesamt"], ["ambient", "Atmosphäre"], ["music", "Musik"], ["sfx", "Effekte"]].map(([key, label]) => `<label>${label}<input data-volume="${key}" type="range" min="0" max="1" step="0.01" value="${audio.settings[key]}"></label>`).join("")}
-      </div>
-      <div class="cue-list">${cues.map(renderCue).join("")}</div>
-    </section>
+    ${soundboard}
 
     <div class="content-grid lower-grid">
       <section class="content-section handout-section">

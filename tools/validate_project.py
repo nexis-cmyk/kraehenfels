@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import sys
+from hashlib import sha256
 from pathlib import Path
 
 from pypdf import PdfReader
@@ -82,6 +83,17 @@ def main() -> None:
         fallback = cue.get("printFallbackId")
         if cue.get("isClue") and fallback not in handout_ids:
             fail(f"Clue {cue['id']} has invalid printed fallback")
+
+    cues_by_id = {cue["id"]: cue for cue in cues}
+    for scene in scenes:
+        seen_fingerprints: dict[str, str] = {}
+        for cue_id in scene["audioCueIds"]:
+            cue = cues_by_id[cue_id]
+            fingerprint = sha256((bundled / cue["file"]).read_bytes()).hexdigest()
+            duplicate_of = seen_fingerprints.get(fingerprint)
+            if duplicate_of:
+                fail(f"{scene['id']} exposes duplicate audio resources: {duplicate_of} and {cue_id}")
+            seen_fingerprints[fingerprint] = cue_id
 
     for name in ("01_Karte_Spieler.pdf", "01_Karte_SL.pdf", "01_Grubenplan_H08.pdf", "01_Grubenplan_SL.pdf", "02_Handouts.pdf", "03_Figurenbau.pdf", "10_SL_Abenteuer.pdf", "11_SL_Schnellreferenz.pdf", "12_SL_Am_Tisch.pdf", "13_SL_Spoiler-Handouts.pdf", "14_Soundboard-Cues.pdf"):
         path = ROOT / "outputs" / name

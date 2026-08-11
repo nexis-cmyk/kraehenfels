@@ -82,7 +82,7 @@ Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `h
 
 ## Audio
 
-Das Soundboard nutzt ein bewusst kleines, tischpraktisches Set: fünf Atmosphären, ein Musikstück und zwölf Effekte. Die Quellclips liegen nur temporär unter `_TMP/mixkit_audio/`. `tools/build_mixkit_simple_pack.py` schneidet und kombiniert sie zu den 18 Dateien unter `audio/mixkit_simple_pack/`. Der Import verteilt diese danach auf alle 46 technischen Cue-Dateien für App und Web-Testversion. Die vollständige Quellenliste steht in [`_DOCS/AUDIO-SOURCES.md`](_DOCS/AUDIO-SOURCES.md).
+Das Soundboard nutzt ein bewusst kleines, tischpraktisches Set: fünf Atmosphären, ein Musikstück und zwölf Effekte. Die Quellclips liegen nur temporär unter `_TMP/mixkit_audio/`. `tools/build_mixkit_simple_pack.py` schneidet und kombiniert sie zu den 18 Dateien unter `audio/mixkit_simple_pack/`. Der Import verteilt diese danach auf alle 46 technischen Cue-Dateien für App und Web-Testversion. Im Leitstand erscheint je Szene jedoch nur eine hörbar unterschiedliche Auswahl; doppelte und stumme Platzhalter bleiben unsichtbar. Die vollständige Quellenliste steht in [`_DOCS/AUDIO-SOURCES.md`](_DOCS/AUDIO-SOURCES.md).
 
 Wenn du später eigene oder KI-generierte Dateien einsetzen möchtest, geht das weiterhin. Der Master-Prompt liegt in [`_DOCS/AUDIO-REBUILD-MASTER-PROMPT.md`](_DOCS/AUDIO-REBUILD-MASTER-PROMPT.md), die Namen des kleinen Ersatzsets in [`_DOCS/AUDIO-SIMPLE-PACK.md`](_DOCS/AUDIO-SIMPLE-PACK.md).
 

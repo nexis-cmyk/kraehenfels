@@ -283,24 +283,31 @@ struct SceneDetailView: View {
 
     private var audioPanel: some View {
         VStack(alignment: .leading, spacing: 11) {
-            HStack {
+            if content.cues(for: scene).isEmpty {
                 SectionLabel(title: "Soundboard")
-                Spacer()
-                Button {
-                    audio.playPreset(content.cues(for: scene))
-                } label: {
-                    Label("Preset", systemImage: "play.fill")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(FrostTheme.frost)
+                Label("Epilog: Nach dem Finale bewusst Stille lassen.", systemImage: "speaker.slash.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(FrostTheme.quiet)
+            } else {
+                HStack {
+                    SectionLabel(title: "Soundboard")
+                    Spacer()
+                    Button {
+                        audio.playPreset(content.cues(for: scene))
+                    } label: {
+                        Label("Preset", systemImage: "play.fill")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(FrostTheme.frost)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(FrostTheme.cobalt.opacity(0.8))
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(FrostTheme.cobalt.opacity(0.8))
-            }
-            Text(audio.sessionStatus)
-                .font(.caption)
-                .foregroundStyle(FrostTheme.quiet)
-            ForEach(content.cues(for: scene)) { cue in
-                CueRow(cue: cue)
+                Text(audio.sessionStatus)
+                    .font(.caption)
+                    .foregroundStyle(FrostTheme.quiet)
+                ForEach(content.cues(for: scene)) { cue in
+                    CueRow(cue: cue)
+                }
             }
             if let error = audio.lastError {
                 Label(error, systemImage: "exclamationmark.triangle.fill")

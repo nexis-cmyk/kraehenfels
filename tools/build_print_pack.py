@@ -1049,14 +1049,15 @@ def build_start_pdf(path: Path) -> None:
 def build_soundboard_cues(path: Path) -> None:
     rows = [[p(text, styles["TableHeader"]) for text in ["Cue", "Wann", "Bedienung", "Fallback am Tisch"]]]
     cue_rows = [
-        ("A01", "Kutschenpanne", "Loop leise, SFX01 beim Bruch", "Wind beschreiben, dann Holzknacken"),
-        ("A03 / A04", "Dorf / Wirtshaus", "Atmosphäre wechseln, keine Musik nötig", "Stimmen absenken und Pausen setzen"),
-        ("A06 / SFX08", "Kirche", "Glocke normal, dann falscher Ton", "3 – 1 – 2 – 4 auf Tisch klopfen"),
-        ("A07 / SFX13", "Grube", "Wind, Stimmen ohne Worte, Boden", "Sätze der Spieler verzögert wiederholen"),
-        ("A09 / SFX26 / SFX27", "Flutstollen", "Grubenluft legen, Wasser und Echo-Schritte nur bei Bedarf", "Wassertropfen oder Fingertippen im Abstand wiederholen"),
-        ("A05 / M03", "Weiße Frau", "Musik erst nach der Stille starten", "Zwei hohe fallende Töne summen"),
-        ("A08 / A10 / M04 / M05", "Finale", "Frostspannung darunter, M04 nur einmal; SFX31 beim Bruch", "Liedblatt H06 sichtbar in die Mitte legen"),
-        ("M06", "Epilog", "Einmal abspielen, danach Stille", "Fenster öffnen oder Wasser einschenken"),
+        ("A01 / SFX01", "Kutschenpanne", "Wind leise legen, Achse erst beim Bruch auslösen", "Wind beschreiben, dann Holzknacken"),
+        ("A04 / SFX23", "Dorf / Wirtshaus", "Nur die Wirtsstube legen; Fensterladen als kurzen Akzent", "Stimmen absenken und Pausen setzen"),
+        ("A06 / SFX07 / SFX08", "Kirche", "Kapelle leise, dann Glocke normal und ein falscher Ton", "3 – 1 – 2 – 4 auf Tisch klopfen"),
+        ("A03 / SFX10", "Schmiede", "Dorfluft unterlegen, Metallvibration nur beim Klöppel", "Einmal mit einem Löffel ans Glas tippen"),
+        ("A09 / SFX11–14", "Grube", "Grubenluft legen; einzelne Schritte, Stimmen oder Schläge nur als Reaktion", "Sätze der Spieler verzögert wiederholen"),
+        ("A05 / SFX15–17", "Weiße Frau", "Erst Stille, dann einen einzelnen Atem-, Motiv- oder Klöppelton", "Zwei hohe fallende Töne summen"),
+        ("SFX18 / SFX29", "Vor Mitternacht", "Frost oder Resonanz nur setzen, wenn die Hinweise zusammenfallen", "Ein Glas kurz anreiben und danach still sein"),
+        ("A08 / M05 / SFX20", "Finale", "Froststurm leise; Musik nur für die Entscheidung, Eisbruch als Abschluss", "Liedblatt H06 sichtbar in die Mitte legen"),
+        ("–", "Epilog", "Keine neue Tonspur: Nach dem Finale bewusst Stille lassen", "Fenster öffnen oder Wasser einschenken"),
     ]
     for row in cue_rows:
         rows.append([p(cell, styles["KSmall"]) for cell in row])
@@ -1099,11 +1100,11 @@ def build_at_table_reference(path: Path) -> None:
         ("S02 Dorf", "H02/H03 · C03", "Rosa oder Jakob bietet einen Ort an", "Preset Dorf · SFX23", "1"),
         ("S03 Kirche", "H04/H06 · C04/C05", "Martin zählt 3-1-2-4", "Preset Kirche · SFX08", "2"),
         ("S04 Schmiede", "H07 · C06", "Klöppel vibriert am Amboss", "Preset Schmiede · SFX10", "2"),
-        ("S05 Grube", "H08/H09 · C07/C08", "Klopfen antwortet auf drei Schläge", "Preset Grube · A09/SFX26", "3"),
+        ("S05 Grube", "H08/H09 · C07/C08", "Klopfen antwortet auf drei Schläge", "Preset Grube · A09/SFX14", "3"),
         ("S06 Erscheinung", "H05 · C09", "Hand zeigt auf Turm und Klöppel", "Preset Erscheinung · SFX16", "4"),
-        ("S07 Wahrheit", "H10 · C10/C11", "Drei Finale nennen", "Preset Wahrheit · M03", "4"),
-        ("S08 Finale", "H11 · alle Kernspuren", "Ein Preis, kein Sackgassenwurf", "Preset Finale · SFX31", "5"),
-        ("S09 Epilog", "Folgen der Wahl", "Jede Figur bekommt einen Nachhall", "M06, dann Stille", "0"),
+        ("S07 Wahrheit", "H10 · C10/C11", "Drei Finale nennen", "Frost / Resonanz · SFX18", "4"),
+        ("S08 Finale", "H11 · alle Kernspuren", "Ein Preis, kein Sackgassenwurf", "Preset Finale · M05/SFX20", "5"),
+        ("S09 Epilog", "Folgen der Wahl", "Jede Figur bekommt einen Nachhall", "Bewusst still", "0"),
     ]
     for row in reference_rows:
         rows.append([p(cell, styles["KSmall"]) for cell in row])

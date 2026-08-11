@@ -10,7 +10,7 @@ Ich wuerde fuer die erste Runde dieses Set nehmen:
 - 1 leises Hintergrundthema
 - 12 starke Effektknoepfe
 
-Die App kann technisch weiter alle 46 Cue-Dateien haben. Im Simple-Pack-Modus werden mehrere App-Dateien aus denselben guten Quellen gebaut. Unwichtige Knoepfe werden stillgelegt, damit keine alten Platzhalter mehr stoeren.
+Die App kann technisch weiter alle 46 Cue-Dateien haben. Im Simple-Pack-Modus werden mehrere App-Dateien aus denselben guten Quellen gebaut. Der Leitstand zeigt jedoch nur einen Vertreter je hörbarer Funktion. Unwichtige, stumme oder doppelte Knöpfe bleiben aus den Szenen heraus, damit keine alten Platzhalter stören.
 
 ## Was du wirklich brauchst
 
