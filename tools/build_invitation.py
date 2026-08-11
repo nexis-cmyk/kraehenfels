@@ -25,7 +25,7 @@ from reportlab.pdfgen import canvas
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "outputs"
 OUTPUT.mkdir(exist_ok=True)
-BACKGROUND = ROOT / "print" / "assets" / "einladung-kraehenfels-bg.png"
+BACKGROUND = ROOT / "print" / "assets" / "scene-v3-coach.png"
 PDF_PATH = OUTPUT / "Einladung_Kraehenfels.pdf"
 
 
@@ -131,7 +131,7 @@ def build_invitation() -> Path:
 
     width, height = A4
     c = canvas.Canvas(str(PDF_PATH), pagesize=A4)
-    c.setTitle("Einladung - Die Weiße Frau schweigt")
+    c.setTitle("Einladung - Krähenfels: Die letzte Kutsche")
     c.setAuthor("Kraehenfels Spielleitung")
 
     draw_cover_image(c, BACKGROUND, width, height)
@@ -237,7 +237,7 @@ def build_invitation() -> Path:
 
     current = draw_para(c, "EINLADUNG", inner_x, current, inner_width, kicker_style)
     current -= 2.4 * mm
-    current = draw_para(c, "DIE WEISSE FRAU SCHWEIGT", inner_x, current, inner_width - 15 * mm, title_style)
+    current = draw_para(c, "DIE LETZTE KUTSCHE", inner_x, current, inner_width - 15 * mm, title_style)
     current -= 1.5 * mm
     current = draw_para(c, "Ein Folk-Horror-Abenteuer für <i>How to be a Hero</i>", inner_x, current, inner_width, sub_style)
     current -= 4.5 * mm
@@ -247,12 +247,12 @@ def build_invitation() -> Path:
     current = draw_para(
         c,
         "<b>Krähenfels, Schwarzwald - November 1890</b><br/><br/>"
-        "Eine Kutsche bleibt im Schnee stecken. Vor euch liegt ein Dorf, das zu viel verschweigt: "
-        "eine Glocke, die seit Jahrzehnten stumm sein sollte, ein verschlossener Grubenweg "
-        "und eine Frau in Weiß, die niemand sprechen hört.<br/><br/>"
+        "Eine Kutsche bleibt im Schnee stecken. Vor euch liegt ein Dorf, das zu freundlich wirkt: "
+        "ein warmer Gasthof, ein Gästebuch mit roten Strichen und eine Alte Eiche, die niemand "
+        "bei Nacht betreten will.<br/><br/>"
         "Ihr seid drei Reisende. Was als unfreiwillige Nacht in Krähenfels beginnt, führt euch "
-        "zu einem alten Pakt, einer falschen Glocke und einer Entscheidung, die das Dorf "
-        "nicht vergessen wird.",
+        "zu einer manipulierten Fahrt, einem verdrehten Gastrecht und einer Entscheidung, "
+        "die das Dorf nicht vergessen wird.",
         inner_x,
         current,
         inner_width,
@@ -344,7 +344,7 @@ def build_invitation() -> Path:
 
     c.setFont(FONT_BOLD, 7.2)
     c.setFillColor(RED)
-    c.drawCentredString(width / 2, panel_y + 7 * mm, "KRÄHENFELS  /  DIE WEISSE FRAU SCHWEIGT")
+    c.drawCentredString(width / 2, panel_y + 7 * mm, "KRÄHENFELS  /  DIE LETZTE KUTSCHE")
     c.showPage()
     c.save()
     return PDF_PATH

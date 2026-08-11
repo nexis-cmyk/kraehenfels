@@ -58,7 +58,7 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
             title: "Audio-Selbsttest",
             scene: "",
             category: "sfx",
-            file: "SFX07_Glocke_normal.wav",
+            file: "V3_SFX05_Schmiedeschlag.wav",
             mode: "oneShot",
             gain: -0.05,
             fadeMs: 0,

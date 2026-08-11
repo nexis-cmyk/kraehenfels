@@ -1,6 +1,6 @@
 # AltStore-Feed
 
-Der fertige Feed liegt als [`source.json`](source.json) im Repository. Die aktuelle IPA ist Version 2.0.7; die Datei enthält Download-URL, Größe und SHA-256-Prüfsumme.
+Der Feed liegt als [`source.json`](source.json) im Repository. Die V3-Vorlage zeigt auf den Release-Tag `v3.0.0`; Größe und SHA-256 werden beim macOS-Release-Workflow in `source.generated.json` ergänzt. Bis der Workflow durchgelaufen ist, bleibt der letzte öffentliche IPA-Release `v2.0.7`.
 
 In AltStore Classic: `Sources` öffnen, `+` wählen und diese Feed-URL eintragen:
 

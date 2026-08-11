@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import shutil
 from pathlib import Path
 
@@ -26,10 +27,28 @@ def sync_directory(source: Path, target: Path, pattern: str) -> int:
     return count
 
 
+def sync_selected(source: Path, target: Path, names: set[str]) -> int:
+    target.mkdir(parents=True, exist_ok=True)
+    for stale in target.iterdir():
+        if stale.is_file() and stale.name not in names:
+            stale.unlink()
+    count = 0
+    for name in sorted(names):
+        source_file = source / name
+        if not source_file.exists():
+            raise FileNotFoundError(source_file)
+        sync_file(source_file, target / name)
+        count += 1
+    return count
+
+
 def main() -> None:
+    manifest = json.loads((ROOT / "content" / "manifest.json").read_text(encoding="utf-8"))
     sync_file(ROOT / "content" / "manifest.json", WEB / "data" / "manifest.json")
-    art_count = sync_directory(APP / "Art", WEB / "assets" / "art", "*.png")
-    audio_count = sync_directory(APP / "Audio", WEB / "assets" / "audio", "*")
+    art_names = {scene["art"] for scene in manifest["scenes"] if scene.get("art")}
+    audio_names = {cue["file"] for cue in manifest["audioCues"]}
+    art_count = sync_selected(APP / "Art", WEB / "assets" / "art", art_names)
+    audio_count = sync_selected(APP / "Audio", WEB / "assets" / "audio", audio_names)
     sync_file(ROOT / "altstore" / "icon.png", WEB / "assets" / "icon.png")
     print(f"Synced browser preview: {art_count} artwork files and {audio_count} audio files")
 

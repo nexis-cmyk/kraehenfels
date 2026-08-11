@@ -1,316 +1,1362 @@
 {
   "meta": {
-    "title": "Die Weiße Frau schweigt",
+    "title": "Krähenfels: Die letzte Kutsche",
     "appTitle": "Krähenfels",
-    "subtitle": "SL-Begleiter für How to be a Hero",
+    "subtitle": "Spielleitstand für How to be a Hero",
     "system": "How to be a Hero",
     "setting": "Schwarzwald, November 1890",
     "language": "de",
-    "version": "2.0.7",
+    "version": "3.0.0",
     "minimumIOS": "17.0"
   },
+  "phases": [
+    {
+      "id": "P01",
+      "title": "Der Bruch",
+      "detail": "Manipulierte Kutsche, Schnee und der erste falsche Schutz.",
+      "symbol": "car.side.fill"
+    },
+    {
+      "id": "P02",
+      "title": "Das Dorf",
+      "detail": "Gasthaus, Kirche und Schmiede öffnen ihre Widersprüche.",
+      "symbol": "house.fill"
+    },
+    {
+      "id": "P03",
+      "title": "Die Spur",
+      "detail": "Namen, Buchseiten und der Weg zur Alten Eiche.",
+      "symbol": "magnifyingglass"
+    },
+    {
+      "id": "P04",
+      "title": "Der Ruf",
+      "detail": "Die Glocke schlägt. Das Dorf muss sich entscheiden.",
+      "symbol": "bell.and.waves.left.and.right.fill"
+    },
+    {
+      "id": "P05",
+      "title": "Der Morgen",
+      "detail": "Drei mögliche Enden und die Rechnung des Waldes.",
+      "symbol": "sunrise.fill"
+    }
+  ],
+  "travelHooks": [
+    {
+      "id": "T01",
+      "title": "Die verschwundene Person",
+      "prompt": "Eine Person aus deinem Umfeld verschwand auf derselben Strecke.",
+      "linkedClueIds": [
+        "C03"
+      ]
+    },
+    {
+      "id": "T02",
+      "title": "Der versiegelte Auftrag",
+      "prompt": "Du sollst einen verschlossenen Brief an Bürgermeister Gruber übergeben.",
+      "linkedClueIds": [
+        "C02",
+        "C06"
+      ]
+    },
+    {
+      "id": "T03",
+      "title": "Der bekannte Name",
+      "prompt": "Du erkennst später einen Namen im Gästebuch, den du aus einem früheren Fall kennst.",
+      "linkedClueIds": [
+        "C03",
+        "C04"
+      ]
+    }
+  ],
+  "threatLevels": [
+    {
+      "level": 0,
+      "title": "Willkommen",
+      "detail": "Die Gruppe ist noch Gast.",
+      "trigger": "Die Kutsche erreicht die Dorfstraße."
+    },
+    {
+      "level": 1,
+      "title": "Beobachtet",
+      "detail": "Ein Fenster bleibt offen, obwohl niemand darin steht.",
+      "trigger": "Die Gruppe fragt nach früheren Reisenden."
+    },
+    {
+      "level": 2,
+      "title": "Eingeschlossen",
+      "detail": "Die Zimmer werden von außen verriegelt.",
+      "trigger": "Ein Pflichtbeweis wird offen ausgesprochen."
+    },
+    {
+      "level": 3,
+      "title": "Abgeschnitten",
+      "detail": "Die Dorfbewohner blockieren den Rückweg.",
+      "trigger": "Die Gruppe verbindet Gruber mit dem Gästebuch."
+    },
+    {
+      "level": 4,
+      "title": "Masken",
+      "detail": "Am Waldrand beginnt eine Prozession.",
+      "trigger": "Die Kinderzeichnung oder das Ritualfragment wird gefunden."
+    },
+    {
+      "level": 5,
+      "title": "Vor dem Morgen",
+      "detail": "Der Knochenhirsch steht an der Alten Eiche.",
+      "trigger": "Die Gruppe betritt das Waldheiligtum."
+    }
+  ],
+  "facts": [
+    {
+      "id": "F01",
+      "title": "Die Panne war geplant",
+      "details": "Die Kutsche wurde auf Grubers Umleitung gelenkt und an der Achse beschädigt.",
+      "clueIds": [
+        "C01",
+        "C02"
+      ],
+      "fallback": "Die Achse zeigt frische, gerade Kerben. Gruber kennt die genaue Ankunftszeit."
+    },
+    {
+      "id": "F02",
+      "title": "Gäste verschwinden",
+      "details": "Frühere Reisende wurden als Gäste aufgenommen und kamen nicht wieder heraus.",
+      "clueIds": [
+        "C03",
+        "C04"
+      ],
+      "fallback": "Elara nennt einen Namen, der im Gästebuch durchgestrichen wurde."
+    },
+    {
+      "id": "F03",
+      "title": "Das Gastrecht war der Schutz",
+      "details": "Der alte Pakt verlangte, jeden Reisenden bis zum Morgen zu schützen.",
+      "clueIds": [
+        "C05",
+        "C09"
+      ],
+      "fallback": "Pfarrer Falk zeigt die Zeile: Ein Gast unter Dach gehört bis zum Hahnenschrei zum Dorf."
+    },
+    {
+      "id": "F04",
+      "title": "Gruber verdrehte den Pakt",
+      "details": "Gruber bindet den Geist mit einer Geweihreliquie und bezahlt für zusätzlichen Schutz mit Leben.",
+      "clueIds": [
+        "C06",
+        "C07",
+        "C08"
+      ],
+      "fallback": "Die Buchhaltung und die Zeichnung nennen beide dieselbe Nacht und dasselbe Geweih."
+    },
+    {
+      "id": "F05",
+      "title": "Der Pakt hat drei Auswege",
+      "details": "Die Gruppe kann das Dorf zum Widerruf bringen, das Gastrecht heilen oder die Bindung zerstören.",
+      "clueIds": [
+        "C09",
+        "C10",
+        "C11"
+      ],
+      "fallback": "Elias kennt drei Wörter: öffnen, erinnern, brechen."
+    }
+  ],
+  "endings": [
+    {
+      "id": "E01",
+      "title": "Öffentlicher Widerruf",
+      "summary": "Das Dorf verweigert Gruber die Opferung.",
+      "requiredFactIds": [
+        "F02",
+        "F03",
+        "F04"
+      ],
+      "cost": "Der übernatürliche Winterschutz erlischt."
+    },
+    {
+      "id": "E02",
+      "title": "Das Gastrecht erneuern",
+      "summary": "Die Namen der Gäste werden an der Alten Eiche zurückgegeben.",
+      "requiredFactIds": [
+        "F03",
+        "F05"
+      ],
+      "cost": "Krähenfels bleibt geschützt und muss seine Schuld offen tragen."
+    },
+    {
+      "id": "E03",
+      "title": "Die Bindung zerstören",
+      "summary": "Altes Schmiedeeisen und Feuer vernichten Reliquie und Knochenhirsch.",
+      "requiredFactIds": [
+        "F04",
+        "F05"
+      ],
+      "cost": "Der Wald verliert seinen Schutz. Der Rückweg wird zum Kampf."
+    }
+  ],
+  "maps": [
+    {
+      "id": "MAP01",
+      "title": "Krähenfels, Übersicht",
+      "playerAsset": "map-v3-village-player.png",
+      "gmAsset": "map-v3-village-gm.png",
+      "spoiler": false
+    },
+    {
+      "id": "MAP02",
+      "title": "Gasthaus Zum schwarzen Keiler",
+      "playerAsset": "map-v3-inn-player.png",
+      "gmAsset": "map-v3-inn-gm.png",
+      "spoiler": false
+    },
+    {
+      "id": "MAP03",
+      "title": "Kirche und Friedhof",
+      "playerAsset": "map-v3-church-player.png",
+      "gmAsset": "map-v3-church-gm.png",
+      "spoiler": false
+    },
+    {
+      "id": "MAP04",
+      "title": "Alte Eiche",
+      "playerAsset": "map-v3-oak-player.png",
+      "gmAsset": "map-v3-oak-gm.png",
+      "spoiler": false
+    }
+  ],
   "npcs": [
     {
       "id": "N01",
-      "name": "Rosa Ketterer",
-      "role": "Wirtin der Krähe",
-      "description": "Pragmatisch, müde und die einzige Person im Dorf, die Fremde nicht sofort wegschickt.",
-      "knows": ["Das Schweigegebot gilt seit dem Unfall von 1848.", "Die Dorfbewohner fürchten die Glocke mehr als die Weiße Frau."],
-      "hides": ["Sie hat Elisabeths Brief aus dem Kirchenbuch genommen.", "Ihr Bruder war einer der Männer im Flutstollen."],
-      "givesHandoutIds": ["H03", "H10"],
-      "prompts": ["Streut Salz an die Türschwelle.", "Sagt erst etwas, wenn die Figuren die Glocke erwähnen."],
-      "cueIds": ["SFX05", "SFX06"]
+      "name": "Konrad Gruber",
+      "role": "Bürgermeister und Gastgeber",
+      "description": "Ein ruhiger Mann mit sauberem Mantel, warmer Stimme und der Gewohnheit, Türen selbst abzuschließen.",
+      "knows": [
+        "Die Kutsche wurde auf seine Umleitung gelenkt.",
+        "Die Alte Eiche steht auf altem Gemeindeland."
+      ],
+      "hides": [
+        "Er führt das Opferbuch.",
+        "Er trägt den Schlüssel zum Geweihschrein."
+      ],
+      "givesHandoutIds": [
+        "H01",
+        "H05"
+      ],
+      "prompts": [
+        "Lobt das Gastrecht, während er die Gästezimmer verriegelt.",
+        "Bietet Hilfe an, sobald die Gruppe zu viel über frühere Reisende weiß."
+      ],
+      "cueIds": [
+        "SFX03",
+        "SFX07"
+      ],
+      "states": [
+        "freundlich",
+        "prüfend",
+        "entlarvt"
+      ],
+      "portrait": "npc-gruber.png"
     },
     {
       "id": "N02",
-      "name": "Martin Hoch",
-      "role": "Pfarrer von Krähenfels",
-      "description": "Ein höflicher, ausgezehrter Pfarrer mit rußigen Fingern und einem Schlüsselbund am Gürtel.",
-      "knows": ["Die Schlagfolge lautet 3-1-2-4.", "Eine Seite im Kirchenbuch wurde absichtlich herausgerissen."],
-      "hides": ["Er hat die Glocke seit Jahren nicht mehr geläutet.", "Er glaubt, dass Elisabeth noch auf eine Antwort wartet."],
-      "givesHandoutIds": ["H04", "H06"],
-      "prompts": ["Zählt beim Reden unbewusst vier Schläge mit den Fingern.", "Wird beim Namen Elisabeth stumm."],
-      "cueIds": ["SFX07", "SFX08"]
+      "name": "Elara Voss",
+      "role": "Wirtin des schwarzen Keilers",
+      "description": "Sie kennt jeden Schritt im Haus und streut Salz an die Schwelle, wenn niemand hinsieht.",
+      "knows": [
+        "Das Gästebuch enthält echte Namen.",
+        "Gruber lässt die Türen nach Mitternacht verriegeln."
+      ],
+      "hides": [
+        "Sie hat einmal einen Gast versteckt.",
+        "Leni soll bei der ersten Prozession nicht aus dem Fenster sehen."
+      ],
+      "givesHandoutIds": [
+        "H03",
+        "H08"
+      ],
+      "prompts": [
+        "Antwortet erst, wenn die Gruppe ihr eine Fluchtmöglichkeit anbietet.",
+        "Schiebt das Gästebuch in Reichweite, ohne es zu erklären."
+      ],
+      "cueIds": [
+        "A02",
+        "SFX03"
+      ],
+      "states": [
+        "ängstlich",
+        "wankend",
+        "verbündet"
+      ],
+      "portrait": "npc-elara.png"
     },
     {
       "id": "N03",
-      "name": "Emil Bopp",
-      "role": "Stellmacher und Schmied",
-      "description": "Breitschultrig, rußverschmiert und überzeugt, dass Metall Erinnerungen speichern kann.",
-      "knows": ["Die Kutschenachse brach nicht durch Frost.", "Der Klöppel enthält Eisen aus der alten Grube."],
-      "hides": ["Er hat den Klöppel vor der Auslieferung geprüft.", "Er fürchtet, dass sein Werk die Glocke geweckt hat."],
-      "givesHandoutIds": ["H07"],
-      "prompts": ["Lässt den Hammer sinken, sobald draußen ein Ton erklingt.", "Bietet den Figuren eine Zange an, aber keine Erklärung."],
-      "cueIds": ["SFX09", "SFX10"]
+      "name": "Elias Renk",
+      "role": "Holzschnitzer und ehemaliger Kulthelfer",
+      "description": "Er schnitzt Geweihe aus Abfallholz und wirkt verrückt, bis seine Details zu den Beweisen passen.",
+      "knows": [
+        "Der Geist war vor der ersten Opferung kein Monster.",
+        "Die Reliquie kann am Namen eines Eidbrechers zerbrechen."
+      ],
+      "hides": [
+        "Er hat den ersten Schlüssel für Gruber angefertigt.",
+        "Er fürchtet die Stimme seiner verstorbenen Schwester."
+      ],
+      "givesHandoutIds": [
+        "H08",
+        "H09"
+      ],
+      "prompts": [
+        "Sagt: Öffnen, erinnern, brechen.",
+        "Verwechselt absichtlich die Richtung zur Eiche, wenn Gruber in der Nähe ist."
+      ],
+      "cueIds": [
+        "SFX06",
+        "SFX08"
+      ],
+      "states": [
+        "ausweichend",
+        "offen",
+        "entschlossen"
+      ],
+      "portrait": "npc-elias.png"
     },
     {
       "id": "N04",
-      "name": "Lorenz Sauter",
-      "role": "Ehemaliger Grubensteiger",
-      "description": "Lebt am Waldrand, spricht langsam und hält eine alte Grubenlampe wie einen Talisman.",
-      "knows": ["Der Flutstollen liegt hinter dem eingestürzten Querschlag.", "Stimmen im Berg imitieren Verstorbene."],
-      "hides": ["Er hat 1848 die Tür zum Flutstollen verriegelt.", "Er hört Elisabeths Stimme noch immer im Wasser."],
-      "givesHandoutIds": ["H08", "H09"],
-      "prompts": ["Blickt bei jedem Knacken zur Tür.", "Warnt: Nicht antworten, wenn jemand aus dem Berg ruft."],
-      "cueIds": ["SFX13", "SFX14"]
+      "name": "Matthias Falk",
+      "role": "Pfarrer und Hüter des Kirchenbuchs",
+      "description": "Ein müder Pfarrer mit Tintenfingern, der eine ausgeschnittene Seite im Ärmel trägt.",
+      "knows": [
+        "Der ursprüngliche Pakt verlangte Schutz für Gäste.",
+        "Grubers Vater ließ die erste Seite entfernen."
+      ],
+      "hides": [
+        "Er hat jahrelang geschwiegen.",
+        "Er besitzt den zweiten Schlüssel zur Eiche."
+      ],
+      "givesHandoutIds": [
+        "H04"
+      ],
+      "prompts": [
+        "Liest die entscheidende Zeile erst, wenn jemand nach dem Sinn des Gastrechts fragt.",
+        "Sagt nicht, ob er Gruber anzeigen würde."
+      ],
+      "cueIds": [
+        "A04",
+        "SFX05"
+      ],
+      "states": [
+        "vorsichtig",
+        "beschämt",
+        "bereit"
+      ],
+      "portrait": "npc-falk.png"
     },
     {
       "id": "N05",
-      "name": "Jakob Rieger",
-      "role": "Kutscher der Postkutsche",
-      "description": "Erschöpft, nervös und der einzige Dorfbewohner, der die Fremden heimlich zum Wegweiser führt.",
-      "knows": ["Die Kiste wurde absichtlich auf diese Kutsche geladen.", "Vor Mitternacht wird die Straße gesperrt."],
-      "hides": ["Er hat den Kutscher im Wald gesehen.", "Er will mit den Figuren fliehen."],
-      "givesHandoutIds": ["H01", "H02"],
-      "prompts": ["Schaut immer wieder zum Waldrand.", "Flüstert den Namen Elisabeth, wenn die Glocke klingt."],
-      "cueIds": ["SFX02", "SFX03"]
+      "name": "Marta Kern",
+      "role": "Schmiedin",
+      "description": "Sie arbeitet schnell, spricht knapp und hält altes Eisen nicht für Aberglauben.",
+      "knows": [
+        "Die schwarze Geweihreliquie enthält drei handgeschmiedete Nägel.",
+        "Feuer kann die Bindung zerstören."
+      ],
+      "hides": [
+        "Sie hat den letzten Nagel für Gruber gefertigt.",
+        "Sie bewahrt eine Eisenstange für einen Aufstand auf."
+      ],
+      "givesHandoutIds": [
+        "H06"
+      ],
+      "prompts": [
+        "Schlägt einmal auf den Amboss, sobald Gruber erwähnt wird.",
+        "Verlangt eine klare Entscheidung, bevor sie das Eisen herausgibt."
+      ],
+      "cueIds": [
+        "A03",
+        "SFX05"
+      ],
+      "states": [
+        "kühl",
+        "prüfend",
+        "helfend"
+      ],
+      "portrait": "npc-marta.png"
+    },
+    {
+      "id": "N06",
+      "name": "Leni Voss",
+      "role": "Zeugin",
+      "description": "Elaras Nichte beobachtet das Dorf aus dem Dachfenster und zeichnet Dinge, die Erwachsene nicht aussprechen.",
+      "knows": [
+        "Die Masken gehen nicht zur Kirche, sondern zur Eiche.",
+        "Gruber trägt nachts ein Geweihstück."
+      ],
+      "hides": [
+        "Sie hat eine Seite aus Grubers Buch gestohlen.",
+        "Sie glaubt, ihre Mutter sei noch im Wald."
+      ],
+      "givesHandoutIds": [
+        "H07"
+      ],
+      "prompts": [
+        "Gibt die Zeichnung nur einer Figur, die sie ernst nimmt.",
+        "Bleibt außer Gefahr und wird nie allein zum Wald geschickt."
+      ],
+      "cueIds": [
+        "SFX07"
+      ],
+      "states": [
+        "scheu",
+        "aufmerksam",
+        "mutig"
+      ],
+      "portrait": "npc-leni.png"
     }
   ],
   "clues": [
-    {"id": "C01", "title": "Die Achse war angesägt", "details": "Unter dem Bruch sind frische Kerben, kein reiner Frostschaden.", "required": true, "handoutId": "H01"},
-    {"id": "C02", "title": "Der Klöppel antwortet", "details": "Das Eisen in der Kiste vibriert, sobald die Glocke erwähnt wird.", "required": true, "handoutId": "H01"},
-    {"id": "C03", "title": "Das Schweigegebot", "details": "Nach Einbruch der Dunkelheit darf niemand den Namen der Weißen Frau sagen.", "required": true, "handoutId": "H03"},
-    {"id": "C04", "title": "Die Lücke von 1848", "details": "Im Kirchenbuch fehlt genau die Seite mit Elisabeth Abeles Eintrag.", "required": true, "handoutId": "H04"},
-    {"id": "C05", "title": "3-1-2-4", "details": "Die Schlagfolge ist kein Uhrsignal, sondern der Schlüssel zur letzten Strophe.", "required": true, "handoutId": "H06"},
-    {"id": "C06", "title": "Eisen aus der Grube", "details": "Der Klöppel wurde aus Erz der alten Grube gegossen.", "required": true, "handoutId": "H07"},
-    {"id": "C07", "title": "Der Flutstollen", "details": "Der Plan zeigt drei Wege. Nur der nasse Querschlag führt unter den Glockenturm.", "required": true, "handoutId": "H08"},
-    {"id": "C08", "title": "Stimmen ohne Körper", "details": "Im Stollen kommen Antworten aus dem Wasser, obwohl niemand dort steht.", "required": true, "handoutId": "H09"},
-    {"id": "C09", "title": "Die Warnung im Schnee", "details": "Die Erscheinung zeigt auf die Glocke und formt lautlos: Nicht die letzte Strophe.", "required": true, "handoutId": "H05"},
-    {"id": "C10", "title": "Elisabeths Brief", "details": "Elisabeth wollte den Widerhall brechen, nicht ihn beschwören.", "required": true, "handoutId": "H10"},
-    {"id": "C11", "title": "Drei Wege ins Finale", "details": "Glockenturm, Schmiede oder Flutstollen verändern nur die Kosten des Rituals.", "required": true, "handoutId": "H11"}
+    {
+      "id": "C01",
+      "title": "Frische Kerben an der Achse",
+      "details": "Die Bruchstelle ist sauber angesägt und erst danach vereist.",
+      "required": true,
+      "handoutId": "H01",
+      "factId": "F01",
+      "locationId": "LOC_ROAD"
+    },
+    {
+      "id": "C02",
+      "title": "Gruber kannte die Ankunft",
+      "details": "Der Kutschauftrag nennt die genaue Umleitung und eine Zahlung aus dem Rathaus.",
+      "required": true,
+      "handoutId": "H01",
+      "factId": "F01",
+      "locationId": "LOC_ROAD"
+    },
+    {
+      "id": "C03",
+      "title": "Namen im Gästebuch",
+      "details": "Mehrere Reisende wurden aufgenommen und mit roter Tinte gestrichen.",
+      "required": true,
+      "handoutId": "H03",
+      "factId": "F02",
+      "locationId": "LOC_INN"
+    },
+    {
+      "id": "C04",
+      "title": "Die Tür wird von außen verriegelt",
+      "details": "Ein Gast soll bis zum Morgen nicht mehr als Gast gelten.",
+      "required": true,
+      "handoutId": "H03",
+      "factId": "F02",
+      "locationId": "LOC_INN"
+    },
+    {
+      "id": "C05",
+      "title": "Der alte Eid",
+      "details": "Wer unter einem Krähenfelser Dach schläft, steht bis zum Hahnenschrei unter Schutz.",
+      "required": true,
+      "handoutId": "H04",
+      "factId": "F03",
+      "locationId": "LOC_CHURCH"
+    },
+    {
+      "id": "C06",
+      "title": "Winter und Opfer zählen zusammen",
+      "details": "Grubers Buchhaltung notiert milde Winter neben verschwundenen Gästen.",
+      "required": true,
+      "handoutId": "H05",
+      "factId": "F04",
+      "locationId": "LOC_ARCHIVE"
+    },
+    {
+      "id": "C07",
+      "title": "Die Geweihreliquie bindet den Geist",
+      "details": "Drei schwarze Nägel halten Geweih und Holzherz zusammen.",
+      "required": true,
+      "handoutId": "H06",
+      "factId": "F04",
+      "locationId": "LOC_SMITHY"
+    },
+    {
+      "id": "C08",
+      "title": "Die Prozession geht zur Eiche",
+      "details": "Lenis Zeichnung zeigt Masken, Schrein und eine offene Tür im Gasthaus.",
+      "required": true,
+      "handoutId": "H07",
+      "factId": "F04",
+      "locationId": "LOC_INN"
+    },
+    {
+      "id": "C09",
+      "title": "Elias kennt die drei Verben",
+      "details": "Öffnen, erinnern und brechen beschreiben die drei Auswege.",
+      "required": true,
+      "handoutId": "H08",
+      "factId": "F05",
+      "locationId": "LOC_WOODS"
+    },
+    {
+      "id": "C10",
+      "title": "Das Ritual hat einen Preis",
+      "details": "Die alte Seite nennt Widerruf, Erneuerung und Feuer als verschiedene Folgen.",
+      "required": true,
+      "handoutId": "H09",
+      "factId": "F05",
+      "locationId": "LOC_WOODS"
+    },
+    {
+      "id": "C11",
+      "title": "Der alte Forstweg",
+      "details": "Die Karte führt von der Rückseite des Gasthauses zur Alten Eiche.",
+      "required": false,
+      "handoutId": "H10",
+      "factId": "F05",
+      "locationId": "LOC_WOODS"
+    }
+  ],
+  "handouts": [
+    {
+      "id": "H01",
+      "title": "Kutschauftrag und Zahlungsanweisung",
+      "format": "A4 Einzelbeweis",
+      "spoiler": false,
+      "fallback": "Achse und Frachtzettel beschreiben",
+      "asset": "handout-h01-order.pdf",
+      "linkedClueIds": [
+        "C01",
+        "C02"
+      ]
+    },
+    {
+      "id": "H02",
+      "title": "Krähenfelser Wochenblatt",
+      "format": "A4 Zeitung",
+      "spoiler": false,
+      "fallback": "Zeitungsartikel vorlesen",
+      "asset": "handout-h02-newspaper.pdf",
+      "linkedClueIds": [
+        "C03"
+      ]
+    },
+    {
+      "id": "H03",
+      "title": "Gästebuch des schwarzen Keilers",
+      "format": "A4 Buchseite",
+      "spoiler": false,
+      "fallback": "Namen und rote Striche nennen",
+      "asset": "handout-h03-guestbook.pdf",
+      "linkedClueIds": [
+        "C03",
+        "C04"
+      ]
+    },
+    {
+      "id": "H04",
+      "title": "Kirchenbuch: Das Gastrecht",
+      "format": "A4 Archivblatt",
+      "spoiler": false,
+      "fallback": "Die Eidzeile vorlesen",
+      "asset": "handout-h04-oath.pdf",
+      "linkedClueIds": [
+        "C05"
+      ]
+    },
+    {
+      "id": "H05",
+      "title": "Grubers Winterbuchhaltung",
+      "format": "A4 Kontobuch",
+      "spoiler": false,
+      "fallback": "Zwei korrespondierende Jahre zeigen",
+      "asset": "handout-h05-ledger.pdf",
+      "linkedClueIds": [
+        "C06"
+      ]
+    },
+    {
+      "id": "H06",
+      "title": "Schmiedezeichnung der Geweihreliquie",
+      "format": "A4 Werkstattblatt",
+      "spoiler": false,
+      "fallback": "Drei Nägel und Feuer beschreiben",
+      "asset": "handout-h06-smithy.pdf",
+      "linkedClueIds": [
+        "C07"
+      ]
+    },
+    {
+      "id": "H07",
+      "title": "Lenis Zeichnung",
+      "format": "A4 Kinderzeichnung",
+      "spoiler": false,
+      "fallback": "Prozession und Eiche beschreiben",
+      "asset": "handout-h07-drawing.pdf",
+      "linkedClueIds": [
+        "C08"
+      ]
+    },
+    {
+      "id": "H08",
+      "title": "Elias' Holzrubbing",
+      "format": "A4 Kohleabreibung",
+      "spoiler": false,
+      "fallback": "Öffnen, erinnern, brechen nennen",
+      "asset": "handout-h08-rubbing.pdf",
+      "linkedClueIds": [
+        "C09"
+      ]
+    },
+    {
+      "id": "H09",
+      "title": "Fragment des alten Rituals",
+      "format": "A4 Spoilerblatt",
+      "spoiler": true,
+      "fallback": "Nur bei Bedarf vorlesen",
+      "asset": "handout-h09-ritual.pdf",
+      "linkedClueIds": [
+        "C10"
+      ]
+    },
+    {
+      "id": "H10",
+      "title": "Forstkarte zur Alten Eiche",
+      "format": "A4 Waldkarte",
+      "spoiler": false,
+      "fallback": "Weg auf der SL-Karte markieren",
+      "asset": "handout-h10-forest-map.pdf",
+      "linkedClueIds": [
+        "C11"
+      ]
+    }
   ],
   "scenes": [
     {
       "id": "S01",
-      "title": "Die Kutschenpanne",
-      "shortTitle": "Panne",
-      "duration": "20-30 Minuten",
-      "goal": "Die Figuren überleben den Unfall, entdecken die Kiste mit dem Glockenklöppel und erreichen Krähenfels.",
-      "handoutIds": ["H01"],
-      "audioCueIds": ["A01", "SFX01", "SFX04"],
-      "nextSceneIds": ["S02"],
-      "readAloud": "Der Schnee kommt waagerecht durch die Tannen. Ein Knacken fährt durch die Kutsche, dann kippt die Welt in Dunkelheit und Pferdeatem.",
-      "gmNotes": ["Lass die Figuren zuerst handeln und beschreibe erst danach die Kiste.", "Der Kutscher bleibt verschwunden; Jakob kann später behaupten, ihn gesehen zu haben."],
-      "npcIds": ["N05"],
-      "clueIds": ["C01", "C02"],
-      "soundPreset": "Panne",
-      "stuckPrompts": ["Wenn niemand die Kiste durchsucht: Der Klöppel schlägt einmal gegen das Holz.", "Wenn die Gruppe im Wald bleibt: Ein warmes Laternenlicht taucht zwischen den Bäumen auf."],
+      "title": "Die manipulierte Kutschenpanne",
+      "shortTitle": "Kutschenpanne",
+      "duration": "25 Minuten",
+      "goal": "Die Figuren überleben den Unfall, finden den Kutschauftrag und erreichen Krähenfels.",
+      "handoutIds": [
+        "H01"
+      ],
+      "audioCueIds": [
+        "A01",
+        "SFX01",
+        "SFX02"
+      ],
+      "nextSceneIds": [
+        "S02"
+      ],
+      "readAloud": "Der Schnee kommt waagerecht durch die Tannen. Ein Knacken läuft durch die Kutsche. Dann kippt die Welt, Pferdeatem schlägt gegen die Scheiben und irgendwo im Wald ruft der Kutscher nach Hilfe.",
+      "gmNotes": [
+        "Die Kutsche wurde absichtlich auf Grubers Umleitung gelenkt.",
+        "Der Kutscher verschwindet aus dem sichtbaren Geschehen. Seine Stimme darf später aus der falschen Richtung kommen."
+      ],
+      "npcIds": [],
+      "clueIds": [
+        "C01",
+        "C02"
+      ],
+      "soundPreset": "Kutsche",
+      "stuckPrompts": [
+        "Die Achse zeigt gerade Sägespuren.",
+        "Eine Laterne im Wald führt zum Dorf, aber nicht zurück zur Hauptstraße."
+      ],
       "escalation": 0,
-      "checklist": ["Unfall vorlesen", "Kiste und Frachtzettel zeigen", "Richtung Dorf anbieten"],
-      "art": "scene-arrival-graphic-novel.png"
+      "checklist": [
+        "Unfall vorlesen",
+        "H01 ausgeben",
+        "Kutsche als Sackgasse beschreiben",
+        "Dorfweg anbieten"
+      ],
+      "art": "scene-v3-coach.png",
+      "phaseId": "P01",
+      "locationIds": [
+        "LOC_ROAD"
+      ],
+      "recommendation": "Lass die Spieler zuerst handeln. Gib den Kutschauftrag unabhängig vom Würfelwurf."
     },
     {
       "id": "S02",
-      "title": "Zur Krähe",
-      "shortTitle": "Dorf",
-      "duration": "20-30 Minuten",
-      "goal": "Die Figuren finden Unterkunft, bemerken das Schweigegebot und hören erstmals von der Weißen Frau.",
-      "handoutIds": ["H02", "H03"],
-      "audioCueIds": ["A04", "SFX23"],
-      "nextSceneIds": ["S03", "S04", "S05"],
-      "readAloud": "Krähenfels liegt unter Schnee wie ein zugedecktes Geheimnis. Hinter beschlagenen Scheiben bewegen sich Schatten, doch niemand winkt euch herein.",
-      "gmNotes": ["Rosa hilft, ohne offen Partei zu ergreifen.", "Die Spieler dürfen frei entscheiden, ob sie Kirche, Schmiede oder Grube zuerst besuchen."],
-      "npcIds": ["N01", "N02", "N05"],
-      "clueIds": ["C03"],
-      "soundPreset": "Dorf",
-      "stuckPrompts": ["Rosa stellt das Wochenblatt sichtbar neben die Suppe.", "Jakob bietet an, bei Tageslicht den Weg zur Grube zu zeigen."],
+      "title": "Das schwarze Keiler",
+      "shortTitle": "Gasthaus",
+      "duration": "40 Minuten",
+      "goal": "Die Figuren finden Unterkunft, treffen Gruber und Elara und bemerken das falsche Gastrecht.",
+      "handoutIds": [
+        "H02",
+        "H03"
+      ],
+      "audioCueIds": [
+        "A02",
+        "SFX03"
+      ],
+      "nextSceneIds": [
+        "S03",
+        "S04",
+        "S05",
+        "S06"
+      ],
+      "readAloud": "Krähenfels liegt unter Schnee wie ein zugedecktes Geheimnis. Im schwarzen Keiler brennt Licht. Bürgermeister Gruber öffnet selbst und sagt, ihr hättet Glück gehabt.",
+      "gmNotes": [
+        "Gruber nennt die Gruppe Gäste und verriegelt später die Zimmer.",
+        "Elara hilft nur, wenn jemand bemerkt, dass sie Salz an die Schwelle streut."
+      ],
+      "npcIds": [
+        "N01",
+        "N02",
+        "N06"
+      ],
+      "clueIds": [
+        "C03",
+        "C04"
+      ],
+      "soundPreset": "Gasthaus",
+      "stuckPrompts": [
+        "Das Gästebuch liegt neben Grubers Schlüsselbund.",
+        "Leni zeichnet die Tür, die nachts von außen geschlossen wird."
+      ],
       "escalation": 1,
-      "checklist": ["Unterkunft geben", "Wochenblatt auslegen", "Schweigegebot fallen lassen", "Freie Reihenfolge bestätigen"],
-      "art": "scene-village-graphic-novel.png"
+      "checklist": [
+        "Gruber vorstellen",
+        "H02 ausgeben",
+        "H03 auffindbar machen",
+        "Zimmer und freie Ermittlung öffnen"
+      ],
+      "art": "scene-v3-inn.png",
+      "phaseId": "P02",
+      "locationIds": [
+        "LOC_INN"
+      ],
+      "recommendation": "Gib keine falsche Sicherheit. Die Gruppe darf sofort frei ermitteln."
     },
     {
       "id": "S03",
-      "title": "Kirche und Glockenturm",
+      "title": "Kirche und Kirchenbuch",
       "shortTitle": "Kirche",
-      "duration": "20-35 Minuten",
-      "goal": "Die Figuren entdecken die fehlende Seite im Kirchenbuch und die Schlagfolge 3-1-2-4.",
-      "handoutIds": ["H04", "H06"],
-      "audioCueIds": ["A06", "SFX07", "SFX08"],
-      "nextSceneIds": ["S06"],
-      "readAloud": "Im Kirchenschiff ist es wärmer als draußen, aber der Atem bleibt sichtbar. Über euch hängt die Glocke, deren Metall aussieht, als hätte es die Kälte gespeichert.",
-      "gmNotes": ["Martin Hoch gibt H04 ohne Wurf, sobald jemand das Register prüft.", "Die Schlagfolge darf auf Tisch oder Hand geklopft werden; ein Patzer verändert nur den Ton, nicht den Hinweis."],
-      "npcIds": ["N02"],
-      "clueIds": ["C04", "C05"],
+      "duration": "30 Minuten",
+      "goal": "Die Gruppe findet den ursprünglichen Gastrecht-Eid und Falks Mitschuld.",
+      "handoutIds": [
+        "H04"
+      ],
+      "audioCueIds": [
+        "A04",
+        "SFX05"
+      ],
+      "nextSceneIds": [
+        "S06"
+      ],
+      "readAloud": "Im Kirchenschiff ist es wärmer als draußen, doch jeder Atem bleibt sichtbar. Der Pfarrer hält eine ausgeschnittene Seite im Ärmel, als wäre Papier schwerer als Eisen.",
+      "gmNotes": [
+        "Falk hilft, wenn die Gruppe nach dem Sinn des Gastrechts fragt.",
+        "Er ist beschämt, aber kein Kultführer."
+      ],
+      "npcIds": [
+        "N04"
+      ],
+      "clueIds": [
+        "C05"
+      ],
       "soundPreset": "Kirche",
-      "stuckPrompts": ["Martin zählt 3-1-2-4 mit dem Schlüsselbund.", "Ein einzelner falscher Glockenton lässt Staub aus dem Gebälk rieseln."],
+      "stuckPrompts": [
+        "Falk liest die Eidzeile vor, wenn jemand das Wort Gast ausspricht.",
+        "Hinter dem Altar liegt eine zweite Abschrift."
+      ],
       "escalation": 2,
-      "checklist": ["Kirchenbuch zeigen", "Schlagfolge sichern", "Liedblatt austeilen", "Zur Erscheinung überleiten"],
-      "art": "scene-chapel-graphic-novel.png"
+      "checklist": [
+        "Kirchenbuch beschreiben",
+        "H04 ausgeben",
+        "Falks Haltung markieren",
+        "Gastrecht als Schutz erklären"
+      ],
+      "art": "scene-v3-church.png",
+      "phaseId": "P03",
+      "locationIds": [
+        "LOC_CHURCH"
+      ],
+      "recommendation": "Die Spieler müssen nicht würfeln, um die Eidzeile zu finden."
     },
     {
       "id": "S04",
-      "title": "Schmiede und Stellmacherei",
+      "title": "Die Schmiede",
       "shortTitle": "Schmiede",
-      "duration": "20-30 Minuten",
-      "goal": "Die Figuren erfahren, dass das Grubeneisen im Klöppel vibriert und die Achse vor dem Unfall brach.",
-      "handoutIds": ["H07"],
-      "audioCueIds": ["A03", "SFX10"],
-      "nextSceneIds": ["S06"],
-      "readAloud": "Hinter der Schmiede glüht ein Ofen wie ein rotes Auge. Emil Bopp legt den Hammer beiseite, bevor ihr die Kiste überhaupt geöffnet habt.",
-      "gmNotes": ["Emil ist kein Kultist. Er schämt sich, dass sein Werk die falsche Glocke nährt.", "Lass die Gruppe testen, ob der Klöppel im Takt der Schmiede reagiert."],
-      "npcIds": ["N03"],
-      "clueIds": ["C01", "C06"],
+      "duration": "30 Minuten",
+      "goal": "Marta erklärt die Geweihreliquie und bietet das alte Eisen für das dritte Finale an.",
+      "handoutIds": [
+        "H06"
+      ],
+      "audioCueIds": [
+        "A03",
+        "SFX05"
+      ],
+      "nextSceneIds": [
+        "S06"
+      ],
+      "readAloud": "Hinter der Schmiede glüht der Ofen wie ein rotes Auge. Marta Kern hebt den Kopf, bevor ihr die Tür ganz geöffnet habt.",
+      "gmNotes": [
+        "Marta gibt das Eisen nicht aus Mitleid, sondern nach einer klaren Entscheidung.",
+        "Die drei Nägel müssen sichtbar unterschiedlich sein."
+      ],
+      "npcIds": [
+        "N05"
+      ],
+      "clueIds": [
+        "C07"
+      ],
       "soundPreset": "Schmiede",
-      "stuckPrompts": ["Emil hält den Klöppel an den Amboss; das Metall beginnt zu singen.", "Eine Kiste mit Ersatzteilen trägt denselben roten Rost wie der Frachtzettel."],
+      "stuckPrompts": [
+        "Marta zeigt drei schwarze Nagelköpfe.",
+        "Der Amboss antwortet mit einem tiefen Nachklang."
+      ],
       "escalation": 2,
-      "checklist": ["Schmiede beschreiben", "Werkbuch geben", "Vibration auslösen", "Grubenweg nennen"],
-      "art": "scene-forge-graphic-novel.png"
+      "checklist": [
+        "Marta vorstellen",
+        "H06 ausgeben",
+        "Eisen als Finale-Weg markieren",
+        "Kosten erklären"
+      ],
+      "art": "scene-v3-smithy.png",
+      "phaseId": "P03",
+      "locationIds": [
+        "LOC_SMITHY"
+      ],
+      "recommendation": "Lass Marta eine praktische Frage stellen: Was soll mit dem Eisen geschehen?"
     },
     {
       "id": "S05",
-      "title": "Die verlassene Grube",
-      "shortTitle": "Grube",
-      "duration": "30-45 Minuten",
-      "goal": "Die Figuren finden den Flutstollen, Elisabeths Kamm und die fehlende Liedseite. Stimmen im Berg geben sich als Verstorbene aus.",
-      "handoutIds": ["H08", "H09"],
-      "audioCueIds": ["A09", "SFX11", "SFX12", "SFX13", "SFX14"],
-      "nextSceneIds": ["S06"],
-      "readAloud": "Der Eingang ist mit Brettern vernagelt, doch Wasser läuft darunter hervor. Jeder Schritt kommt einen Herzschlag zu spät zurück.",
-      "gmNotes": ["Gib den Flurplan offen aus; die Gefahr entsteht durch Geräusche und Entscheidungen, nicht durch Wegsuche.", "Die Stimmen dürfen vertraute Namen benutzen, aber niemals eine neue Lösung verraten."],
-      "npcIds": ["N04", "N05"],
-      "clueIds": ["C07", "C08"],
-      "soundPreset": "Grube",
-      "stuckPrompts": ["Lorenz markiert den nassen Querschlag mit Kreide.", "Ein Klopfen antwortet exakt auf drei Schläge der Gruppe."],
+      "title": "Die Waldspur",
+      "shortTitle": "Waldspur",
+      "duration": "35 Minuten",
+      "goal": "Lenis Zeichnung und Elias' Rubbing führen zur Alten Eiche und zum verdrehten Pakt.",
+      "handoutIds": [
+        "H07",
+        "H08",
+        "H10"
+      ],
+      "audioCueIds": [
+        "A05",
+        "SFX04",
+        "SFX06"
+      ],
+      "nextSceneIds": [
+        "S06"
+      ],
+      "readAloud": "Hinter den letzten Häusern verliert sich der Weg zwischen Tannen. Im Schnee liegen Abdrücke, die wie Hufe beginnen und wie menschliche Schritte enden.",
+      "gmNotes": [
+        "Zeige den Knochenhirsch noch nicht vollständig.",
+        "Elias kann ein Stück der Wahrheit sagen, ohne alle Lösungen zu verraten."
+      ],
+      "npcIds": [
+        "N03",
+        "N06"
+      ],
+      "clueIds": [
+        "C08",
+        "C09",
+        "C11"
+      ],
+      "soundPreset": "Wald",
+      "stuckPrompts": [
+        "Lenis Zeichnung zeigt die Alte Eiche mit offenem Schrein.",
+        "Elias sagt die drei Verben: öffnen, erinnern, brechen."
+      ],
       "escalation": 3,
-      "checklist": ["Grubenplan auslegen", "Flutstollen markieren", "Stimmen einsetzen", "Kamm oder Liedseite finden"],
-      "art": "scene-mine-graphic-novel.png"
+      "checklist": [
+        "Spuren beschreiben",
+        "H07 ausgeben",
+        "H08 ausgeben",
+        "Weg zur Eiche markieren"
+      ],
+      "art": "scene-v3-woods.png",
+      "phaseId": "P03",
+      "locationIds": [
+        "LOC_WOODS"
+      ],
+      "recommendation": "Die Spuren sind ein sicherer Hinweis, kein Verfolgungswurf."
     },
     {
       "id": "S06",
-      "title": "Die Frau im Schnee",
-      "shortTitle": "Erscheinung",
-      "duration": "15-25 Minuten",
-      "goal": "Die Weiße Frau warnt die Figuren, ohne sie anzugreifen. Der Glockenklöppel schlägt einmal von selbst.",
-      "handoutIds": ["H05"],
-      "audioCueIds": ["A05", "SFX15", "SFX16", "SFX17"],
-      "nextSceneIds": ["S07"],
-      "readAloud": "Der Schneefall hält inne. Zwischen den Grabsteinen steht eine Frau in Weiß. Sie hebt die Hand, als wolle sie euch nicht begrüßen, sondern zurückhalten.",
-      "gmNotes": ["Die Erscheinung greift nicht an und spricht nicht mit Worten.", "Zeige H05 erst nach der ersten Reaktion; die Rückseite enthält die Spielleitungserklärung."],
-      "npcIds": [],
-      "clueIds": ["C09"],
-      "soundPreset": "Erscheinung",
-      "stuckPrompts": ["Die Frau zeigt auf den Klöppel und dann auf den Glockenturm.", "Wenn jemand näher tritt, erlischt die nächste Laterne."],
+      "title": "Was Gruber verschweigt",
+      "shortTitle": "Wahrheit",
+      "duration": "35 Minuten",
+      "goal": "Die Gruppe verbindet Gastbuch, Winterbuchhaltung und Ritualfragment.",
+      "handoutIds": [
+        "H05",
+        "H09"
+      ],
+      "audioCueIds": [
+        "A03",
+        "M01",
+        "SFX07"
+      ],
+      "nextSceneIds": [
+        "S07"
+      ],
+      "readAloud": "Kurz vor Mitternacht steht das Dorf still. Auf dem Tisch liegen Gästebuch, Kirchenbuch und Buchhaltung. Drei verschiedene Hände haben dieselbe Lüge geschrieben.",
+      "gmNotes": [
+        "H05 kann im Rathaus oder in Grubers Büro gefunden werden.",
+        "H09 bleibt hinter dem Spoilerschalter, bis die Gruppe feststeckt."
+      ],
+      "npcIds": [
+        "N01",
+        "N02",
+        "N04"
+      ],
+      "clueIds": [
+        "C03",
+        "C05",
+        "C06",
+        "C10"
+      ],
+      "soundPreset": "Verdacht",
+      "stuckPrompts": [
+        "Die milden Winter stehen direkt neben den Namen der verschwundenen Gäste.",
+        "Falk nennt Grubers Vater als ersten Eidbrecher."
+      ],
       "escalation": 4,
-      "checklist": ["Erscheinung zeigen", "Warnung beschreiben", "Kabinettfoto geben", "Vor Mitternacht ankündigen"],
-      "art": "scene-white-woman-graphic-novel.png"
+      "checklist": [
+        "H05 ausgeben",
+        "H09 nur bei Bedarf öffnen",
+        "Gruber als Verdächtigen markieren",
+        "Prozession ankündigen"
+      ],
+      "art": "scene-v3-truth.png",
+      "phaseId": "P04",
+      "locationIds": [
+        "LOC_ARCHIVE"
+      ],
+      "recommendation": "Wenn zwei Fakten verbunden sind, erhöhe die Eskalation manuell auf 4."
     },
     {
       "id": "S07",
-      "title": "Vor Mitternacht",
-      "shortTitle": "Wahrheit",
-      "duration": "15-25 Minuten",
-      "goal": "Die Hinweise werden zusammengelegt. Die Figuren wählen ihren Weg zum Finale.",
-      "handoutIds": ["H10"],
-      "audioCueIds": ["SFX18", "SFX29"],
-      "nextSceneIds": ["S08"],
-      "readAloud": "Kurz vor Mitternacht steht das Dorf still. Auf dem Tisch liegen Frachtzettel, Liedblatt, Plan und Brief wie Teile eines Mechanismus.",
-      "gmNotes": ["H10 ist ein Spoiler-Handout. Lies es nur vor, wenn die Gruppe die Verbindung selbst nicht findet.", "Jeder der drei Wege führt ins Finale; die Wahl bestimmt, welcher Preis sichtbar wird."],
-      "npcIds": ["N01", "N02", "N03", "N04"],
-      "clueIds": ["C10", "C11"],
-      "soundPreset": "Wahrheit",
-      "stuckPrompts": ["Rosa legt den Brief neben das Liedblatt und sagt: Sie wollte es beenden.", "Martin nennt die drei Orte: Turm, Feuer, Wasser."],
-      "escalation": 4,
-      "checklist": ["Spoiler-Schalter prüfen", "Hinweise sortieren lassen", "Finalweg wählen", "Finale-Preset bereithalten"],
-      "art": "scene-village-graphic-novel.png"
+      "title": "Die Alte Eiche",
+      "shortTitle": "Finale",
+      "duration": "50 Minuten",
+      "goal": "Die Gruppe entscheidet zwischen Widerruf, Erneuerung und Zerstörung.",
+      "handoutIds": [],
+      "audioCueIds": [
+        "A06",
+        "M02",
+        "SFX08"
+      ],
+      "nextSceneIds": [
+        "S08"
+      ],
+      "readAloud": "Die Alte Eiche steht im Schnee wie ein schwarzes Gerippe. Zwischen den Wurzeln hängt die Geweihreliquie. Hinter euch setzt die Prozession ein, vor euch hebt der Knochenhirsch den Kopf.",
+      "gmNotes": [
+        "Der Knochenhirsch wird erst hier vollständig gezeigt.",
+        "Jeder Weg braucht eine klare Entscheidung und hat sichtbare Kosten.",
+        "Bei einem Fehlschlag verliert die Gruppe Zeit, Vertrauen oder eine Ressource, aber nicht automatisch eine Figur."
+      ],
+      "npcIds": [
+        "N01",
+        "N02",
+        "N03",
+        "N05",
+        "N06"
+      ],
+      "clueIds": [
+        "C05",
+        "C07",
+        "C09",
+        "C10",
+        "C11"
+      ],
+      "soundPreset": "Alte Eiche",
+      "stuckPrompts": [
+        "Die Reliquie hat drei Nägel und drei sichtbare Bruchstellen.",
+        "Elara ruft den ersten Namen aus dem Gästebuch."
+      ],
+      "escalation": 5,
+      "checklist": [
+        "Finalkarte auslegen",
+        "Knochenhirsch beschreiben",
+        "Drei Wege anbieten",
+        "Kosten ausspielen",
+        "Ende markieren"
+      ],
+      "art": "scene-v3-oak.png",
+      "phaseId": "P05",
+      "locationIds": [
+        "LOC_WOODS"
+      ],
+      "recommendation": "Lege die drei Endkarten erst aus, wenn die Gruppe ihre Entscheidung ausgesprochen hat."
     },
     {
       "id": "S08",
-      "title": "Die letzte Strophe",
-      "shortTitle": "Finale",
-      "duration": "35-55 Minuten",
-      "goal": "Die Figuren verhindern die Befreiung des Widerhalls und entscheiden über Elisabeths Schicksal.",
-      "handoutIds": ["H11"],
-      "audioCueIds": ["A08", "M05", "SFX20"],
-      "nextSceneIds": ["S09"],
-      "readAloud": "Der Frost zieht in konzentrischen Linien über den Boden. Über dem Wasser hängt die Glocke, und irgendwo darunter atmet etwas im gleichen Takt.",
-      "gmNotes": ["Baue drei klare Optionen an: Schlagfolge brechen, Klöppel schmelzen oder Flutstollen öffnen.", "Ein Fehlschlag kostet eine Ressource oder eine Erinnerung, aber beendet die Geschichte nicht sofort."],
-      "npcIds": ["N01", "N02", "N03", "N04", "N05"],
-      "clueIds": ["C05", "C06", "C07", "C10", "C11"],
-      "soundPreset": "Finale",
-      "stuckPrompts": ["Der Klöppel zeigt mit seiner Spitze zum richtigen Weg.", "Die Weiße Frau hebt drei Finger: Turm, Feuer, Wasser."],
-      "escalation": 5,
-      "checklist": ["Finale-Karte geben", "Drei Wege benennen", "Herzschlag starten", "Bannung oder Scheitern auslösen"],
-      "art": "scene-finale-graphic-novel.png"
-    },
-    {
-      "id": "S09",
       "title": "Tauwetter",
       "shortTitle": "Epilog",
-      "duration": "10 Minuten",
-      "goal": "Die Folgen der gewählten Lösung werden gezeigt.",
+      "duration": "15 Minuten",
+      "goal": "Die Folgen der Wahl werden für Dorf und Figuren sichtbar.",
       "handoutIds": [],
-      "audioCueIds": [],
+      "audioCueIds": [
+        "A03",
+        "SFX09"
+      ],
       "nextSceneIds": [],
-      "readAloud": "Am Morgen taut der Schnee in dünnen Rinnsalen. Krähenfels hat wieder Geräusche, aber niemand kann sagen, ob die Glocke wirklich still ist.",
-      "gmNotes": ["Gib jeder Figur einen kurzen persönlichen Nachhall.", "Beende mit einem offenen, kleinen Geräusch statt mit einer Erklärung."],
-      "npcIds": ["N01", "N05"],
+      "readAloud": "Am Morgen taut der Schnee in dünnen Rinnsalen. Krähenfels hat wieder Geräusche. Nur die Frage, wer hier künftig Gäste schützt, bleibt unbeantwortet.",
+      "gmNotes": [
+        "Gib jeder Figur einen persönlichen Nachhall.",
+        "Beende mit einem kleinen echten Geräusch, nicht mit einer langen Erklärung."
+      ],
+      "npcIds": [
+        "N01",
+        "N02",
+        "N03",
+        "N04",
+        "N05",
+        "N06"
+      ],
       "clueIds": [],
       "soundPreset": "Epilog",
-      "stuckPrompts": ["Ein letzter Tropfen fällt im Takt 3-1-2-4.", "Jakob findet eine rostrote Faser im Schnee."],
+      "stuckPrompts": [
+        "Ein Tropfen fällt aus der Alten Eiche.",
+        "Im Gästebuch ist eine rote Linie verschwunden."
+      ],
       "escalation": 0,
-      "checklist": ["Folgen der Wahl erzählen", "Figuren nach dem Nachhall fragen", "Epilog-Cue starten"],
-      "art": "scene-village-graphic-novel.png"
+      "checklist": [
+        "Ende erzählen",
+        "NPC-Folgen nennen",
+        "Spieler nach dem Nachhall fragen"
+      ],
+      "art": "scene-v3-epilogue.png",
+      "phaseId": "P05",
+      "locationIds": [
+        "LOC_WOODS"
+      ],
+      "recommendation": "Lass nach dem letzten Satz drei Atemzüge Stille."
     }
   ],
-  "handouts": [
-    {"id": "H01", "title": "Kutschschein und Frachtzettel", "format": "A5", "spoiler": false, "fallback": "Vorlesetext in SL_Abenteuer.pdf"},
-    {"id": "H02", "title": "Handskizze von Krähenfels", "format": "A4", "spoiler": false, "fallback": "SL-Karte mit abgedeckten Markierungen"},
-    {"id": "H03", "title": "Krähenfelser Wochenblatt", "format": "A5", "spoiler": false, "fallback": "Vorlesetext in der Szene"},
-    {"id": "H04", "title": "Kirchenbuchauszug", "format": "A5", "spoiler": false, "fallback": "Transkription in der SL-Schnellreferenz"},
-    {"id": "H05", "title": "Kabinettfoto von 1848", "format": "A5 einseitig", "spoiler": false, "fallback": "Beschreibung in der Szene"},
-    {"id": "H06", "title": "Liedblatt ohne letzte Strophe", "format": "A5", "spoiler": false, "fallback": "Text in der SL-Schnellreferenz"},
-    {"id": "H07", "title": "Werkbuch der Stellmacherei", "format": "A5", "spoiler": false, "fallback": "Gesprochene Zusammenfassung"},
-    {"id": "H08", "title": "Alter Flur- und Grubenplan", "format": "A4", "spoiler": false, "fallback": "SL beschreibt drei mögliche Wege"},
-    {"id": "H09", "title": "Bericht von Lorenz Sauter", "format": "A5", "spoiler": false, "fallback": "Vorlesetext in der Szene"},
-    {"id": "H10", "title": "Elisabeths Brief", "format": "A5", "spoiler": true, "fallback": "SL liest nur bei Bedarf vor"},
-    {"id": "H11", "title": "Finale: Schlagfolge und Lied", "format": "A4", "spoiler": true, "fallback": "Finale-Karte der SL"}
+  "locations": [
+    {
+      "id": "LOC_ROAD",
+      "title": "Kutschenstraße",
+      "mapId": "MAP01",
+      "sceneIds": [
+        "S01"
+      ],
+      "npcIds": [],
+      "clueIds": [
+        "C01",
+        "C02"
+      ]
+    },
+    {
+      "id": "LOC_INN",
+      "title": "Zum schwarzen Keiler",
+      "mapId": "MAP02",
+      "sceneIds": [
+        "S02"
+      ],
+      "npcIds": [
+        "N01",
+        "N02",
+        "N06"
+      ],
+      "clueIds": [
+        "C03",
+        "C04",
+        "C08"
+      ]
+    },
+    {
+      "id": "LOC_CHURCH",
+      "title": "Kirche und Friedhof",
+      "mapId": "MAP03",
+      "sceneIds": [
+        "S03"
+      ],
+      "npcIds": [
+        "N04"
+      ],
+      "clueIds": [
+        "C05"
+      ]
+    },
+    {
+      "id": "LOC_SMITHY",
+      "title": "Schmiede",
+      "mapId": "MAP01",
+      "sceneIds": [
+        "S04"
+      ],
+      "npcIds": [
+        "N05"
+      ],
+      "clueIds": [
+        "C07"
+      ]
+    },
+    {
+      "id": "LOC_WOODS",
+      "title": "Wald und Alte Eiche",
+      "mapId": "MAP04",
+      "sceneIds": [
+        "S05",
+        "S07",
+        "S08"
+      ],
+      "npcIds": [
+        "N03",
+        "N06"
+      ],
+      "clueIds": [
+        "C08",
+        "C09",
+        "C10",
+        "C11"
+      ]
+    },
+    {
+      "id": "LOC_ARCHIVE",
+      "title": "Rathausarchiv",
+      "mapId": "MAP01",
+      "sceneIds": [
+        "S06"
+      ],
+      "npcIds": [
+        "N01",
+        "N04"
+      ],
+      "clueIds": [
+        "C06",
+        "C10"
+      ]
+    }
   ],
   "audioCues": [
-    {"id": "A01", "title": "Postkutsche im Schneesturm", "scene": "S01", "category": "ambient", "file": "A01_Postkutsche_im_Schneesturm.m4a", "mode": "loop", "gain": -0.18, "fadeMs": 2500, "isClue": false, "printFallbackId": null},
-    {"id": "A03", "title": "Krähenfels bei Tag", "scene": "S02", "category": "ambient", "file": "A03_Kraehenfels_bei_Tag.m4a", "mode": "loop", "gain": -0.22, "fadeMs": 2500, "isClue": false, "printFallbackId": null},
-    {"id": "A04", "title": "Wirtsstube am Abend", "scene": "S02", "category": "ambient", "file": "A04_Wirtsstube_am_Abend.m4a", "mode": "loop", "gain": -0.24, "fadeMs": 2500, "isClue": false, "printFallbackId": null},
-    {"id": "A05", "title": "Dorf nach Mitternacht", "scene": "S06", "category": "ambient", "file": "A05_Dorf_nach_Mitternacht.m4a", "mode": "loop", "gain": -0.25, "fadeMs": 2500, "isClue": false, "printFallbackId": null},
-    {"id": "A06", "title": "Kapelle und Friedhof", "scene": "S03", "category": "ambient", "file": "A06_Kapelle_und_Friedhof.m4a", "mode": "loop", "gain": -0.24, "fadeMs": 2500, "isClue": false, "printFallbackId": null},
-    {"id": "A07", "title": "Weiße Spur im Wald", "scene": "S05", "category": "ambient", "file": "A07_Weisse_Spur_im_Wald.m4a", "mode": "loop", "gain": -0.23, "fadeMs": 2500, "isClue": false, "printFallbackId": null},
-    {"id": "A08", "title": "Finale im Froststurm", "scene": "S08", "category": "ambient", "file": "A08_Finale_Froststurm.m4a", "mode": "loop", "gain": -0.2, "fadeMs": 1800, "isClue": false, "printFallbackId": null},
-    {"id": "A09", "title": "Grubenluft Layer", "scene": "S05", "category": "ambient", "file": "A09_Grubenluft_Layer.m4a", "mode": "loop", "gain": -0.34, "fadeMs": 2200, "isClue": false, "printFallbackId": null},
-    {"id": "A10", "title": "Frostspannung Layer", "scene": "S08", "category": "ambient", "file": "A10_Frostspannung_Layer.m4a", "mode": "loop", "gain": -0.32, "fadeMs": 1600, "isClue": false, "printFallbackId": null},
-    {"id": "M01", "title": "Ankunft in Krähenfels", "scene": "S01", "category": "music", "file": "M01_Ankunft_in_Kraehenfels.m4a", "mode": "loop", "gain": -0.28, "fadeMs": 2500, "isClue": false, "printFallbackId": null},
-    {"id": "M02", "title": "Das Dorf verschweigt etwas", "scene": "S02", "category": "music", "file": "M02_Das_Dorf_verschweigt_etwas.m4a", "mode": "loop", "gain": -0.3, "fadeMs": 2500, "isClue": false, "printFallbackId": null},
-    {"id": "M03", "title": "Die Weiße Frau naht", "scene": "S06", "category": "music", "file": "M03_Die_Weisse_Frau_naht.m4a", "mode": "loop", "gain": -0.28, "fadeMs": 1800, "isClue": false, "printFallbackId": null},
-    {"id": "M04", "title": "Ihr altes Lied", "scene": "S08", "category": "music", "file": "M04_Ihr_altes_Lied.m4a", "mode": "oneShot", "gain": -0.22, "fadeMs": 600, "isClue": true, "printFallbackId": "H06"},
-    {"id": "M05", "title": "Frost und Entscheidung", "scene": "S08", "category": "music", "file": "M05_Frost_und_Opfer.m4a", "mode": "loop", "gain": -0.24, "fadeMs": 1400, "isClue": false, "printFallbackId": null},
-    {"id": "M06", "title": "Tauwetter", "scene": "S09", "category": "music", "file": "M06_Tauwetter_Epilog.m4a", "mode": "oneShot", "gain": -0.2, "fadeMs": 500, "isClue": false, "printFallbackId": null},
-    {"id": "SFX01", "title": "Achse bricht", "scene": "S01", "category": "sfx", "file": "SFX01_Achse_bricht.wav", "mode": "oneShot", "gain": -0.12, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX02", "title": "Pferde scheuen", "scene": "S01", "category": "sfx", "file": "SFX02_Pferde_scheuen.wav", "mode": "oneShot", "gain": -0.18, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX03", "title": "Hufe im Schnee", "scene": "S01", "category": "sfx", "file": "SFX03_Hufe_im_Schnee.wav", "mode": "oneShot", "gain": -0.25, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX04", "title": "Astbruch hinter der Kutsche", "scene": "S01", "category": "sfx", "file": "SFX04_Astbruch.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX05", "title": "Ferne Krähen", "scene": "S02", "category": "sfx", "file": "SFX05_Kraehen.wav", "mode": "oneShot", "gain": -0.25, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX06", "title": "Plötzliche Stille", "scene": "S02", "category": "sfx", "file": "SFX06_Stille.wav", "mode": "oneShot", "gain": -0.1, "fadeMs": 0, "isClue": true, "printFallbackId": "H03"},
-    {"id": "SFX07", "title": "Glocke normal", "scene": "S03", "category": "sfx", "file": "SFX07_Glocke_normal.wav", "mode": "oneShot", "gain": -0.18, "fadeMs": 0, "isClue": false, "printFallbackId": "H06"},
-    {"id": "SFX08", "title": "Glocke aus dem Eis", "scene": "S03", "category": "sfx", "file": "SFX08_Glocke_falsch.wav", "mode": "oneShot", "gain": -0.15, "fadeMs": 0, "isClue": true, "printFallbackId": "H06"},
-    {"id": "SFX09", "title": "Schmiedefeuer und Amboss", "scene": "S04", "category": "sfx", "file": "SFX09_Schmiede.wav", "mode": "loop", "gain": -0.3, "fadeMs": 400, "isClue": false, "printFallbackId": null},
-    {"id": "SFX10", "title": "Metall vibriert", "scene": "S04", "category": "sfx", "file": "SFX10_Metall_vibriert.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": true, "printFallbackId": "H07"},
-    {"id": "SFX11", "title": "Schritte im Schnee", "scene": "S05", "category": "sfx", "file": "SFX11_Schritte.wav", "mode": "oneShot", "gain": -0.24, "fadeMs": 0, "isClue": false, "printFallbackId": "H08"},
-    {"id": "SFX12", "title": "Barfüßige Schritte", "scene": "S05", "category": "sfx", "file": "SFX12_Barfuss_Schritte.wav", "mode": "oneShot", "gain": -0.18, "fadeMs": 0, "isClue": true, "printFallbackId": "H08"},
-    {"id": "SFX13", "title": "Stimmen im Berg", "scene": "S05", "category": "sfx", "file": "SFX13_Stimmen_ohne_Worte.wav", "mode": "oneShot", "gain": -0.25, "fadeMs": 0, "isClue": true, "printFallbackId": "H09"},
-    {"id": "SFX14", "title": "Schläge unter dem Boden", "scene": "S05", "category": "sfx", "file": "SFX14_Schlaege_unter_Boden.wav", "mode": "oneShot", "gain": -0.15, "fadeMs": 0, "isClue": true, "printFallbackId": "H09"},
-    {"id": "SFX15", "title": "Atem hinter einer Person", "scene": "S06", "category": "sfx", "file": "SFX15_Atem_hinter_dir.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX16", "title": "Zwei hohe fallende Töne", "scene": "S06", "category": "sfx", "file": "SFX16_Weisse_Frau_Motiv.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": true, "printFallbackId": "H05"},
-    {"id": "SFX17", "title": "Ein Klöppelschlag von selbst", "scene": "S06", "category": "sfx", "file": "SFX17_Kloeppel_schlaegt.wav", "mode": "oneShot", "gain": -0.13, "fadeMs": 0, "isClue": true, "printFallbackId": "H06"},
-    {"id": "SFX18", "title": "Frost breitet sich aus", "scene": "S07", "category": "sfx", "file": "SFX18_Frost_breitet_sich_aus.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX19", "title": "Herzschlag im Frost", "scene": "S08", "category": "sfx", "file": "SFX19_Herzschlag.wav", "mode": "loop", "gain": -0.28, "fadeMs": 500, "isClue": false, "printFallbackId": null},
-    {"id": "SFX20", "title": "Eisbruch", "scene": "S08", "category": "sfx", "file": "SFX20_Eisbruch.wav", "mode": "oneShot", "gain": -0.14, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX21", "title": "Bannung gelingt", "scene": "S08", "category": "sfx", "file": "SFX21_Bannung.wav", "mode": "oneShot", "gain": -0.16, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX22", "title": "Bannung scheitert", "scene": "S08", "category": "sfx", "file": "SFX22_Scheitern.wav", "mode": "oneShot", "gain": -0.16, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX23", "title": "Fensterladen im Wind", "scene": "S02", "category": "sfx", "file": "SFX23_Fensterladen_im_Wind.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX24", "title": "Fernes Läuten", "scene": "S03", "category": "sfx", "file": "SFX24_Fernes_Laeuten.wav", "mode": "oneShot", "gain": -0.26, "fadeMs": 0, "isClue": true, "printFallbackId": "H06"},
-    {"id": "SFX25", "title": "Holz unter Spannung", "scene": "S04", "category": "sfx", "file": "SFX25_Holz_unter_Spannung.wav", "mode": "oneShot", "gain": -0.22, "fadeMs": 0, "isClue": true, "printFallbackId": "H07"},
-    {"id": "SFX26", "title": "Wasser im Flutstollen", "scene": "S05", "category": "sfx", "file": "SFX26_Wasser_im_Flutstollen.wav", "mode": "loop", "gain": -0.3, "fadeMs": 450, "isClue": false, "printFallbackId": "H08"},
-    {"id": "SFX27", "title": "Wiederhallende Schritte", "scene": "S05", "category": "sfx", "file": "SFX27_Wiederhallende_Schritte.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": true, "printFallbackId": "H09"},
-    {"id": "SFX28", "title": "Klopfen unter dem Boden", "scene": "S05", "category": "sfx", "file": "SFX28_Klopfen_unter_Boden.wav", "mode": "oneShot", "gain": -0.16, "fadeMs": 0, "isClue": true, "printFallbackId": "H09"},
-    {"id": "SFX29", "title": "Verzerrte Glockenresonanz", "scene": "S03", "category": "sfx", "file": "SFX29_Glockenresonanz.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": true, "printFallbackId": "H06"},
-    {"id": "SFX30", "title": "Kurzer Atem im Raum", "scene": "S06", "category": "sfx", "file": "SFX30_Atem_im_Raum.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX31", "title": "Resonanz bricht ab", "scene": "S08", "category": "sfx", "file": "SFX31_Resonanzabbruch.wav", "mode": "oneShot", "gain": -0.14, "fadeMs": 0, "isClue": false, "printFallbackId": null}
+    {
+      "id": "A01",
+      "title": "Kutschenstraße im Schneesturm",
+      "scene": "S01",
+      "category": "ambient",
+      "file": "V3_A01_Kutschenstrasse.m4a",
+      "mode": "loop",
+      "gain": -0.22,
+      "fadeMs": 2200,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Wind, Holz, entfernte Pferde und gedämpfte Räder."
+    },
+    {
+      "id": "A02",
+      "title": "Gasthaus bei geschlossener Tür",
+      "scene": "S02",
+      "category": "ambient",
+      "file": "V3_A02_Gasthaus.m4a",
+      "mode": "loop",
+      "gain": -0.3,
+      "fadeMs": 1800,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Feuer, niedrige Stimmen, Geschirr und ein Raum, der zu aufmerksam still wird."
+    },
+    {
+      "id": "A03",
+      "title": "Krähenfels am Tag",
+      "scene": "S04",
+      "category": "ambient",
+      "file": "V3_A03_Dorf.m4a",
+      "mode": "loop",
+      "gain": -0.28,
+      "fadeMs": 2000,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Winterwind, einzelne Schritte, entfernte Arbeit und ungewöhnlich wenige Vögel."
+    },
+    {
+      "id": "A04",
+      "title": "Kirche ohne Glocke",
+      "scene": "S03",
+      "category": "ambient",
+      "file": "V3_A04_Kirche.m4a",
+      "mode": "loop",
+      "gain": -0.32,
+      "fadeMs": 2200,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Holz, kalter Raum, Wind im Turm und ein kaum hörbares Metallknacken."
+    },
+    {
+      "id": "A05",
+      "title": "Waldspur im Schnee",
+      "scene": "S05",
+      "category": "ambient",
+      "file": "V3_A05_Waldspur.m4a",
+      "mode": "loop",
+      "gain": -0.3,
+      "fadeMs": 2000,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Tiefer Waldwind, Äste, entfernte Schritte und das Gefühl einer falschen Richtung."
+    },
+    {
+      "id": "A06",
+      "title": "Alte Eiche vor dem Morgen",
+      "scene": "S07",
+      "category": "ambient",
+      "file": "V3_A06_Alte_Eiche.m4a",
+      "mode": "loop",
+      "gain": -0.26,
+      "fadeMs": 1800,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Sturm, Holzspannung, tiefer Atem und ein langsames, organisches Dröhnen."
+    },
+    {
+      "id": "M01",
+      "title": "Etwas stimmt nicht",
+      "scene": "S06",
+      "category": "music",
+      "file": "V3_M01_Verdacht.m4a",
+      "mode": "loop",
+      "gain": -0.32,
+      "fadeMs": 2500,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Leise dunkle Fläche ohne Melodie, für Ermittlungen unter Druck."
+    },
+    {
+      "id": "M02",
+      "title": "Die Prozession",
+      "scene": "S07",
+      "category": "music",
+      "file": "V3_M02_Prozession.m4a",
+      "mode": "loop",
+      "gain": -0.34,
+      "fadeMs": 1800,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Langsame, tiefe Pulsbewegung ohne Sprache und ohne plötzlichen Laut."
+    },
+    {
+      "id": "SFX01",
+      "title": "Achse bricht",
+      "scene": "S01",
+      "category": "sfx",
+      "file": "V3_SFX01_Achse.wav",
+      "mode": "oneShot",
+      "gain": -0.18,
+      "fadeMs": 0,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Kurzes Holzsplittern mit Wagenmetall."
+    },
+    {
+      "id": "SFX02",
+      "title": "Pferde scheuen",
+      "scene": "S01",
+      "category": "sfx",
+      "file": "V3_SFX02_Pferde.wav",
+      "mode": "oneShot",
+      "gain": -0.22,
+      "fadeMs": 0,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Hufe, Geschirr und ein kurzer erschreckter Laut."
+    },
+    {
+      "id": "SFX03",
+      "title": "Riegel von außen",
+      "scene": "S02",
+      "category": "sfx",
+      "file": "V3_SFX03_Riegel.wav",
+      "mode": "oneShot",
+      "gain": -0.2,
+      "fadeMs": 0,
+      "isClue": true,
+      "printFallbackId": "H03",
+      "description": "Schwerer Holzriegel, der außerhalb des Zimmers geschlossen wird."
+    },
+    {
+      "id": "SFX04",
+      "title": "Geweih an der Tür",
+      "scene": "S05",
+      "category": "sfx",
+      "file": "V3_SFX04_Geweih.wav",
+      "mode": "oneShot",
+      "gain": -0.25,
+      "fadeMs": 0,
+      "isClue": true,
+      "printFallbackId": "H07",
+      "description": "Trockener Knochenkratzer auf altem Holz, gefolgt von einem Astknacken."
+    },
+    {
+      "id": "SFX05",
+      "title": "Ein einzelner Schmiedeschlag",
+      "scene": "S04",
+      "category": "sfx",
+      "file": "V3_SFX05_Schmiedeschlag.wav",
+      "mode": "oneShot",
+      "gain": -0.2,
+      "fadeMs": 0,
+      "isClue": true,
+      "printFallbackId": "H06",
+      "description": "Naher Ambossanschlag mit langer Metallresonanz."
+    },
+    {
+      "id": "SFX06",
+      "title": "Stimme ohne Sprecher",
+      "scene": "S05",
+      "category": "sfx",
+      "file": "V3_SFX06_Stimme.wav",
+      "mode": "oneShot",
+      "gain": -0.28,
+      "fadeMs": 0,
+      "isClue": true,
+      "printFallbackId": "H08",
+      "description": "Atem, entfernte menschliche Silben ohne verständliche Sprache und ein verzögerter Hall."
+    },
+    {
+      "id": "SFX07",
+      "title": "Masken auf dem Weg",
+      "scene": "S06",
+      "category": "sfx",
+      "file": "V3_SFX07_Prozession.wav",
+      "mode": "oneShot",
+      "gain": -0.25,
+      "fadeMs": 0,
+      "isClue": true,
+      "printFallbackId": "H07",
+      "description": "Viele langsame Schritte, Holzmasken und eine einzelne entfernte Laterne."
+    },
+    {
+      "id": "SFX08",
+      "title": "Knochenhirsch hebt den Kopf",
+      "scene": "S07",
+      "category": "sfx",
+      "file": "V3_SFX08_Knochenhirsch.wav",
+      "mode": "oneShot",
+      "gain": -0.3,
+      "fadeMs": 0,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Tiefe Atembewegung, Geweih, Schritt im Schnee und ein kurzer Druckabfall."
+    },
+    {
+      "id": "SFX09",
+      "title": "Die Bindung bricht",
+      "scene": "S08",
+      "category": "sfx",
+      "file": "V3_SFX09_Bindung.wav",
+      "mode": "oneShot",
+      "gain": -0.2,
+      "fadeMs": 0,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Holz und Eisen geben nach, der Druck fällt ab, danach nur Tauwasser."
+    },
+    {
+      "id": "SFX10",
+      "title": "Atem des Waldes",
+      "scene": "S08",
+      "category": "sfx",
+      "file": "V3_SFX10_Waldatem.wav",
+      "mode": "oneShot",
+      "gain": -0.28,
+      "fadeMs": 0,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Langsames Einatmen zwischen Bäumen, das sich in normalen Wind auflöst."
+    }
   ]
 }

@@ -6,11 +6,11 @@ const progressCount = document.querySelector("#progress-count");
 const progressFill = document.querySelector("#progress-fill");
 const audioStatus = document.querySelector("#audio-status");
 const nightPhases = [
-  { title: "Ankunft", detail: "Kutschenpanne und erster Weg ins Dorf.", symbol: "✦" },
-  { title: "Dunkelheit", detail: "Dorf, Kirche, Schmiede und Grube stehen offen.", symbol: "☾" },
-  { title: "Warnung", detail: "Die Weiße Frau und die Wahrheit vor Mitternacht.", symbol: "!" },
-  { title: "Mitternacht", detail: "Das Finale beginnt. Jetzt zählt jede Entscheidung.", symbol: "◉" },
-  { title: "Tauwetter", detail: "Stille nach dem Finale und persönlicher Epilog.", symbol: "◌" },
+  { title: "Der Bruch", detail: "Manipulierte Kutsche, Schnee und der erste falsche Schutz.", symbol: "✦" },
+  { title: "Das Dorf", detail: "Gasthaus, Kirche und Schmiede öffnen ihre Widersprüche.", symbol: "⌂" },
+  { title: "Die Spur", detail: "Namen, Buchseiten und der Weg zur Alten Eiche.", symbol: "⌕" },
+  { title: "Der Ruf", detail: "Die Glocke schlägt. Das Dorf muss sich entscheiden.", symbol: "!" },
+  { title: "Der Morgen", detail: "Drei mögliche Enden und die Rechnung des Waldes.", symbol: "◉" },
 ];
 
 function normalizedNightPhase(value) {
@@ -40,6 +40,9 @@ const state = {
   sessionNote: localStorage.getItem("kraehenfels.sessionNote") || "",
   sceneNotes: stored("kraehenfels.sceneNotes", {}),
   nightPhase: normalizedNightPhase(localStorage.getItem("kraehenfels.nightPhase")),
+  threatLevel: Math.min(5, Math.max(0, Number(localStorage.getItem("kraehenfels.threatLevel") || 0))),
+  npcStates: stored("kraehenfels.npcStates", {}),
+  selectedHooks: stored("kraehenfels.selectedHooks", {}),
   spoilersOpen: false,
   statusTone: "ok",
 };
@@ -53,6 +56,9 @@ function persist() {
   localStorage.setItem("kraehenfels.sessionNote", state.sessionNote);
   localStorage.setItem("kraehenfels.sceneNotes", JSON.stringify(state.sceneNotes));
   localStorage.setItem("kraehenfels.nightPhase", String(state.nightPhase));
+  localStorage.setItem("kraehenfels.threatLevel", String(state.threatLevel));
+  localStorage.setItem("kraehenfels.npcStates", JSON.stringify(state.npcStates));
+  localStorage.setItem("kraehenfels.selectedHooks", JSON.stringify(state.selectedHooks));
 }
 
 const audio = new AudioEngine({
@@ -137,9 +143,11 @@ function renderNPC(npc) {
       ${npc.hides?.length ? `<p><span>VERSCHWEIGT</span>${npc.hides.map(escapeHtml).join("<br>")}</p>` : ""}
       ${npc.givesHandoutIds?.length ? `<p class="gives-handout"><span>GIBT</span>${npc.givesHandoutIds.map((id) => `${id} · ${escapeHtml(handoutById(id)?.title ?? "")}`).join("<br>")}</p>` : ""}
     </div>` : "";
+  const stateIndex = Number(state.npcStates[npc.id] || 0);
+  const states = npc.states?.length ? `<label class="npc-state"><span>Haltung</span><select data-npc-state="${npc.id}">${npc.states.map((label, index) => `<option value="${index}" ${index === stateIndex ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}</select></label>` : "";
   return `<article class="npc-entry">
     <div class="npc-heading"><div><h3>${escapeHtml(npc.name)}</h3><p>${escapeHtml(npc.role)}</p></div></div>
-    <p>${escapeHtml(npc.description)}</p>${spoiler}${prompt}
+    <p>${escapeHtml(npc.description)}</p>${states}${spoiler}${prompt}
   </article>`;
 }
 
@@ -174,8 +182,8 @@ function render() {
         <h2>${escapeHtml(scene.title)}</h2>
         <p>${escapeHtml(scene.goal)}</p>
       </div>
-      <div class="escalation" aria-label="Eskalation Stufe ${scene.escalation} von 5">
-        <span>Eskalation</span><div>${[0, 1, 2, 3, 4].map((level) => `<i class="${level < scene.escalation ? "is-hot" : ""}"></i>`).join("")}</div><strong>${scene.escalation}/5</strong>
+      <div class="escalation" aria-label="Dorfspannung Stufe ${state.threatLevel} von 5">
+        <span>Dorfspannung</span><div>${[0, 1, 2, 3, 4].map((level) => `<i class="${level < state.threatLevel ? "is-hot" : ""}"></i>`).join("")}</div><strong>${state.threatLevel}/5</strong>
       </div>
     </section>
 
@@ -190,6 +198,7 @@ function render() {
         <div><span class="eyebrow">Nachtstand</span><strong>${escapeHtml(nightPhase.symbol)} ${escapeHtml(nightPhase.title)}</strong><small>${escapeHtml(nightPhase.detail)}</small></div>
         <div class="night-control-actions"><button class="button button-quiet" data-action="night-previous" type="button" ${state.nightPhase === 0 ? "disabled" : ""}>Zurück</button><select data-night-phase aria-label="Nachtstand auswählen">${nightPhases.map((phase, index) => `<option value="${index}" ${index === state.nightPhase ? "selected" : ""}>${escapeHtml(phase.title)}</option>`).join("")}</select><button class="button button-primary" data-action="night-next" type="button" ${state.nightPhase === nightPhases.length - 1 ? "disabled" : ""}>Weiter</button></div>
       </div>
+      <label class="field threat-field"><span>Dorfspannung manuell setzen</span><input data-threat type="range" min="0" max="5" step="1" value="${state.threatLevel}"><small>Die App empfiehlt nur. Du entscheidest, wann die Lage kippt.</small></label>
       <div class="table-fields">
         ${state.playerNames.map((name, index) => `<label class="field"><span>Reisender ${index + 1}</span><input data-player-index="${index}" type="text" autocomplete="off" autocapitalize="words" placeholder="Name der Figur" value="${escapeHtml(name)}"></label>`).join("")}
       </div>
@@ -210,7 +219,13 @@ function render() {
 
     <section class="content-section npc-section">
       <div class="section-heading"><h2>NPCs in dieser Szene</h2><span>${npcs.length ? "Verhalten und Handouts" : "Keine festen NPCs"}</span></div>
-      <div class="npc-list">${npcs.length ? npcs.map(renderNPC).join("") : `<p class="quiet-copy">Die Weiße Frau reagiert auf die Gruppe und spricht nicht mit Worten.</p>`}</div>
+      <div class="npc-list">${npcs.length ? npcs.map(renderNPC).join("") : `<p class="quiet-copy">Der Wald reagiert auf die Gruppe und spricht nicht mit Worten.</p>`}</div>
+    </section>
+
+    <section class="content-section dossier-section">
+      <div class="section-heading"><h2>Akte</h2><span>${state.manifest.facts.filter((fact) => fact.clueIds.every((id) => state.clues.has(id))).length} / ${state.manifest.facts.length} Schlussfolgerungen</span></div>
+      <div class="fact-list">${state.manifest.facts.map((fact) => { const found = fact.clueIds.every((id) => state.clues.has(id)); return `<div class="fact-row ${found ? "is-found" : ""}"><span>${found ? "✓" : "·"}</span><div><strong>${escapeHtml(fact.title)}</strong><small>${escapeHtml(found ? fact.details : "Noch nicht bestätigt")}</small></div></div>`; }).join("")}</div>
+      <div class="hook-list"><h3>Reisehaken</h3>${state.manifest.travelHooks.map((hook) => `<button class="check-row ${Object.values(state.selectedHooks).includes(hook.id) ? "is-found" : ""}" data-hook="${hook.id}" type="button" aria-pressed="${Object.values(state.selectedHooks).includes(hook.id)}"><span class="checkmark">${Object.values(state.selectedHooks).includes(hook.id) ? "✓" : ""}</span><span><strong>${escapeHtml(hook.title)}</strong><small>${escapeHtml(hook.prompt)}</small></span></button>`).join("")}</div>
     </section>
 
     ${soundboard}
@@ -225,6 +240,11 @@ function render() {
         <ol class="stuck-list">${scene.stuckPrompts.map((prompt) => `<li>${escapeHtml(prompt)}</li>`).join("")}</ol>
       </section>
     </div>
+
+    <section class="content-section maps-section">
+      <div class="section-heading"><h2>Karten</h2><span>Spieler und SL-Ansicht</span></div>
+      <div class="map-list">${(state.manifest.maps || []).map((map) => `<figure class="map-card"><img src="./assets/maps/${encodeURIComponent(map.playerAsset)}" alt="${escapeHtml(map.title)}" loading="lazy"><figcaption>${escapeHtml(map.title)} <small>Spielerkarte</small></figcaption></figure>`).join("")}</div>
+    </section>
 
     <section class="content-section scene-note-section" aria-labelledby="scene-note-title">
       <div class="section-heading"><div><h2 id="scene-note-title">Deine Tischnotiz</h2><p>Für Entscheidungen, Aussagen und offene Fäden dieser Szene.</p></div><span class="save-state">speichert lokal</span></div>
@@ -253,6 +273,19 @@ document.addEventListener("click", async (event) => {
   if (clueButton) return toggleSet(state.clues, clueButton.dataset.clue);
   const checklistButton = event.target.closest("[data-check]");
   if (checklistButton) return toggleSet(state.checklist, checklistButton.dataset.check);
+  const hookButton = event.target.closest("[data-hook]");
+  if (hookButton) {
+    const id = hookButton.dataset.hook;
+    if (Object.values(state.selectedHooks).includes(id)) {
+      state.selectedHooks = Object.fromEntries(Object.entries(state.selectedHooks).filter(([, value]) => value !== id));
+    } else {
+      const slot = ["0", "1", "2"].find((key) => !state.selectedHooks[key]);
+      if (slot) state.selectedHooks[slot] = id;
+    }
+    persist();
+    render();
+    return;
+  }
   const action = event.target.closest("[data-action]")?.dataset.action;
   if (action === "spoilers") {
     state.spoilersOpen = !state.spoilersOpen;
@@ -305,6 +338,15 @@ document.addEventListener("input", (event) => {
     state.nightPhase = normalizedNightPhase(event.target.value);
     persist();
     render();
+  }
+  if (event.target.matches("[data-threat]")) {
+    state.threatLevel = Math.min(5, Math.max(0, Number(event.target.value)));
+    persist();
+    render();
+  }
+  if (event.target.matches("[data-npc-state]")) {
+    state.npcStates[event.target.dataset.npcState] = Number(event.target.value);
+    persist();
   }
 });
 

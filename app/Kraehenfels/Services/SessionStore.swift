@@ -10,11 +10,11 @@ final class SessionStore: ObservableObject {
     }
 
     static let nightPhases = [
-        NightPhase(id: 0, title: "Ankunft", detail: "Kutschenpanne und erster Weg ins Dorf.", symbol: "car.side.fill"),
-        NightPhase(id: 1, title: "Dunkelheit", detail: "Dorf, Kirche, Schmiede und Grube stehen offen.", symbol: "moon.stars.fill"),
-        NightPhase(id: 2, title: "Warnung", detail: "Die Weiße Frau und die Wahrheit vor Mitternacht.", symbol: "exclamationmark.triangle.fill"),
-        NightPhase(id: 3, title: "Mitternacht", detail: "Das Finale beginnt. Jetzt zählt jede Entscheidung.", symbol: "bell.and.waves.left.and.right.fill"),
-        NightPhase(id: 4, title: "Tauwetter", detail: "Stille nach dem Finale und persönlicher Epilog.", symbol: "drop.fill"),
+        NightPhase(id: 0, title: "Der Bruch", detail: "Manipulierte Kutsche, Schnee und der erste falsche Schutz.", symbol: "car.side.fill"),
+        NightPhase(id: 1, title: "Das Dorf", detail: "Gasthaus, Kirche und Schmiede öffnen ihre Widersprüche.", symbol: "house.lodge.fill"),
+        NightPhase(id: 2, title: "Die Spur", detail: "Namen, Buchseiten und der Weg zur Alten Eiche.", symbol: "magnifyingglass"),
+        NightPhase(id: 3, title: "Der Ruf", detail: "Die Glocke schlägt. Das Dorf muss sich entscheiden.", symbol: "bell.and.waves.left.and.right.fill"),
+        NightPhase(id: 4, title: "Der Morgen", detail: "Drei mögliche Enden und die Rechnung des Waldes.", symbol: "sunrise.fill"),
     ]
 
     private struct Snapshot: Codable {
@@ -22,9 +22,17 @@ final class SessionStore: ObservableObject {
         var sessionNote: String
         var sceneNotes: [String: String]
         var nightPhaseIndex: Int?
+        var currentSceneID: String
+        var completedSceneIDs: [String]
+        var checkedClueIDs: [String]
+        var completedChecklistIDs: [String]
+        var npcStates: [String: Int]
+        var threatLevel: Int
+        var selectedHooks: [String: String]
     }
 
-    private let storageKey = "kraehenfels.sessionJournal.v1"
+    private let storageKey = "kraehenfels.sessionJournal.v3"
+    private let defaults: UserDefaults
 
     @Published var playerNames: [String] {
         didSet { persist() }
@@ -42,18 +50,61 @@ final class SessionStore: ObservableObject {
         didSet { persist() }
     }
 
+    @Published var currentSceneID: String {
+        didSet { persist() }
+    }
+
+    @Published var completedSceneIDs: Set<String> {
+        didSet { persist() }
+    }
+
+    @Published var checkedClueIDs: Set<String> {
+        didSet { persist() }
+    }
+
+    @Published var completedChecklistIDs: Set<String> {
+        didSet { persist() }
+    }
+
+    @Published var npcStates: [String: Int] {
+        didSet { persist() }
+    }
+
+    @Published var threatLevel: Int {
+        didSet { persist() }
+    }
+
+    @Published var selectedHooks: [String: String] {
+        didSet { persist() }
+    }
+
     init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         if let data = defaults.data(forKey: storageKey),
            let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) {
             playerNames = Self.normalizedNames(snapshot.playerNames)
             sessionNote = snapshot.sessionNote
             sceneNotes = snapshot.sceneNotes
             nightPhaseIndex = Self.normalizedNightPhase(snapshot.nightPhaseIndex ?? 0)
+            currentSceneID = snapshot.currentSceneID
+            completedSceneIDs = Set(snapshot.completedSceneIDs)
+            checkedClueIDs = Set(snapshot.checkedClueIDs)
+            completedChecklistIDs = Set(snapshot.completedChecklistIDs)
+            npcStates = snapshot.npcStates
+            threatLevel = Self.normalizedThreat(snapshot.threatLevel)
+            selectedHooks = snapshot.selectedHooks
         } else {
             playerNames = ["", "", ""]
             sessionNote = ""
             sceneNotes = [:]
             nightPhaseIndex = 0
+            currentSceneID = "S01"
+            completedSceneIDs = []
+            checkedClueIDs = []
+            completedChecklistIDs = []
+            npcStates = [:]
+            threatLevel = 0
+            selectedHooks = [:]
         }
     }
 
@@ -90,6 +141,38 @@ final class SessionStore: ObservableObject {
         playerNames = ["", "", ""]
         sessionNote = ""
         sceneNotes = [:]
+        nightPhaseIndex = 0
+        currentSceneID = "S01"
+        completedSceneIDs = []
+        checkedClueIDs = []
+        completedChecklistIDs = []
+        npcStates = [:]
+        threatLevel = 0
+        selectedHooks = [:]
+    }
+
+    func setThreatLevel(_ level: Int) {
+        threatLevel = Self.normalizedThreat(level)
+    }
+
+    func toggleClue(_ clueID: String) {
+        if checkedClueIDs.contains(clueID) {
+            checkedClueIDs.remove(clueID)
+        } else {
+            checkedClueIDs.insert(clueID)
+        }
+    }
+
+    func toggleChecklist(_ checklistID: String) {
+        if completedChecklistIDs.contains(checklistID) {
+            completedChecklistIDs.remove(checklistID)
+        } else {
+            completedChecklistIDs.insert(checklistID)
+        }
+    }
+
+    func setNPCState(_ npcID: String, state: Int) {
+        npcStates[npcID] = min(max(state, 0), 2)
     }
 
     private func persist() {
@@ -97,10 +180,17 @@ final class SessionStore: ObservableObject {
             playerNames: Self.normalizedNames(playerNames),
             sessionNote: sessionNote,
             sceneNotes: sceneNotes,
-            nightPhaseIndex: Self.normalizedNightPhase(nightPhaseIndex)
+            nightPhaseIndex: Self.normalizedNightPhase(nightPhaseIndex),
+            currentSceneID: currentSceneID,
+            completedSceneIDs: Array(completedSceneIDs).sorted(),
+            checkedClueIDs: Array(checkedClueIDs).sorted(),
+            completedChecklistIDs: Array(completedChecklistIDs).sorted(),
+            npcStates: npcStates,
+            threatLevel: Self.normalizedThreat(threatLevel),
+            selectedHooks: selectedHooks
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
-        UserDefaults.standard.set(data, forKey: storageKey)
+        defaults.set(data, forKey: storageKey)
     }
 
     private static func normalizedNames(_ names: [String]) -> [String] {
@@ -109,5 +199,9 @@ final class SessionStore: ObservableObject {
 
     private static func normalizedNightPhase(_ index: Int) -> Int {
         min(max(index, 0), nightPhases.count - 1)
+    }
+
+    private static func normalizedThreat(_ level: Int) -> Int {
+        min(max(level, 0), 5)
     }
 }

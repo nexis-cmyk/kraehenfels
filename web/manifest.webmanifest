@@ -1,7 +1,7 @@
 {
   "name": "Krähenfels · Leitstand",
   "short_name": "Krähenfels",
-  "description": "Offlinefähiger Spielleiter-Leitstand für Die Weiße Frau schweigt.",
+  "description": "Offlinefähiger Spielleiter-Leitstand für Krähenfels: Die letzte Kutsche.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#090e17",

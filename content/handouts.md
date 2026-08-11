@@ -1,137 +1,43 @@
-# Spielerhandouts: Die Weiße Frau schweigt
+# Spielerbeweise: Krähenfels: Die letzte Kutsche
 
-Diese Texte sind die Druckvorlagen. Die Seiten werden im PDF mit viel Rand und großen Schriften gesetzt. Der Text in eckigen Klammern ist nur für die Spielleitung und wird nicht mitgedruckt.
+Jeder Beweis wird als eigenes A4-Blatt ausgegeben. Der SL-Index nennt Fundort, NPC und Fallback, bleibt aber außerhalb der Spielerunterlagen.
 
-## H01 Kutschschein und Frachtzettel
+## H01 Kutschauftrag und Zahlungsanweisung
 
-**POSTKUTSCHE FREIBURG – FREUDENSTADT**  
-17. November 1890, Abfahrt 16:10 Uhr
+Die Umleitung über Krähenfels ist handschriftlich ergänzt. Bürgermeister Gruber bestätigt die Zahlung für eine verspätete Ankunft. Unter dem Frachtvermerk steht: "Achse prüfen. Gäste vor Mitternacht unter Dach bringen."
 
-Fahrgäste: drei Reisende, Namen nicht eingetragen.  
-Fracht: ein verschnürtes Eisenstück, Absender **W. Abele, Krähenfels**.  
-Besonderer Hinweis des Frachtführers: *Nicht öffnen. Nicht läuten. Bei Frost nicht berühren.*
+## H02 Krähenfelser Wochenblatt
 
-Stempel am Rand: **Umleitung über Krähenfels wegen Schnee auf der Passstraße.**
+Ein kurzer Lokalteil berichtet von drei Reisenden, die nach einer Übernachtung nicht weiterreisten. Ein Gemeinderat bittet darum, "fremde Namen nicht unnötig zu wiederholen".
 
-## H02 Handskizze von Krähenfels
+## H03 Gästebuch des schwarzen Keilers
 
-Eine grobe Ortskarte mit diesen sichtbaren Bezeichnungen:
+Die Namen früherer Gäste sind mit roter Tinte gestrichen. Neben jedem Namen steht dieselbe Uhrzeit. Die aktuelle Seite enthält drei freie Zeilen.
 
-- Gasthaus **Zur Krähe**
-- Kirche und Friedhof
-- Schmiede / Stellmacherei
-- alter Weg zur Grube
-- Bach und kleine Brücke
-- Kutschenweg nach Freiburg
+## H04 Kirchenbuch: Das Gastrecht
 
-Am unteren Rand steht: *Nach Sonnenuntergang keine Glocke. Kein Singen. Keine fremden Namen rufen.*
+"Wer unter Dach aufgenommen ist, bleibt bis zum ersten Hahnenschrei Gast. Kein Messer, kein Seil und kein Name soll ihn an den Wald zurückgeben."
 
-## H03 Krähenfelser Wochenblatt
+## H05 Grubers Winterbuchhaltung
 
-**Krähenfelser Wochenblatt, 16. November 1890**
+Die Tabelle verbindet milde Winter mit einer steigenden Zahl roter Markierungen. Die Einträge stammen aus Grubers Büro, nicht aus der Kirche.
 
-### Winterdienst verschoben
+## H06 Schmiedezeichnung der Geweihreliquie
 
-Der neue Klöppel für die obere Kirchenglocke ist eingetroffen. Die Montage wird bis zum Ende des Frostes verschoben. Der Gemeinderat erinnert daran, dass die Glocke seit dem Unglück von 1848 nicht mehr nach Einbruch der Dunkelheit geläutet wird.
+Eine technische Zeichnung zeigt ein Geweihstück, drei schwarze Nägel und eine Eisenstange. Die Notiz lautet: "Feuer löst die Bindung. Ein Eid kann sie wenden."
 
-### Vermisster Holzsammler
+## H07 Lenis Zeichnung
 
-Wilhelm Abele, 42, wurde am alten Grubenweg zuletzt gesehen. Hinweise bitte beim Pfarrhaus abgeben.
+Maskierte Dorfbewohner gehen von einer offenen Tür zu einer Alten Eiche. Ein Geweih steht zwischen den Wurzeln. Ein Kind hat drei Wörter daneben geschrieben: "öffnen, erinnern, brechen".
 
-### Aus dem Gemeinderat
+## H08 Elias' Holzrubbing
 
-Besucher sollen sich nach Sonnenuntergang in ihren Unterkünften aufhalten. Das ist eine Vorsichtsmaßnahme gegen den Schnee und kein Grund für Gerüchte.
+Die Kohleabreibung zeigt eine Schwelle, einen Kreis und einen gebrochenen Geweihbogen. Die Rückseite enthält die Namen der letzten drei Gäste, die Elara aus dem Gedächtnis kennt.
 
-## H04 Kirchenbuchauszug
+## H09 Fragment des alten Rituals
 
-**Krähenfels, 3. Dezember 1848**
+Dieses Blatt bleibt zunächst bei der Spielleitung. Es beschreibt drei Wege: das Dorf zum Widerruf bringen, das Gastrecht an der Eiche erneuern oder die Bindung mit Feuer und Eisen brechen.
 
-Heute wurde Elisabeth Abele, Kantorin und Lehrerin, im Schnee oberhalb der Grube gefunden. Sie hatte drei Kinder aus dem eingestürzten Stollen geführt. Der Rückweg blieb ihr versperrt.
+## H10 Forstkarte zur Alten Eiche
 
-Die Glocke schlug danach viermal, obwohl niemand im Turm war.
-
-Die letzte Zeile ist herausgerissen. Am Falz sind nur noch die Wörter zu lesen:
-
-**... nicht die Frau ...  
-... was unter dem Stein ...  
-... die Stimme ...**
-
-## H05 Kabinettfoto von 1848
-
-Auf dem Foto steht eine junge Frau neben einer kleinen Glocke. Unter dem Foto:
-
-**Elisabeth Abele, Kantorin, Krähenfels, Winter 1848.**
-
-Jemand hat später mit Bleistift ergänzt:
-
-*Sie hat uns herausgeführt. Nicht die Hexe.*
-
-## H06 Liedblatt ohne letzte Strophe
-
-**Lied für den Heimweg**
-
-Wenn der erste Schnee fällt,  
-wenn der zweite Weg schweigt,  
-wenn der dritte Ton ruft,  
-bleibt der vierte Stein.
-
-Die letzte Strophe fehlt. Unter dem Notensystem sind vier kleine Kreise eingezeichnet:
-
-**3   1   2   4**
-
-Randnotiz in anderer Handschrift: *Nicht die Glocke antwortet. Das Echo tut es.*
-
-## H07 Werkbuch der Stellmacherei
-
-**Eintrag vom 15. November 1890, Emil Bopp**
-
-Die Kutschenachse aus Freiburg ist sauber gearbeitet. Der Bruch sitzt nicht an der schwächsten Stelle. Metallstaub liegt im Holz, als hätte etwas von innen dagegen geschlagen.
-
-Der neue Glockenklöppel besteht aus altem Grubeneisen. Beim Anschlagen summt er, auch wenn die Glocke gedämpft wird.
-
-Vermerk: **Nicht zusammen mit der Glocke lagern.**
-
-## H08 Alter Flur- und Grubenplan
-
-Der Plan zeigt drei Wege vom Dorf zur verlassenen Grube:
-
-1. der sichtbare Försterweg, endet am verschütteten Mundloch
-2. der Bachlauf, führt zu einem niedrigen Flutstollen
-3. der alte Seilzugweg, führt zu einer Kammer unter der Kapelle
-
-Ein Kreis markiert einen kleinen Raum mit der Notiz: **Abele, Werkzeug und Liedblatt**.
-
-## H09 Bericht von Lorenz Sauter
-
-*Ich höre schlecht, aber der Berg hört zu gut.*
-
-Die Stimmen kommen nicht aus einer Richtung. Sie nehmen Wörter, die gerade gesprochen wurden, und geben sie später zurück. Erst leise. Dann mit einer Stimme, die man kennt.
-
-Elisabeth war nicht die Frau, die den Berg weckte. Sie war die Frau, die ihn unten hielt.
-
-Wenn ihr den Klöppel habt, lasst ihn nicht allein schwingen. Gebt ihm eine Antwort.
-
-## H10 Elisabeths Brief
-
-**[Nur bei Bedarf an die Spieler geben]**
-
-An Wilhelm, falls ich nicht zurückkehre.
-
-Die Leute werden sagen, ich hätte die Kinder in die Grube geführt. Das stimmt nicht. Ich habe sie herausgeführt. Was unten blieb, trägt unsere Stimmen wie Mäntel.
-
-Der neue Klöppel ist aus dem Eisen des ersten Einsturzes. Er öffnet den Widerhall, wenn er ohne Antwort läutet. Nennt meinen vollen Namen und singt die Gegenfolge: **drei, eins, zwei, vier**.
-
-Wenn niemand antwortet, schmilzt das Eisen. Wenn ihr schweigt, hört der Berg auf euch.
-
-**Elisabeth Abele**
-
-## H11 Finale: Schlagfolge und Lied
-
-**Für die letzte Szene**
-
-1. Klöppel sichern oder schmelzen.
-2. Gegenfolge hörbar machen: **3 – 1 – 2 – 4**.
-3. Den Namen vollständig sprechen: **Elisabeth Abele**.
-4. Entscheiden, ob die Glocke, die Grube oder das Eisen das Ende trägt.
-
-Die Weiße Frau greift niemanden an. Sie wartet auf eine Antwort, die nicht aus dem Berg kommt.
+Eine alte Waldkarte zeigt einen Weg hinter dem Gasthaus, der in keiner aktuellen Dorfkarte verzeichnet ist.

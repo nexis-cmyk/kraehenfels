@@ -4,8 +4,6 @@ struct RootView: View {
     @EnvironmentObject private var content: ContentStore
     @EnvironmentObject private var audio: AudioEngine
     @EnvironmentObject private var session: SessionStore
-    @AppStorage("currentSceneID") private var currentSceneID = "S01"
-    @AppStorage("completedSceneIDs") private var completedSceneIDs = ""
 
     var body: some View {
         NavigationStack {
@@ -14,6 +12,7 @@ struct RootView: View {
                     header
                     tableStatus
                     nightStatus
+                    threatStatus
                     currentSceneCard
                     sceneList
                     quickActions
@@ -42,7 +41,7 @@ struct RootView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("DIE WEISSE FRAU SCHWEIGT")
+            Text("KRÄHENFELS · DIE LETZTE KUTSCHE")
                 .font(.caption.weight(.semibold))
                 .tracking(1.6)
                 .foregroundStyle(FrostTheme.cobalt)
@@ -57,14 +56,14 @@ struct RootView: View {
 
     private var currentSceneCard: some View {
         Group {
-            if let scene = content.scene(for: currentSceneID) {
+            if let scene = content.scene(for: session.currentSceneID) {
                 NavigationLink(destination: SceneDetailView(scene: scene)) {
                     FrostCard {
                         VStack(alignment: .leading, spacing: 13) {
                             HStack {
                                 SectionLabel(title: "Aktuelle Szene")
                                 Spacer()
-                                Text("\(completedCount)/\(content.manifest.scenes.count) abgeschlossen")
+                                Text("\(session.completedSceneIDs.count)/\(content.manifest.scenes.count) abgeschlossen")
                                     .font(.caption.monospaced())
                                     .foregroundStyle(FrostTheme.quiet)
                             }
@@ -85,7 +84,7 @@ struct RootView: View {
                                 Image(systemName: "arrow.up.right")
                                     .foregroundStyle(FrostTheme.cobalt)
                             }
-                            ProgressView(value: Double(completedCount), total: Double(max(content.manifest.scenes.count, 1)))
+                            ProgressView(value: Double(session.completedSceneIDs.count), total: Double(max(content.manifest.scenes.count, 1)))
                                 .tint(FrostTheme.cobalt)
                         }
                     }
@@ -153,11 +152,40 @@ struct RootView: View {
         }
     }
 
+    private var threatStatus: some View {
+        FrostCard {
+            HStack(spacing: 12) {
+                Image(systemName: session.threatLevel >= 4 ? "eye.trianglebadge.exclamationmark" : "tree.fill")
+                    .foregroundStyle(session.threatLevel >= 4 ? FrostTheme.warning : FrostTheme.cobalt)
+                    .frame(width: 28)
+                VStack(alignment: .leading, spacing: 3) {
+                    SectionLabel(title: "Dorfspannung")
+                    if let level = content.manifest.threatLevels.first(where: { $0.level == session.threatLevel }) {
+                        Text("Stufe \(session.threatLevel): \(level.title)")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.white)
+                        Text(level.detail)
+                            .font(.caption)
+                            .foregroundStyle(FrostTheme.quiet)
+                    } else {
+                        Text("Stufe \(session.threatLevel) von 5")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.white)
+                    }
+                }
+                Spacer()
+                Stepper("", value: Binding(get: { session.threatLevel }, set: { session.setThreatLevel($0) }), in: 0...5)
+                    .labelsHidden()
+                    .accessibilityLabel("Dorfspannung")
+            }
+        }
+    }
+
     private var sceneList: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionLabel(title: "Szenen")
             ForEach(content.manifest.scenes) { scene in
-                NavigationLink(destination: SceneDetailView(scene: scene)) {
+                    NavigationLink(destination: SceneDetailView(scene: scene)) {
                     sceneRow(scene)
                 }
                 .buttonStyle(.plain)
@@ -166,7 +194,7 @@ struct RootView: View {
     }
 
     private func sceneRow(_ scene: SceneEntry) -> some View {
-        let completed = completedSceneIDs.split(separator: ",").contains(Substring(scene.id))
+        let completed = session.completedSceneIDs.contains(scene.id)
         return HStack(spacing: 13) {
             Text(scene.id)
                 .font(.caption.monospaced().weight(.bold))
@@ -189,7 +217,7 @@ struct RootView: View {
     }
 
     private var quickActions: some View {
-        HStack(spacing: 12) {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
             NavigationLink(destination: RulesView()) {
                 FrostCard {
                     Label("Regeln", systemImage: "dice")
@@ -214,10 +242,15 @@ struct RootView: View {
                 }
             }
             .buttonStyle(.plain)
+            NavigationLink(destination: CaseFileView()) {
+                FrostCard {
+                    Label("Akte", systemImage: "folder")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(FrostTheme.frost)
+                }
+            }
+            .buttonStyle(.plain)
         }
     }
 
-    private var completedCount: Int {
-        completedSceneIDs.split(separator: ",").filter { !$0.isEmpty }.count
-    }
 }

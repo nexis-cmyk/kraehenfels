@@ -5,10 +5,6 @@ struct SceneDetailView: View {
     @EnvironmentObject private var content: ContentStore
     @EnvironmentObject private var audio: AudioEngine
     @EnvironmentObject private var session: SessionStore
-    @AppStorage("currentSceneID") private var currentSceneID = "S01"
-    @AppStorage("completedSceneIDs") private var completedSceneIDs = ""
-    @AppStorage("checkedClueIDs") private var checkedClueIDs = ""
-    @AppStorage("completedChecklistIDs") private var completedChecklistIDs = ""
     @State private var showSpoilers = false
 
     var body: some View {
@@ -19,6 +15,7 @@ struct SceneDetailView: View {
                 escalationCard
                 readAloudCard
                 goalCard
+                recommendationCard
                 gmNotesCard
                 sessionNoteCard
                 cluePanel
@@ -60,19 +57,39 @@ struct SceneDetailView: View {
         FrostCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    SectionLabel(title: "Eskalation")
+                    SectionLabel(title: "Dorfspannung")
                     Spacer()
-                    Text("Stufe \(scene.escalation)/5")
+                    Text("Stufe \(session.threatLevel)/5")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(scene.escalation >= 4 ? FrostTheme.warning : FrostTheme.frost)
+                        .foregroundStyle(session.threatLevel >= 4 ? FrostTheme.warning : FrostTheme.frost)
                 }
                 HStack(spacing: 7) {
                     ForEach(0..<6, id: \.self) { index in
                         Capsule()
-                            .fill(index <= scene.escalation ? (index >= 4 ? FrostTheme.warning : FrostTheme.cobalt) : FrostTheme.panelRaised)
+                            .fill(index <= session.threatLevel ? (index >= 4 ? FrostTheme.warning : FrostTheme.cobalt) : FrostTheme.panelRaised)
                             .frame(height: 7)
                     }
                 }
+                Stepper("Manuell setzen", value: Binding(get: { session.threatLevel }, set: { session.setThreatLevel($0) }), in: 0...5)
+                    .font(.caption)
+                    .foregroundStyle(FrostTheme.quiet)
+            }
+        }
+    }
+
+    private var recommendationCard: some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    SectionLabel(title: "Nächster sinnvoller Schritt")
+                    Spacer()
+                    Image(systemName: "lightbulb.fill")
+                        .foregroundStyle(FrostTheme.warning)
+                }
+                Text(scene.recommendation.isEmpty ? "Lass die Gruppe frei handeln und reagiere auf ihre Fragen." : scene.recommendation)
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.9))
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -187,8 +204,8 @@ struct SceneDetailView: View {
     private func clueRow(_ clue: ClueEntry) -> some View {
         Button { toggleClue(clue.id) } label: {
             HStack(alignment: .top, spacing: 12) {
-                Image(systemName: isMarked(clue.id, in: checkedClueIDs) ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(isMarked(clue.id, in: checkedClueIDs) ? FrostTheme.cobalt : FrostTheme.quiet)
+                Image(systemName: session.checkedClueIDs.contains(clue.id) ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(session.checkedClueIDs.contains(clue.id) ? FrostTheme.cobalt : FrostTheme.quiet)
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 5) {
                         Text(clue.title)
@@ -255,6 +272,15 @@ struct SceneDetailView: View {
                         Label("Kann geben: \(npc.givesHandoutIds.joined(separator: ", "))", systemImage: "doc.badge.plus")
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(FrostTheme.cobalt)
+                    }
+                    if !npc.states.isEmpty {
+                        Picker("Haltung", selection: Binding(get: { session.npcStates[npc.id, default: 0] }, set: { session.setNPCState(npc.id, state: $0) })) {
+                            ForEach(Array(npc.states.enumerated()), id: \.offset) { index, state in
+                                Text(state.capitalized).tag(index)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityLabel("Haltung von \(npc.name)")
                     }
                 }
                 if let prompt = npc.prompts.first {
@@ -389,8 +415,8 @@ struct SceneDetailView: View {
                 let id = "\(scene.id)-\(index)"
                 Button { toggleChecklist(id) } label: {
                     HStack(spacing: 10) {
-                        Image(systemName: isMarked(id, in: completedChecklistIDs) ? "checkmark.square.fill" : "square")
-                            .foregroundStyle(isMarked(id, in: completedChecklistIDs) ? FrostTheme.cobalt : FrostTheme.quiet)
+                        Image(systemName: session.completedChecklistIDs.contains(id) ? "checkmark.square.fill" : "square")
+                            .foregroundStyle(session.completedChecklistIDs.contains(id) ? FrostTheme.cobalt : FrostTheme.quiet)
                         Text(item)
                             .font(.subheadline)
                             .foregroundStyle(.white.opacity(0.88))
@@ -404,10 +430,8 @@ struct SceneDetailView: View {
 
     private var finishButton: some View {
         Button {
-            currentSceneID = scene.nextSceneIds.first ?? scene.id
-            var ids = splitIDs(completedSceneIDs)
-            if !ids.contains(scene.id) { ids.append(scene.id) }
-            completedSceneIDs = ids.joined(separator: ",")
+            session.currentSceneID = scene.nextSceneIds.first ?? scene.id
+            session.completedSceneIDs.insert(scene.id)
         } label: {
             Text(scene.nextSceneIds.isEmpty ? "Szene abschließen" : "Szene abschließen und weiter")
                 .font(.headline)
@@ -420,31 +444,19 @@ struct SceneDetailView: View {
     }
 
     private var checkedClueCount: Int {
-        scene.clueIds.filter { isMarked($0, in: checkedClueIDs) }.count
+        scene.clueIds.filter { session.checkedClueIDs.contains($0) }.count
     }
 
     private var completedChecklistCount: Int {
-        scene.checklist.indices.filter { isMarked("\(scene.id)-\($0)", in: completedChecklistIDs) }.count
-    }
-
-    private func splitIDs(_ raw: String) -> [String] {
-        raw.split(separator: ",").map(String.init)
-    }
-
-    private func isMarked(_ id: String, in raw: String) -> Bool {
-        splitIDs(raw).contains(id)
+        scene.checklist.indices.filter { session.completedChecklistIDs.contains("\(scene.id)-\($0)") }.count
     }
 
     private func toggleClue(_ id: String) {
-        var ids = splitIDs(checkedClueIDs)
-        if let index = ids.firstIndex(of: id) { ids.remove(at: index) } else { ids.append(id) }
-        checkedClueIDs = ids.joined(separator: ",")
+        session.toggleClue(id)
     }
 
     private func toggleChecklist(_ id: String) {
-        var ids = splitIDs(completedChecklistIDs)
-        if let index = ids.firstIndex(of: id) { ids.remove(at: index) } else { ids.append(id) }
-        completedChecklistIDs = ids.joined(separator: ",")
+        session.toggleChecklist(id)
     }
 }
 

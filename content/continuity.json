@@ -1,34 +1,30 @@
 {
-  "title": "Die Weiße Frau schweigt",
-  "date": "1890-11-17",
+  "title": "Krähenfels: Die letzte Kutsche",
+  "date": "1890-11-28",
   "location": "Krähenfels, Schwarzwald",
-  "midnightEvent": "1890-11-18T00:00:00",
+  "midnightEvent": "1890-11-29T00:00:00",
   "names": {
-    "elizabeth": "Elisabeth Abele",
-    "echo": "Der Widerhall unter dem Stein",
-    "innkeeper": "Rosa Ketterer",
-    "priest": "Martin Hoch",
-    "smith": "Emil Bopp",
-    "miner": "Lorenz Sauter",
-    "coachman": "Jakob Rieger",
-    "deadFiance": "Matthias Renz",
-    "formerOwner": "Wilhelm Abele"
+    "mayor": "Konrad Gruber",
+    "innkeeper": "Elara Voss",
+    "carver": "Elias Renk",
+    "priest": "Matthias Falk",
+    "smith": "Marta Kern",
+    "witness": "Leni Voss",
+    "forestSpirit": "Der Knochenhirsch",
+    "coachman": "Der verschwundene Kutscher"
   },
   "facts": [
-    "Elisabeth Abele war 1848 Kantorin und wollte Matthias Renz heiraten.",
-    "Bergleute öffneten 1848 einen unnatürlich glatten Hohlraum.",
-    "Der Widerhall kopiert nur Stimmen und Wissen, das er zuvor gehört hat.",
-    "Elisabeth band den Widerhall mit einer Gegenmelodie.",
-    "Der neue Glockenklöppel wurde aus Grubeneisen von 1848 gegossen.",
-    "Die Schlagfolge im Finale lautet 3-1-2-4.",
-    "Der vollständige Name Elisabeth Abele muss ausgesprochen werden.",
-    "Die Kutschenachse brach durch eine Vibration vor dem Bergrutsch."
+    "Die Kutschenpanne wurde von Gruber vorbereitet.",
+    "Das alte Gastrecht sollte Reisende bis zum Morgen schützen.",
+    "Gruber verdrehte den Schutzpakt zu einer Opferung.",
+    "Die Geweihreliquie bindet den Knochenhirsch.",
+    "Widerruf, Erneuerung und Feuer sind die drei Auswege."
   ],
   "timeline": [
-    {"year": 1848, "event": "Hohlraum geöffnet, Matthias verschüttet, Elisabeth steigt hinab und bindet den Widerhall."},
-    {"year": 1848, "event": "Wilhelm Abele lässt Elisabeths Eintrag aus dem Kirchenbuch entfernen."},
-    {"year": 1889, "event": "Die alte Glocke wird wegen eines Risses aus dem Betrieb genommen."},
-    {"year": 1890, "event": "Ein neuer Klöppel aus altem Grubeneisen wird zur Kirche gebracht."},
-    {"year": 1890, "event": "Der Pfarrer plant die Weihe für Mitternacht am 18. November."}
+    {"year": 1848, "event": "Der ursprüngliche Gastrecht-Eid wird an der Alten Eiche bestätigt."},
+    {"year": 1871, "event": "Grubers Vater lässt die entscheidende Kirchenbuchseite entfernen."},
+    {"year": 1889, "event": "Gruber beginnt, milde Winter und verschwundene Gäste im Rathausbuch zu verbinden."},
+    {"year": 1890, "event": "Marta fertigt die drei Nägel für die schwarze Geweihreliquie."},
+    {"year": 1890, "event": "Die letzte Kutsche wird auf Grubers Umleitung nach Krähenfels gelenkt."}
   ]
 }
