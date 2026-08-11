@@ -65,7 +65,7 @@ Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: Schnee, Tannen, K
 - `01_Karte_SL.pdf`: geheime Karte mit Flutstollen, Kammer und Wahrheit
 - `01_Grubenplan_H08.pdf` und `01_Grubenplan_SL.pdf`: beschädigter Vermessungsplan mit optionalem SL-Overlay
 - `02_Handouts.pdf`: nur spielersichere, ausschneidbare Hinweise mit Kennung, Schnittlinie und Ausgabezeitpunkt
-- `03_Figurenbau.pdf`: drei Begabungen, 400 Punkte und HTBAH-Schnellregeln
+- `03_Figurenbau.pdf`: ausfüllbare Reiseakte mit Porträtfeld, Passdaten, Rollenfragen, drei Begabungen, 400 Punkten und HTBAH-Schnellregeln (Spielerseite dreimal drucken)
 - `10_SL_Abenteuer.pdf`: vorlesbare Szenen, NPCs und Enden
 - `11_SL_Schnellreferenz.pdf`: Wahrheit, Pflichtspuren und Improvisationshilfe
 - `12_SL_Am_Tisch.pdf`: einseitiger Ablaufzettel mit Hinweisen, Sounds und Eskalation pro Szene

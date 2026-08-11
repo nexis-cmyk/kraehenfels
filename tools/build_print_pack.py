@@ -973,14 +973,28 @@ def build_handouts(
 
 
 def build_character_sheet(path: Path) -> None:
-    story = title_block("Figurenbau", "How to be a Hero / drei Reisende / 400 Fähigkeitspunkte")
+    story = title_block("Figurenbau", "Krähenfels / Reiseakte / How to be a Hero")
+    identity_card = Table([[
+        p("<font color='#315F67'><b>REISEPASS · POSTKUTSCHE NACH FREIBURG</b></font><br/><br/><b>Name</b>  ____________________________________________________<br/><br/><b>Alter</b>  ____________     <b>Beruf</b>  __________________________________<br/><br/><b>Persönlicher Gegenstand</b>  ______________________________________________", styles["KSmall"]),
+        p("<para alignment='center'><font color='#6B5137'><b>PORTRÄT ODER<br/>ZEICHNUNG</b></font><br/><br/><br/><font color='#869A91'>Wie sieht deine Figur<br/>im Schneesturm aus?</font></para>", styles["KSmall"]),
+    ]], colWidths=[126 * mm, 42 * mm], rowHeights=[43 * mm])
+    identity_card.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (0, 0), colors.HexColor("#F4EBD8")),
+        ("BACKGROUND", (1, 0), (1, 0), PALE),
+        ("BOX", (0, 0), (-1, -1), 0.9, UMBER),
+        ("INNERGRID", (0, 0), (-1, -1), 0.6, LINE),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 5 * mm),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 5 * mm),
+        ("TOPPADDING", (0, 0), (-1, -1), 5 * mm),
+    ]))
     story += [
-        p("Name: ____________________________________    Alter: ______    Beruf: ______________________________", styles["KBody"]),
-        p("Persönlicher Gegenstand: __________________________________________________________________________", styles["KBody"]),
-        Spacer(1, 2 * mm),
-        p("Rollenimpuls", styles["KCardTitle"]),
-        p("Was kann deine Figur, das in dieser Kutsche nützlich wird? ________________________________________________________________", styles["KBody"]),
-        p("Was darf die Gruppe niemals erfahren? __________________________________________________________________________________", styles["KBody"]),
+        identity_card,
+        Spacer(1, 4 * mm),
+        p("<b>REISEVERMERK</b>  Was kann deine Figur, das in dieser Kutsche nützlich wird?", styles["KSmall"]),
+        p("__________________________________________________________________________________________________", styles["KBody"]),
+        p("<b>VERSCHLOSSENE SACHE</b>  Was darf die Gruppe niemals erfahren?", styles["KSmall"]),
+        p("__________________________________________________________________________________________________", styles["KBody"]),
         Spacer(1, 2 * mm),
     ]
     rows = [["Begabung", "Punkte", "Begabung / 10", "Fähigkeiten und Punkte"], ["Handeln", "", "", ""], ["Wissen", "", "", ""], ["Soziales", "", "", ""], ["Summe", "400", "", ""]]
