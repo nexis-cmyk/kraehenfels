@@ -7,7 +7,7 @@ Das Repository enthält:
 - das vollständige Abenteuer mit SL-Schnellreferenz
 - eine spoilerfreie Dorfkarte und eine markierte SL-Karte
 - Handouts und einen geführten Charakterbau
-- selbst erzeugte Musik, Atmosphären und Soundeffekte
+- einsatzfertige Atmosphären, Musik und Soundeffekte aus dokumentierten Mixkit-Quellen
 - eine native iOS-Begleitapp ab iOS 17 mit Szenenleitstand, NPCs, Pflichtspuren, Vorlesetexten und Audio-Selbsttest
 - GitHub Actions für Tests, IPA-Build und AltStore-Feed
 - eine offlinefähige Web-Testversion für Leitstand und Soundboard
@@ -76,11 +76,11 @@ Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.z
 
 Die Browser-Version lässt sich vor dem Sideloaden lokal testen. Sie verwendet dieselben Szenen, NPCs, Handouts und Audiodateien wie die iPhone-App. Die genaue Startanleitung steht in [`web/README.md`](web/README.md).
 
-## Audio ersetzen
+## Audio
 
-Die aktuellen Audios sind Platzhalter. Der Master-Prompt fuer eine komplette Neuerzeugung liegt in [`_DOCS/AUDIO-REBUILD-MASTER-PROMPT.md`](_DOCS/AUDIO-REBUILD-MASTER-PROMPT.md). Wenn neue Dateien vorliegen, muessen ihre Dateinamen den vorhandenen Cue-Dateien entsprechen. WAV-Dateien mit gleichem Basisnamen sind ebenfalls okay, das Import-Skript wandelt sie passend um.
+Das Soundboard nutzt ein bewusst kleines, tischpraktisches Set: fünf Atmosphären, ein Musikstück und zwölf Effekte. Die Quellclips liegen nur temporär unter `_TMP/mixkit_audio/`. `tools/build_mixkit_simple_pack.py` schneidet und kombiniert sie zu den 18 Dateien unter `audio/mixkit_simple_pack/`. Der Import verteilt diese danach auf alle 46 technischen Cue-Dateien für App und Web-Testversion. Die vollständige Quellenliste steht in [`_DOCS/AUDIO-SOURCES.md`](_DOCS/AUDIO-SOURCES.md).
 
-Fuer den ersten Spielabend ist der einfache Weg wahrscheinlich besser: [`_DOCS/AUDIO-SIMPLE-PACK.md`](_DOCS/AUDIO-SIMPLE-PACK.md) reduziert das Paket auf 5 Loops, 1 Hintergrundthema und 12 starke Effektknoepfe. Der Simple-Pack-Import baut daraus trotzdem alle App-Dateien.
+Wenn du später eigene oder KI-generierte Dateien einsetzen möchtest, geht das weiterhin. Der Master-Prompt liegt in [`_DOCS/AUDIO-REBUILD-MASTER-PROMPT.md`](_DOCS/AUDIO-REBUILD-MASTER-PROMPT.md), die Namen des kleinen Ersatzsets in [`_DOCS/AUDIO-SIMPLE-PACK.md`](_DOCS/AUDIO-SIMPLE-PACK.md).
 
 ```powershell
 python tools/import_audio_replacements.py "C:\Pfad\zu\neuen-sounds" --sync-web
@@ -93,7 +93,10 @@ Das Skript schreibt nach `audio/generated/`, `app/Kraehenfels/Resources/Audio/` 
 Simple-Pack-Import:
 
 ```powershell
+python tools/build_mixkit_simple_pack.py
 python tools/import_audio_replacements.py "C:\Pfad\zu\simple-sounds" --simple-pack --sync-web
+python tools/build_web_preview.py
+python tools/validate_project.py
 ```
 
 ## Lizenzhinweise

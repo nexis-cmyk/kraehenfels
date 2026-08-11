@@ -20,9 +20,7 @@ Das Projekt liefert ein vollständiges Spielpaket für `Die Weiße Frau schweigt
 
 `content/manifest.json` ist die maschinenlesbare Quelle für Szenen, Handouts, Cues, NPCs, Pflichtspuren und Verknüpfungen. Lange Spieltexte liegen daneben in klar getrennten Inhaltsdateien. Der PDF-Generator, die SwiftUI-App und die Web-Testversion prüfen dieselben IDs gegen das Manifest.
 
-Die Audioerzeugung ist deterministisch. Python und NumPy erzeugen die Rohsignale, FFmpeg normalisiert und exportiert die Dateien. Es werden keine fremden Samples eingebunden.
-
-Die aktuellen Audios sind damit als technische Platzhalter zu behandeln. Fuer den finalen Spieltisch brauchen Ambiences, Musik und wichtige Effekte echte Foley- oder AI-generierte Quellen. Der komplette Ersatzkatalog steht in `_DOCS/SOUND-PROMPTS.md` und listet alle 46 Soundboard-Dateien mit Zielklang und Prompt. `_DOCS/AUDIO-REBUILD-MASTER-PROMPT.md` ist der kopierbare Gesamtprompt fuer eine externe Audio-KI oder Soundproduktion. `_DOCS/AUDIO-SIMPLE-PACK.md` ist die reduzierte Spielabend-Variante mit 5 Loops, 1 Hintergrundthema und 12 Effektknoepfen. Die Dateinamen sollen beim Austausch gleich bleiben, damit Manifest, App und Web-Testversion unveraendert weiter funktionieren. `tools/import_audio_replacements.py` importiert neu erzeugte Dateien, wandelt sie bei Bedarf mit FFmpeg in die erwarteten Formate und kopiert sie in App- und Web-Zielordner. Mit `--simple-pack` verteilt es das reduzierte Set auf alle 46 technischen App-Dateien und legt unnoetige Cues still.
+Die Audio-Pipeline nutzt für den fertigen Spielabend dokumentierte Mixkit-Quellen. `tools/build_mixkit_simple_pack.py` bearbeitet fünf Atmosphären, ein Musikstück und zwölf Effekte mit FFmpeg zu einem kompakten 18-Dateien-Paket. `tools/import_audio_replacements.py --simple-pack --sync-web` verteilt dieses Paket anschließend auf die 46 stabilen Dateinamen für iOS-App und Web-Testversion. So bleiben Manifest, App und Browser-Leitstand synchron, obwohl am Tisch nur die tatsächlich nützlichen Cues auftauchen. Quellen, Rollen und Lizenzverweis stehen in `_DOCS/AUDIO-SOURCES.md`. `_DOCS/SOUND-PROMPTS.md` und `_DOCS/AUDIO-REBUILD-MASTER-PROMPT.md` bleiben als Vorlage erhalten, falls später eigene Aufnahmen oder KI-Dateien ausgetauscht werden sollen.
 
 Die Druckunterlagen entstehen mit ReportLab. `print/assets/` enthält eigens erzeugte Rasterbilder: das Titelmotiv, eine beschriftete Luftansicht des Dorfes, Elisabeth Abeles Kabinettfoto, eine Glockenradierung, einen Holzstich für das Wochenblatt, eine technische Stellmacher-Zeichnung, einen gefalteten Vermessungsplan der Grube und sieben Graphic-Novel-Szenenbilder. Die Handouts haben voneinander abweichende Requisitenformen: Ticket, Zeitung, Kirchenregister, Foto, Liedblatt, Werkbuch, Feldnotiz, handschriftliche Aussage, Brief und Ritualkarte. Der Generator bettet sie gezielt in Titel, Karte, Handouts und die SL-Bildstrecke ein. Spielerhinweise und H10/H11 sind nun in getrennten PDFs, damit das Spielpaket keine Spoiler mitliefert. Jede Druckseite führt Handout-ID, Ausgabehinweis, Schnittmarken und eine Scherenlinie. Die PDFs werden mit `pypdf` und per Poppler-Render geprüft.
 
@@ -35,7 +33,7 @@ Die Druckunterlagen entstehen mit ReportLab. `print/assets/` enthält eigens erz
 - `outputs/02_Handouts.pdf`, `outputs/03_Figurenbau.pdf`, `outputs/10_SL_Abenteuer.pdf`, `outputs/11_SL_Schnellreferenz.pdf`, `outputs/12_SL_Am_Tisch.pdf`, `outputs/13_SL_Spoiler-Handouts.pdf`
 - `outputs/14_Soundboard-Cues.pdf`
 - vierzehn Druckgrafiken in `print/assets/`
-- 46 originale Audios in `audio/generated/` und im iOS-Bundle
+- 46 aus dokumentierten Mixkit-Quellen erzeugte Audios in `audio/generated/` und im iOS-Bundle
 - SwiftUI-Leitstand mit Offline-Content, Szenenbildern, Vorlesetext, NPCs, Pflichtspuren, Cue-Steuerung, Audio-Selbsttest, Regeln, Settings und GitHub-Release-Workflow
 
 ## Qualitätsregeln

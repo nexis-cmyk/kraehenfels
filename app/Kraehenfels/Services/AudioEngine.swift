@@ -143,7 +143,7 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
             lastEvent = "Nicht geladen: \(cue.file)"
             return
         }
-        if replacingCategory, cue.category == "ambient" || cue.category == "music" {
+        if replacingCategory && (cue.category == "ambient" || cue.category == "music") {
             stopCategory(cue.category)
         }
         if let old = players[cue.id] {
