@@ -8,7 +8,7 @@ Das Repository enthält:
 - eine spoilerfreie Dorfkarte und eine markierte SL-Karte
 - Handouts und einen geführten Charakterbau
 - einsatzfertige Atmosphären, Musik und Soundeffekte aus dokumentierten Mixkit-Quellen
-- eine native iOS-Begleitapp ab iOS 17 mit Szenenleitstand, NPCs, Pflichtspuren, Vorlesetexten und Audio-Selbsttest
+- eine native iOS-Begleitapp ab iOS 17 mit Szenenleitstand, NPCs, Pflichtspuren, Vorlesetexten, Tischnotizen und Audio-Selbsttest
 - GitHub Actions für Tests, IPA-Build und AltStore-Feed
 - eine offlinefähige Web-Testversion für Leitstand und Soundboard
 

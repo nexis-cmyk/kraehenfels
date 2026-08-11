@@ -3,6 +3,7 @@ import SwiftUI
 struct RootView: View {
     @EnvironmentObject private var content: ContentStore
     @EnvironmentObject private var audio: AudioEngine
+    @EnvironmentObject private var session: SessionStore
     @AppStorage("currentSceneID") private var currentSceneID = "S01"
     @AppStorage("completedSceneIDs") private var completedSceneIDs = ""
 
@@ -11,6 +12,7 @@ struct RootView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     header
+                    tableStatus
                     currentSceneCard
                     sceneList
                     quickActions
@@ -24,6 +26,7 @@ struct RootView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         NavigationLink("Regeln", destination: RulesView())
+                        NavigationLink("Am Tisch", destination: SessionView())
                         NavigationLink("Einstellungen", destination: SettingsView())
                     } label: {
                         Image(systemName: "ellipsis.circle")
@@ -91,6 +94,37 @@ struct RootView: View {
         }
     }
 
+    private var tableStatus: some View {
+        FrostCard {
+            HStack(alignment: .center, spacing: 12) {
+                Image(systemName: "person.3.fill")
+                    .font(.title3)
+                    .foregroundStyle(FrostTheme.cobalt)
+                    .frame(width: 28)
+                VStack(alignment: .leading, spacing: 3) {
+                    SectionLabel(title: "Am Tisch")
+                    if session.savedNames().isEmpty {
+                        Text("Drei Reisende noch benennen")
+                            .font(.subheadline)
+                            .foregroundStyle(FrostTheme.quiet)
+                    } else {
+                        Text(session.savedNames().joined(separator: " · "))
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.white)
+                            .lineLimit(2)
+                    }
+                }
+                Spacer()
+                NavigationLink(destination: SessionView()) {
+                    Image(systemName: "pencil")
+                        .foregroundStyle(FrostTheme.cobalt)
+                        .frame(minWidth: 44, minHeight: 44)
+                }
+                .accessibilityLabel("Tischdaten bearbeiten")
+            }
+        }
+    }
+
     private var sceneList: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionLabel(title: "Szenen")
@@ -139,6 +173,14 @@ struct RootView: View {
             NavigationLink(destination: SettingsView()) {
                 FrostCard {
                     Label("Audio", systemImage: "speaker.wave.2")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(FrostTheme.frost)
+                }
+            }
+            .buttonStyle(.plain)
+            NavigationLink(destination: SessionView()) {
+                FrostCard {
+                    Label("Am Tisch", systemImage: "person.3")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(FrostTheme.frost)
                 }

@@ -20,6 +20,12 @@ const state = {
   completed: new Set(stored("kraehenfels.completed", [])),
   clues: new Set(stored("kraehenfels.clues", [])),
   checklist: new Set(stored("kraehenfels.checklist", [])),
+  playerNames: Array.from({ length: 3 }, (_, index) => {
+    const saved = stored("kraehenfels.playerNames", []);
+    return typeof saved[index] === "string" ? saved[index] : "";
+  }),
+  sessionNote: localStorage.getItem("kraehenfels.sessionNote") || "",
+  sceneNotes: stored("kraehenfels.sceneNotes", {}),
   spoilersOpen: false,
   statusTone: "ok",
 };
@@ -29,6 +35,9 @@ function persist() {
   localStorage.setItem("kraehenfels.completed", JSON.stringify([...state.completed]));
   localStorage.setItem("kraehenfels.clues", JSON.stringify([...state.clues]));
   localStorage.setItem("kraehenfels.checklist", JSON.stringify([...state.checklist]));
+  localStorage.setItem("kraehenfels.playerNames", JSON.stringify(state.playerNames));
+  localStorage.setItem("kraehenfels.sessionNote", state.sessionNote);
+  localStorage.setItem("kraehenfels.sceneNotes", JSON.stringify(state.sceneNotes));
 }
 
 const audio = new AudioEngine({
@@ -147,6 +156,14 @@ function render() {
       <p>${escapeHtml(scene.readAloud)}</p>
     </section>
 
+    <section class="content-section table-section" aria-labelledby="table-title">
+      <div class="section-heading"><div><h2 id="table-title">Am Tisch</h2><p>Nur auf diesem Gerät gespeichert.</p></div><button class="text-button" data-action="clear-table" type="button">Tischdaten löschen</button></div>
+      <div class="table-fields">
+        ${state.playerNames.map((name, index) => `<label class="field"><span>Reisender ${index + 1}</span><input data-player-index="${index}" type="text" autocomplete="off" autocapitalize="words" placeholder="Name der Figur" value="${escapeHtml(name)}"></label>`).join("")}
+      </div>
+      <label class="field session-field"><span>Notiz vor der Runde</span><textarea data-session-note rows="3" placeholder="Beziehungen, Grenzen am Tisch oder offene Ideen für den Einstieg …">${escapeHtml(state.sessionNote)}</textarea></label>
+    </section>
+
     <div class="content-grid">
       <section class="content-section notes-section">
         <div class="section-heading"><h2>SL-Notizen</h2><button class="text-button spoiler-toggle" data-action="spoilers" type="button" aria-expanded="${state.spoilersOpen}">${state.spoilersOpen ? "Spoiler schließen" : "Spoiler zeigen"}</button></div>
@@ -183,6 +200,11 @@ function render() {
       </section>
     </div>
 
+    <section class="content-section scene-note-section" aria-labelledby="scene-note-title">
+      <div class="section-heading"><div><h2 id="scene-note-title">Deine Tischnotiz</h2><p>Für Entscheidungen, Aussagen und offene Fäden dieser Szene.</p></div><span class="save-state">speichert lokal</span></div>
+      <label class="field"><span class="visually-hidden">Tischnotiz zu ${escapeHtml(scene.title)}</span><textarea data-scene-note="${scene.id}" rows="5" placeholder="Was ist passiert? Wer weiß schon zu viel? Was bleibt offen?">${escapeHtml(state.sceneNotes[scene.id] || "")}</textarea></label>
+    </section>
+
     <section class="checklist-section">
       <div class="section-heading"><h2>Abschluss der Szene</h2><span class="counter">${checklistCount} / ${scene.checklist.length}</span></div>
       <div class="finish-list">${scene.checklist.map((item, index) => { const id = `${scene.id}-${index}`; return `<button class="finish-row" data-check="${id}" type="button" aria-pressed="${state.checklist.has(id)}"><span class="checkmark">${state.checklist.has(id) ? "✓" : ""}</span>${escapeHtml(item)}</button>`; }).join("")}</div>
@@ -218,10 +240,31 @@ document.addEventListener("click", async (event) => {
     persist();
     render();
   }
+  if (action === "clear-table") {
+    const shouldClear = window.confirm("Tischdaten löschen? Namen und eigene Notizen werden nur auf diesem Gerät entfernt.");
+    if (!shouldClear) return;
+    state.playerNames = ["", "", ""];
+    state.sessionNote = "";
+    state.sceneNotes = {};
+    persist();
+    render();
+  }
 });
 
 document.addEventListener("input", (event) => {
   if (event.target.matches("[data-volume]")) audio.setVolume(event.target.dataset.volume, event.target.value);
+  if (event.target.matches("[data-player-index]")) {
+    state.playerNames[Number(event.target.dataset.playerIndex)] = event.target.value;
+    persist();
+  }
+  if (event.target.matches("[data-session-note]")) {
+    state.sessionNote = event.target.value;
+    persist();
+  }
+  if (event.target.matches("[data-scene-note]")) {
+    state.sceneNotes[event.target.dataset.sceneNote] = event.target.value;
+    persist();
+  }
 });
 
 document.querySelector("#stop-all").addEventListener("click", () => audio.stopAll());

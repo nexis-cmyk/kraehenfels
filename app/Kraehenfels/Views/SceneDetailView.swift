@@ -4,6 +4,7 @@ struct SceneDetailView: View {
     let scene: SceneEntry
     @EnvironmentObject private var content: ContentStore
     @EnvironmentObject private var audio: AudioEngine
+    @EnvironmentObject private var session: SessionStore
     @AppStorage("currentSceneID") private var currentSceneID = "S01"
     @AppStorage("completedSceneIDs") private var completedSceneIDs = ""
     @AppStorage("checkedClueIDs") private var checkedClueIDs = ""
@@ -19,6 +20,7 @@ struct SceneDetailView: View {
                 readAloudCard
                 goalCard
                 gmNotesCard
+                sessionNoteCard
                 cluePanel
                 npcPanel
                 audioPanel
@@ -147,6 +149,36 @@ struct SceneDetailView: View {
                     if let clue = content.manifest.clues.first(where: { $0.id == id }) {
                         clueRow(clue)
                     }
+                }
+            }
+        }
+    }
+
+    private var sessionNoteCard: some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    SectionLabel(title: "Deine Tischnotiz")
+                    Spacer()
+                    Text("speichert lokal")
+                        .font(.caption)
+                        .foregroundStyle(FrostTheme.quiet)
+                }
+                ZStack(alignment: .topLeading) {
+                    if session.sceneNoteBinding(for: scene.id).wrappedValue.isEmpty {
+                        Text("Was ist gerade passiert? Wer weiß schon zu viel? Was bleibt offen?")
+                            .font(.subheadline)
+                            .foregroundStyle(FrostTheme.quiet)
+                            .padding(.top, 8)
+                            .padding(.leading, 5)
+                            .allowsHitTesting(false)
+                    }
+                    TextEditor(text: session.sceneNoteBinding(for: scene.id))
+                        .font(.subheadline)
+                        .foregroundStyle(.white)
+                        .scrollContentBackground(.hidden)
+                        .frame(minHeight: 108)
+                        .accessibilityLabel("Tischnotiz zu \(scene.title)")
                 }
             }
         }

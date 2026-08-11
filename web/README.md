@@ -25,5 +25,6 @@ Im Browser `http://localhost:4173` öffnen. Der Browser muss dafür geöffnet bl
 - Spoiler-Schalter und Spielerhandouts
 - Szenen-Presets, einzelne Effekte und Lautstärkemischung
 - Stopp-Taste, Fortschritt und Speicherung im Browser
+- drei Reisende, allgemeine Sessionnotiz und eine eigene Notiz pro Szene
 
 Die Browser-Version ist ein Testleitstand. Die spätere Installation auf dem iPhone erfolgt weiterhin über die signierte IPA in AltStore.
