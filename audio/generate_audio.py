@@ -130,6 +130,14 @@ def ambient(kind: str, seconds: float = 32.0) -> np.ndarray:
             drop = bell(185, 0.32, 0.2) * 0.22
             drops[start:start + len(drop)] += drop
         return normalize(wind * 0.25 + hiss * 0.12 + sine(38, seconds, 0.08) + drops)
+    if kind == "mine_deep":
+        water = periodic_noise(seconds, -0.32, 0.32, 902) * 0.22
+        pressure = sine(31, seconds, 0.12) + sine(61, seconds, 0.035)
+        return normalize(wind * 0.18 + hiss * 0.18 + pressure + water)
+    if kind == "tension":
+        swell = 0.5 + 0.5 * np.sin(2 * np.pi * 0.035 * t)
+        wire = sine(122, seconds, 0.07) + sine(244, seconds, 0.025)
+        return normalize(wind * 0.29 + hiss * 0.16 + wire * swell + sine(42, seconds, 0.06))
     if kind == "finale":
         pulse = sine(0.85, seconds, 0.18) * (0.5 + 0.5 * np.sin(2 * np.pi * 0.085 * t))
         return normalize(wind * 0.34 + hiss * 0.14 + pulse + sine(71, seconds, 0.06))
@@ -231,6 +239,52 @@ def fx(kind: str) -> np.ndarray:
         return fade(normalize(bell(294, 2.2, 0.25) + bell(392, 2.2, 0.18)), 12)
     if kind == "fail":
         return fade(normalize(bell(104, 2.2, 0.18) + sine(71, 2.2, 0.17)), 7)
+    if kind == "shutter":
+        out = crack(0.85, 301) * 0.6 + sine(73, 0.85, 0.16)
+        return fade(normalize(out), 6)
+    if kind == "distantbell":
+        return fade(normalize(bell(156, 4.8, 0.42) + sine(78, 4.8, 0.045)), 8)
+    if kind == "strain":
+        t = np.arange(int(2.1 * SR), dtype=np.float32) / SR
+        creak = sine(190 + 17 * np.sin(2 * np.pi * 0.7 * t), 2.1, 0.23)
+        return fade(normalize(creak * np.exp(-t * 0.8) + crack(2.1, 331) * 0.24), 8)
+    if kind == "water":
+        t = np.arange(int(3.2 * SR), dtype=np.float32) / SR
+        droplets = np.zeros_like(t)
+        for at, freq in ((0.35, 510), (1.2, 430), (2.05, 620), (2.7, 390)):
+            start = int(at * SR)
+            drop = bell(freq, 0.28, 0.12) * 0.26
+            droplets[start:start + len(drop)] += drop
+        flow = periodic_noise(3.2, -0.45, 0.45, 744) * 0.18
+        return fade(normalize(flow + droplets), 12)
+    if kind == "echo_steps":
+        base = fx("steps") * 0.65
+        delay = np.zeros_like(base)
+        offset = int(0.42 * SR)
+        delay[offset:] += base[:-offset] * 0.52
+        offset2 = int(0.86 * SR)
+        delay[offset2:] += base[:-offset2] * 0.27
+        return fade(normalize(base + delay), 7)
+    if kind == "knock":
+        out = np.zeros(int(2.0 * SR), dtype=np.float32)
+        for at in (0.22, 0.56, 0.93):
+            start = int(at * SR)
+            hit = sine(72, 0.18, 0.45) * np.exp(-np.linspace(0, 7, int(0.18 * SR), dtype=np.float32))
+            out[start:start + len(hit)] += hit
+        return fade(normalize(out), 8)
+    if kind == "resonance":
+        t = np.arange(int(3.8 * SR), dtype=np.float32) / SR
+        tone = sine(224, 3.8, 0.35) + sine(448, 3.8, 0.14) + sine(671, 3.8, 0.07)
+        return fade(normalize(tone * np.exp(-t * 0.75)), 5)
+    if kind == "room_breath":
+        t = np.arange(int(2.7 * SR), dtype=np.float32) / SR
+        env = np.sin(np.pi * t / 2.7) ** 1.25
+        return fade(normalize(periodic_noise(2.7, -1, 1, 488) * env * 0.72 + sine(53, 2.7, 0.08)), 30)
+    if kind == "resonance_break":
+        t = np.arange(int(2.2 * SR), dtype=np.float32) / SR
+        rising = sine(224, 2.2, 0.36) + sine(448, 2.2, 0.14)
+        cut = np.clip(1.0 - (t - 1.1) * 8.0, 0.0, 1.0)
+        return fade(normalize(rising * cut + crack(2.2, 531) * (t > 1.08)), 6)
     return fade(normalize(crack(0.8)), 5)
 
 
@@ -242,6 +296,8 @@ AMBIENTS = {
     "A06_Kapelle_und_Friedhof.m4a": "chapel",
     "A07_Weisse_Spur_im_Wald.m4a": "mine",
     "A08_Finale_Froststurm.m4a": "finale",
+    "A09_Grubenluft_Layer.m4a": "mine_deep",
+    "A10_Frostspannung_Layer.m4a": "tension",
 }
 MUSIC = {
     "M01_Ankunft_in_Kraehenfels.m4a": "arrival",
@@ -252,7 +308,7 @@ MUSIC = {
     "M06_Tauwetter_Epilog.m4a": "thaw",
 }
 SFX = {
-    "SFX01_Achse_bricht.wav": "axle", "SFX02_Pferde_scheuen.wav": "horses", "SFX03_Hufe_im_Schnee.wav": "hooves", "SFX04_Astbruch.wav": "branch", "SFX05_Kraehen.wav": "crow", "SFX06_Stille.wav": "silence", "SFX07_Glocke_normal.wav": "bell", "SFX08_Glocke_falsch.wav": "wrongbell", "SFX09_Schmiede.wav": "forge", "SFX10_Metall_vibriert.wav": "metal", "SFX11_Schritte.wav": "steps", "SFX12_Barfuss_Schritte.wav": "baresteps", "SFX13_Stimmen_ohne_Worte.wav": "voices", "SFX14_Schlaege_unter_Boden.wav": "ground", "SFX15_Atem_hinter_dir.wav": "breath", "SFX16_Weisse_Frau_Motiv.wav": "woman", "SFX17_Kloeppel_schlaegt.wav": "clapper", "SFX18_Frost_breitet_sich_aus.wav": "frost", "SFX19_Herzschlag.wav": "heartbeat", "SFX20_Eisbruch.wav": "ice", "SFX21_Bannung.wav": "seal", "SFX22_Scheitern.wav": "fail",
+    "SFX01_Achse_bricht.wav": "axle", "SFX02_Pferde_scheuen.wav": "horses", "SFX03_Hufe_im_Schnee.wav": "hooves", "SFX04_Astbruch.wav": "branch", "SFX05_Kraehen.wav": "crow", "SFX06_Stille.wav": "silence", "SFX07_Glocke_normal.wav": "bell", "SFX08_Glocke_falsch.wav": "wrongbell", "SFX09_Schmiede.wav": "forge", "SFX10_Metall_vibriert.wav": "metal", "SFX11_Schritte.wav": "steps", "SFX12_Barfuss_Schritte.wav": "baresteps", "SFX13_Stimmen_ohne_Worte.wav": "voices", "SFX14_Schlaege_unter_Boden.wav": "ground", "SFX15_Atem_hinter_dir.wav": "breath", "SFX16_Weisse_Frau_Motiv.wav": "woman", "SFX17_Kloeppel_schlaegt.wav": "clapper", "SFX18_Frost_breitet_sich_aus.wav": "frost", "SFX19_Herzschlag.wav": "heartbeat", "SFX20_Eisbruch.wav": "ice", "SFX21_Bannung.wav": "seal", "SFX22_Scheitern.wav": "fail", "SFX23_Fensterladen_im_Wind.wav": "shutter", "SFX24_Fernes_Laeuten.wav": "distantbell", "SFX25_Holz_unter_Spannung.wav": "strain", "SFX26_Wasser_im_Flutstollen.wav": "water", "SFX27_Wiederhallende_Schritte.wav": "echo_steps", "SFX28_Klopfen_unter_Boden.wav": "knock", "SFX29_Glockenresonanz.wav": "resonance", "SFX30_Atem_im_Raum.wav": "room_breath", "SFX31_Resonanzabbruch.wav": "resonance_break",
 }
 
 

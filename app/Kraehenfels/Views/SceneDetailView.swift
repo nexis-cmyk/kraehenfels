@@ -6,14 +6,25 @@ struct SceneDetailView: View {
     @EnvironmentObject private var audio: AudioEngine
     @AppStorage("currentSceneID") private var currentSceneID = "S01"
     @AppStorage("completedSceneIDs") private var completedSceneIDs = ""
+    @AppStorage("checkedClueIDs") private var checkedClueIDs = ""
+    @AppStorage("completedChecklistIDs") private var completedChecklistIDs = ""
+    @State private var showSpoilers = false
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 22) {
+            VStack(alignment: .leading, spacing: 18) {
+                SceneArtView(resourceName: scene.art, height: 205)
                 sceneHeader
+                escalationCard
+                readAloudCard
                 goalCard
+                gmNotesCard
+                cluePanel
+                npcPanel
                 audioPanel
                 handoutPanel
+                stuckPanel
+                checklistPanel
                 finishButton
             }
             .padding(20)
@@ -25,15 +36,59 @@ struct SceneDetailView: View {
 
     private var sceneHeader: some View {
         VStack(alignment: .leading, spacing: 9) {
-            Text(scene.id)
-                .font(.caption.monospaced().weight(.bold))
-                .foregroundStyle(FrostTheme.cobalt)
+            HStack {
+                Text(scene.id)
+                    .font(.caption.monospaced().weight(.bold))
+                    .foregroundStyle(FrostTheme.cobalt)
+                Spacer()
+                Text(scene.soundPreset ?? "Freies Spiel")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(FrostTheme.warning)
+            }
             Text(scene.title)
                 .font(.system(size: 31, weight: .bold, design: .rounded))
                 .foregroundStyle(FrostTheme.frost)
             Label(scene.duration, systemImage: "clock")
                 .font(.subheadline)
                 .foregroundStyle(FrostTheme.quiet)
+        }
+    }
+
+    private var escalationCard: some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    SectionLabel(title: "Eskalation")
+                    Spacer()
+                    Text("Stufe \(scene.escalation)/5")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(scene.escalation >= 4 ? FrostTheme.warning : FrostTheme.frost)
+                }
+                HStack(spacing: 7) {
+                    ForEach(0..<6, id: \.self) { index in
+                        Capsule()
+                            .fill(index <= scene.escalation ? (index >= 4 ? FrostTheme.warning : FrostTheme.cobalt) : FrostTheme.panelRaised)
+                            .frame(height: 7)
+                    }
+                }
+            }
+        }
+    }
+
+    private var readAloudCard: some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    SectionLabel(title: "Vorlesen")
+                    Spacer()
+                    Image(systemName: "quote.opening")
+                        .foregroundStyle(FrostTheme.cobalt)
+                }
+                Text(scene.readAloud.isEmpty ? "Kein Vorleseimpuls hinterlegt." : scene.readAloud)
+                    .font(.body.italic())
+                    .foregroundStyle(.white.opacity(0.92))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 
@@ -49,11 +104,182 @@ struct SceneDetailView: View {
         }
     }
 
+    private var gmNotesCard: some View {
+        DisclosureGroup(isExpanded: $showSpoilers) {
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(Array(scene.gmNotes.enumerated()), id: \.offset) { _, note in
+                    Label(note, systemImage: "eye.slash")
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.88))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.top, 8)
+        } label: {
+            HStack {
+                SectionLabel(title: "SL-Notizen")
+                Spacer()
+                Text(showSpoilers ? "offen" : "Spoiler")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(FrostTheme.warning)
+            }
+        }
+        .tint(FrostTheme.frost)
+        .padding(16)
+        .background(FrostTheme.panel, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private var cluePanel: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                SectionLabel(title: "Hinweise verfolgen")
+                Spacer()
+                Text("\(checkedClueCount)/\(scene.clueIds.count)")
+                    .font(.caption.monospaced().weight(.bold))
+                    .foregroundStyle(FrostTheme.cobalt)
+            }
+            if scene.clueIds.isEmpty {
+                Text("Keine Pflicht-Hinweise in dieser Szene.")
+                    .font(.subheadline)
+                    .foregroundStyle(FrostTheme.quiet)
+            } else {
+                ForEach(scene.clueIds, id: \.self) { id in
+                    if let clue = content.manifest.clues.first(where: { $0.id == id }) {
+                        clueRow(clue)
+                    }
+                }
+            }
+        }
+    }
+
+    private func clueRow(_ clue: ClueEntry) -> some View {
+        Button { toggleClue(clue.id) } label: {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: isMarked(clue.id, in: checkedClueIDs) ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isMarked(clue.id, in: checkedClueIDs) ? FrostTheme.cobalt : FrostTheme.quiet)
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 5) {
+                        Text(clue.title)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
+                        if clue.required {
+                            Text("PFLICHT")
+                                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                .foregroundStyle(FrostTheme.warning)
+                        }
+                    }
+                    Text(clue.details)
+                        .font(.caption)
+                        .foregroundStyle(FrostTheme.quiet)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+            }
+            .padding(13)
+            .background(FrostTheme.panel, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var npcPanel: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(title: "NPCs in dieser Szene")
+            if scene.npcIds.isEmpty {
+                Text("Keine festen NPCs. Die Erscheinung reagiert auf die Gruppe.")
+                    .font(.subheadline)
+                    .foregroundStyle(FrostTheme.quiet)
+            }
+            ForEach(scene.npcIds, id: \.self) { id in
+                if let npc = content.manifest.npcs.first(where: { $0.id == id }) {
+                    npcCard(npc)
+                }
+            }
+        }
+    }
+
+    private func npcCard(_ npc: NPCEntry) -> some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(npc.name)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Spacer()
+                    Text(npc.role)
+                        .font(.caption)
+                        .foregroundStyle(FrostTheme.cobalt)
+                }
+                Text(npc.description)
+                    .font(.subheadline)
+                    .foregroundStyle(FrostTheme.quiet)
+                if showSpoilers {
+                    if !npc.knows.isEmpty {
+                        bulletList(title: "Weiß", items: npc.knows, icon: "checkmark.seal")
+                    }
+                    if !npc.hides.isEmpty {
+                        bulletList(title: "Verschweigt", items: npc.hides, icon: "lock")
+                    }
+                    if !npc.givesHandoutIds.isEmpty {
+                        Label("Kann geben: \(npc.givesHandoutIds.joined(separator: ", "))", systemImage: "doc.badge.plus")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(FrostTheme.cobalt)
+                    }
+                }
+                if let prompt = npc.prompts.first {
+                    Label(prompt, systemImage: "person.wave.2")
+                        .font(.caption)
+                        .foregroundStyle(FrostTheme.warning)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private func bulletList(title: String, items: [String], icon: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title.uppercased())
+                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .foregroundStyle(FrostTheme.quiet)
+            ForEach(items, id: \.self) { item in
+                Label(item, systemImage: icon)
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.82))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
     private var audioPanel: some View {
         VStack(alignment: .leading, spacing: 11) {
-            SectionLabel(title: "Soundboard")
+            HStack {
+                SectionLabel(title: "Soundboard")
+                Spacer()
+                Button {
+                    audio.playPreset(content.cues(for: scene))
+                } label: {
+                    Label("Preset", systemImage: "play.fill")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(FrostTheme.frost)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(FrostTheme.cobalt.opacity(0.8))
+            }
+            Text(audio.sessionStatus)
+                .font(.caption)
+                .foregroundStyle(FrostTheme.quiet)
             ForEach(content.cues(for: scene)) { cue in
                 CueRow(cue: cue)
+            }
+            if let error = audio.lastError {
+                Label(error, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(FrostTheme.warning)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else if let event = audio.lastEvent {
+                Label(event, systemImage: "checkmark.circle")
+                    .font(.caption)
+                    .foregroundStyle(FrostTheme.cobalt)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Button {
                 audio.stopAll()
@@ -70,19 +296,19 @@ struct SceneDetailView: View {
 
     private var handoutPanel: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(title: "Hinweise")
+            SectionLabel(title: "Handouts")
             ForEach(scene.handoutIds, id: \.self) { id in
                 if let handout = content.handout(for: id) {
                     HStack(spacing: 12) {
-                        Image(systemName: handout.spoiler ? "lock.fill" : "doc.text")
+                        Image(systemName: handout.spoiler ? (showSpoilers ? "lock.open.fill" : "lock.fill") : "doc.text")
                             .foregroundStyle(handout.spoiler ? FrostTheme.warning : FrostTheme.cobalt)
                         VStack(alignment: .leading, spacing: 3) {
                             Text("\(handout.id) · \(handout.title)")
                                 .font(.subheadline.weight(.medium))
                                 .foregroundStyle(.white)
-                            Text(handout.spoiler ? "Spoiler · nur bei Bedarf" : "Spielerhinweis · \(handout.format)")
+                            Text(handout.spoiler && !showSpoilers ? "Spoiler · Schalter oben öffnen" : (handout.spoiler ? "SL-Spoiler · \(handout.format)" : "Spielerhinweis · \(handout.format)"))
                                 .font(.caption)
-                                .foregroundStyle(FrostTheme.quiet)
+                                .foregroundStyle(handout.spoiler ? FrostTheme.warning : FrostTheme.quiet)
                         }
                         Spacer()
                     }
@@ -92,10 +318,55 @@ struct SceneDetailView: View {
         }
     }
 
+    private var stuckPanel: some View {
+        DisclosureGroup {
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(scene.stuckPrompts, id: \.self) { prompt in
+                    Label(prompt, systemImage: "lifepreserver")
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.88))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.top, 8)
+        } label: {
+            SectionLabel(title: "Wenn die Gruppe feststeckt")
+        }
+        .tint(FrostTheme.frost)
+        .padding(16)
+        .background(FrostTheme.panel, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private var checklistPanel: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack {
+                SectionLabel(title: "Abschluss-Checkliste")
+                Spacer()
+                Text("\(completedChecklistCount)/\(scene.checklist.count)")
+                    .font(.caption.monospaced().weight(.bold))
+                    .foregroundStyle(FrostTheme.cobalt)
+            }
+            ForEach(Array(scene.checklist.enumerated()), id: \.offset) { index, item in
+                let id = "\(scene.id)-\(index)"
+                Button { toggleChecklist(id) } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: isMarked(id, in: completedChecklistIDs) ? "checkmark.square.fill" : "square")
+                            .foregroundStyle(isMarked(id, in: completedChecklistIDs) ? FrostTheme.cobalt : FrostTheme.quiet)
+                        Text(item)
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.88))
+                        Spacer()
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
     private var finishButton: some View {
         Button {
             currentSceneID = scene.nextSceneIds.first ?? scene.id
-            var ids = completedSceneIDs.split(separator: ",").map(String.init)
+            var ids = splitIDs(completedSceneIDs)
             if !ids.contains(scene.id) { ids.append(scene.id) }
             completedSceneIDs = ids.joined(separator: ",")
         } label: {
@@ -107,6 +378,34 @@ struct SceneDetailView: View {
                 .background(FrostTheme.frost, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .accessibilityHint("Markiert diese Szene als abgeschlossen")
+    }
+
+    private var checkedClueCount: Int {
+        scene.clueIds.filter { isMarked($0, in: checkedClueIDs) }.count
+    }
+
+    private var completedChecklistCount: Int {
+        scene.checklist.indices.filter { isMarked("\(scene.id)-\($0)", in: completedChecklistIDs) }.count
+    }
+
+    private func splitIDs(_ raw: String) -> [String] {
+        raw.split(separator: ",").map(String.init)
+    }
+
+    private func isMarked(_ id: String, in raw: String) -> Bool {
+        splitIDs(raw).contains(id)
+    }
+
+    private func toggleClue(_ id: String) {
+        var ids = splitIDs(checkedClueIDs)
+        if let index = ids.firstIndex(of: id) { ids.remove(at: index) } else { ids.append(id) }
+        checkedClueIDs = ids.joined(separator: ",")
+    }
+
+    private func toggleChecklist(_ id: String) {
+        var ids = splitIDs(completedChecklistIDs)
+        if let index = ids.firstIndex(of: id) { ids.remove(at: index) } else { ids.append(id) }
+        completedChecklistIDs = ids.joined(separator: ",")
     }
 }
 

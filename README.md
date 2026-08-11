@@ -8,15 +8,15 @@ Das Repository enthält:
 - eine spoilerfreie Dorfkarte und eine markierte SL-Karte
 - Handouts und einen geführten Charakterbau
 - selbst erzeugte Musik, Atmosphären und Soundeffekte
-- eine native iOS-Begleitapp ab iOS 17
+- eine native iOS-Begleitapp ab iOS 17 mit Szenenleitstand, NPCs, Pflichtspuren, Vorlesetexten und Audio-Selbsttest
 - GitHub Actions für Tests, IPA-Build und AltStore-Feed
 
 ## Fertiger iPhone-Build
 
-Die öffentliche Release-Version 1.0.1 ist hier verfügbar:
+Die öffentliche Release-Version 2.0.0 ist hier verfügbar:
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
-- [Kraehenfels.ipa herunterladen](https://github.com/nexis-cmyk/kraehenfels/releases/download/v1.0.1/Kraehenfels.ipa)
+- [Kraehenfels.ipa herunterladen](https://github.com/nexis-cmyk/kraehenfels/releases/download/v2.0.0/Kraehenfels.ipa)
 - [AltStore-Feed](https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/source.json)
 
 Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-Account signiert. Eine kurze Windows-Anleitung steht in [`altstore/README.md`](altstore/README.md).
@@ -64,6 +64,7 @@ Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: Schnee, Tannen, K
 - `03_Figurenbau.pdf`: drei Begabungen, 400 Punkte und HTBAH-Schnellregeln
 - `10_SL_Abenteuer.pdf`: vorlesbare Szenen, NPCs und Enden
 - `11_SL_Schnellreferenz.pdf`: Wahrheit, Pflichtspuren und Improvisationshilfe
+- `12_SL_Am_Tisch.pdf`: einseitiger Ablaufzettel mit Hinweisen, Sounds und Eskalation pro Szene
 - `14_Soundboard-Cues.pdf`: konkrete Cue-Momente mit Papier-Fallbacks
 
 Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.zip` und `outputs/Kraehenfels-Audio.zip` bereit.

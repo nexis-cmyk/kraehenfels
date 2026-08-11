@@ -6,9 +6,79 @@
     "system": "How to be a Hero",
     "setting": "Schwarzwald, November 1890",
     "language": "de",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "minimumIOS": "17.0"
   },
+  "npcs": [
+    {
+      "id": "N01",
+      "name": "Rosa Ketterer",
+      "role": "Wirtin der Krähe",
+      "description": "Pragmatisch, müde und die einzige Person im Dorf, die Fremde nicht sofort wegschickt.",
+      "knows": ["Das Schweigegebot gilt seit dem Unfall von 1848.", "Die Dorfbewohner fürchten die Glocke mehr als die Weiße Frau."],
+      "hides": ["Sie hat Elisabeths Brief aus dem Kirchenbuch genommen.", "Ihr Bruder war einer der Männer im Flutstollen."],
+      "givesHandoutIds": ["H03", "H10"],
+      "prompts": ["Streut Salz an die Türschwelle.", "Sagt erst etwas, wenn die Figuren die Glocke erwähnen."],
+      "cueIds": ["SFX05", "SFX06"]
+    },
+    {
+      "id": "N02",
+      "name": "Martin Hoch",
+      "role": "Küster und Friedhofswächter",
+      "description": "Ein höflicher, ausgezehrter Mann mit rußigen Fingern und einem Schlüsselbund am Gürtel.",
+      "knows": ["Die Schlagfolge lautet 3-1-2-4.", "Eine Seite im Kirchenbuch wurde absichtlich herausgerissen."],
+      "hides": ["Er hat die Glocke seit Jahren nicht mehr geläutet.", "Er glaubt, dass Elisabeth noch auf eine Antwort wartet."],
+      "givesHandoutIds": ["H04", "H06"],
+      "prompts": ["Zählt beim Reden unbewusst vier Schläge mit den Fingern.", "Wird beim Namen Elisabeth stumm."],
+      "cueIds": ["SFX07", "SFX08"]
+    },
+    {
+      "id": "N03",
+      "name": "Emil Bopp",
+      "role": "Stellmacher und Schmied",
+      "description": "Breitschultrig, rußverschmiert und überzeugt, dass Metall Erinnerungen speichern kann.",
+      "knows": ["Die Kutschenachse brach nicht durch Frost.", "Der Klöppel enthält Eisen aus der alten Grube."],
+      "hides": ["Er hat den Klöppel vor der Auslieferung geprüft.", "Er fürchtet, dass sein Werk die Glocke geweckt hat."],
+      "givesHandoutIds": ["H07"],
+      "prompts": ["Lässt den Hammer sinken, sobald draußen ein Ton erklingt.", "Bietet den Figuren eine Zange an, aber keine Erklärung."],
+      "cueIds": ["SFX09", "SFX10"]
+    },
+    {
+      "id": "N04",
+      "name": "Lorenz Sauter",
+      "role": "Ehemaliger Grubensteiger",
+      "description": "Lebt am Waldrand, spricht langsam und hält eine alte Grubenlampe wie einen Talisman.",
+      "knows": ["Der Flutstollen liegt hinter dem eingestürzten Querschlag.", "Stimmen im Berg imitieren Verstorbene."],
+      "hides": ["Er hat 1848 die Tür zum Flutstollen verriegelt.", "Er hört Elisabeths Stimme noch immer im Wasser."],
+      "givesHandoutIds": ["H08", "H09"],
+      "prompts": ["Blickt bei jedem Knacken zur Tür.", "Warnt: Nicht antworten, wenn jemand aus dem Berg ruft."],
+      "cueIds": ["SFX13", "SFX14"]
+    },
+    {
+      "id": "N05",
+      "name": "Jakob Rieger",
+      "role": "Junger Fuhrknecht",
+      "description": "Nervös, hilfsbereit und der einzige Dorfbewohner, der die Fremden heimlich zum Wegweiser führt.",
+      "knows": ["Die Kiste wurde absichtlich auf diese Kutsche geladen.", "Vor Mitternacht wird die Straße gesperrt."],
+      "hides": ["Er hat den Kutscher im Wald gesehen.", "Er will mit den Figuren fliehen."],
+      "givesHandoutIds": ["H01", "H02"],
+      "prompts": ["Schaut immer wieder zum Waldrand.", "Flüstert den Namen Elisabeth, wenn die Glocke klingt."],
+      "cueIds": ["SFX02", "SFX03"]
+    }
+  ],
+  "clues": [
+    {"id": "C01", "title": "Die Achse war angesägt", "details": "Unter dem Bruch sind frische Kerben, kein reiner Frostschaden.", "required": true, "handoutId": "H01"},
+    {"id": "C02", "title": "Der Klöppel antwortet", "details": "Das Eisen in der Kiste vibriert, sobald die Glocke erwähnt wird.", "required": true, "handoutId": "H01"},
+    {"id": "C03", "title": "Das Schweigegebot", "details": "Nach Einbruch der Dunkelheit darf niemand den Namen der Weißen Frau sagen.", "required": true, "handoutId": "H03"},
+    {"id": "C04", "title": "Die Lücke von 1848", "details": "Im Kirchenbuch fehlt genau die Seite mit Elisabeth Abeles Eintrag.", "required": true, "handoutId": "H04"},
+    {"id": "C05", "title": "3-1-2-4", "details": "Die Schlagfolge ist kein Uhrsignal, sondern der Schlüssel zur letzten Strophe.", "required": true, "handoutId": "H06"},
+    {"id": "C06", "title": "Eisen aus der Grube", "details": "Der Klöppel wurde aus Erz der alten Grube gegossen.", "required": true, "handoutId": "H07"},
+    {"id": "C07", "title": "Der Flutstollen", "details": "Der Plan zeigt drei Wege. Nur der nasse Querschlag führt unter den Glockenturm.", "required": true, "handoutId": "H08"},
+    {"id": "C08", "title": "Stimmen ohne Körper", "details": "Im Stollen kommen Antworten aus dem Wasser, obwohl niemand dort steht.", "required": true, "handoutId": "H09"},
+    {"id": "C09", "title": "Die Warnung im Schnee", "details": "Die Erscheinung zeigt auf die Glocke und formt lautlos: Nicht die letzte Strophe.", "required": true, "handoutId": "H05"},
+    {"id": "C10", "title": "Elisabeths Brief", "details": "Elisabeth wollte den Widerhall brechen, nicht ihn beschwören.", "required": true, "handoutId": "H10"},
+    {"id": "C11", "title": "Drei Wege ins Finale", "details": "Glockenturm, Schmiede oder Flutstollen verändern nur die Kosten des Rituals.", "required": true, "handoutId": "H11"}
+  ],
   "scenes": [
     {
       "id": "S01",
@@ -17,8 +87,17 @@
       "duration": "20-30 Minuten",
       "goal": "Die Figuren überleben den Unfall, entdecken die Kiste mit dem Glockenklöppel und erreichen Krähenfels.",
       "handoutIds": ["H01"],
-      "audioCueIds": ["A01", "SFX01", "SFX02", "SFX03", "SFX04"],
-      "nextSceneIds": ["S02"]
+      "audioCueIds": ["A01", "SFX01", "SFX02", "SFX03", "SFX04", "SFX25"],
+      "nextSceneIds": ["S02"],
+      "readAloud": "Der Schnee kommt waagerecht durch die Tannen. Ein Knacken fährt durch die Kutsche, dann kippt die Welt in Dunkelheit und Pferdeatem.",
+      "gmNotes": ["Lass die Figuren zuerst handeln und beschreibe erst danach die Kiste.", "Der Kutscher bleibt verschwunden; Jakob kann später behaupten, ihn gesehen zu haben."],
+      "npcIds": ["N05"],
+      "clueIds": ["C01", "C02"],
+      "soundPreset": "Panne",
+      "stuckPrompts": ["Wenn niemand die Kiste durchsucht: Der Klöppel schlägt einmal gegen das Holz.", "Wenn die Gruppe im Wald bleibt: Ein warmes Laternenlicht taucht zwischen den Bäumen auf."],
+      "escalation": 0,
+      "checklist": ["Unfall vorlesen", "Kiste und Frachtzettel zeigen", "Richtung Dorf anbieten"],
+      "art": "scene-arrival-graphic-novel.png"
     },
     {
       "id": "S02",
@@ -27,8 +106,17 @@
       "duration": "20-30 Minuten",
       "goal": "Die Figuren finden Unterkunft, bemerken das Schweigegebot und hören erstmals von der Weißen Frau.",
       "handoutIds": ["H02", "H03"],
-      "audioCueIds": ["A03", "A04", "SFX05", "SFX06"],
-      "nextSceneIds": ["S03", "S04", "S05"]
+      "audioCueIds": ["A03", "A04", "SFX05", "SFX06", "SFX23"],
+      "nextSceneIds": ["S03", "S04", "S05"],
+      "readAloud": "Krähenfels liegt unter Schnee wie ein zugedecktes Geheimnis. Hinter beschlagenen Scheiben bewegen sich Schatten, doch niemand winkt euch herein.",
+      "gmNotes": ["Rosa hilft, ohne offen Partei zu ergreifen.", "Die Spieler dürfen frei entscheiden, ob sie Kirche, Schmiede oder Grube zuerst besuchen."],
+      "npcIds": ["N01", "N05"],
+      "clueIds": ["C03"],
+      "soundPreset": "Dorf",
+      "stuckPrompts": ["Rosa stellt das Wochenblatt sichtbar neben die Suppe.", "Jakob bietet an, bei Tageslicht den Weg zur Grube zu zeigen."],
+      "escalation": 1,
+      "checklist": ["Unterkunft geben", "Wochenblatt auslegen", "Schweigegebot fallen lassen", "Freie Reihenfolge bestätigen"],
+      "art": "scene-village-graphic-novel.png"
     },
     {
       "id": "S03",
@@ -37,8 +125,17 @@
       "duration": "20-35 Minuten",
       "goal": "Die Figuren entdecken die fehlende Seite im Kirchenbuch und die Schlagfolge 3-1-2-4.",
       "handoutIds": ["H04", "H06"],
-      "audioCueIds": ["A06", "SFX07", "SFX08"],
-      "nextSceneIds": ["S06"]
+      "audioCueIds": ["A06", "SFX07", "SFX08", "SFX24", "SFX29"],
+      "nextSceneIds": ["S06"],
+      "readAloud": "Im Kirchenschiff ist es wärmer als draußen, aber der Atem bleibt sichtbar. Über euch hängt die Glocke, deren Metall aussieht, als hätte es die Kälte gespeichert.",
+      "gmNotes": ["Martin Hoch gibt H04 ohne Wurf, sobald jemand das Register prüft.", "Die Schlagfolge darf auf Tisch oder Hand geklopft werden; ein Patzer verändert nur den Ton, nicht den Hinweis."],
+      "npcIds": ["N02"],
+      "clueIds": ["C04", "C05"],
+      "soundPreset": "Kirche",
+      "stuckPrompts": ["Martin zählt 3-1-2-4 mit dem Schlüsselbund.", "Ein einzelner falscher Glockenton lässt Staub aus dem Gebälk rieseln."],
+      "escalation": 2,
+      "checklist": ["Kirchenbuch zeigen", "Schlagfolge sichern", "Liedblatt austeilen", "Zur Erscheinung überleiten"],
+      "art": "scene-chapel-graphic-novel.png"
     },
     {
       "id": "S04",
@@ -47,8 +144,17 @@
       "duration": "20-30 Minuten",
       "goal": "Die Figuren erfahren, dass das Grubeneisen im Klöppel vibriert und die Achse vor dem Unfall brach.",
       "handoutIds": ["H07"],
-      "audioCueIds": ["A03", "SFX09", "SFX10"],
-      "nextSceneIds": ["S06"]
+      "audioCueIds": ["A03", "SFX09", "SFX10", "SFX25"],
+      "nextSceneIds": ["S06"],
+      "readAloud": "Hinter der Schmiede glüht ein Ofen wie ein rotes Auge. Emil Bopp legt den Hammer beiseite, bevor ihr die Kiste überhaupt geöffnet habt.",
+      "gmNotes": ["Emil ist kein Kultist. Er schämt sich, dass sein Werk die falsche Glocke nährt.", "Lass die Gruppe testen, ob der Klöppel im Takt der Schmiede reagiert."],
+      "npcIds": ["N03"],
+      "clueIds": ["C01", "C06"],
+      "soundPreset": "Schmiede",
+      "stuckPrompts": ["Emil hält den Klöppel an den Amboss; das Metall beginnt zu singen.", "Eine Kiste mit Ersatzteilen trägt denselben roten Rost wie der Frachtzettel."],
+      "escalation": 2,
+      "checklist": ["Schmiede beschreiben", "Werkbuch geben", "Vibration auslösen", "Grubenweg nennen"],
+      "art": "scene-forge-graphic-novel.png"
     },
     {
       "id": "S05",
@@ -57,8 +163,17 @@
       "duration": "30-45 Minuten",
       "goal": "Die Figuren finden den Flutstollen, Elisabeths Kamm und die fehlende Liedseite. Stimmen im Berg geben sich als Verstorbene aus.",
       "handoutIds": ["H08", "H09"],
-      "audioCueIds": ["A07", "SFX11", "SFX12", "SFX13", "SFX14"],
-      "nextSceneIds": ["S06"]
+      "audioCueIds": ["A07", "A09", "SFX11", "SFX12", "SFX13", "SFX14", "SFX26", "SFX27", "SFX28"],
+      "nextSceneIds": ["S06"],
+      "readAloud": "Der Eingang ist mit Brettern vernagelt, doch Wasser läuft darunter hervor. Jeder Schritt kommt einen Herzschlag zu spät zurück.",
+      "gmNotes": ["Gib den Flurplan offen aus; die Gefahr entsteht durch Geräusche und Entscheidungen, nicht durch Wegsuche.", "Die Stimmen dürfen vertraute Namen benutzen, aber niemals eine neue Lösung verraten."],
+      "npcIds": ["N04"],
+      "clueIds": ["C07", "C08"],
+      "soundPreset": "Grube",
+      "stuckPrompts": ["Lorenz markiert den nassen Querschlag mit Kreide.", "Ein Klopfen antwortet exakt auf drei Schläge der Gruppe."],
+      "escalation": 3,
+      "checklist": ["Grubenplan auslegen", "Flutstollen markieren", "Stimmen einsetzen", "Kamm oder Liedseite finden"],
+      "art": "scene-mine-graphic-novel.png"
     },
     {
       "id": "S06",
@@ -67,8 +182,17 @@
       "duration": "15-25 Minuten",
       "goal": "Die Weiße Frau warnt die Figuren, ohne sie anzugreifen. Der Glockenklöppel schlägt einmal von selbst.",
       "handoutIds": ["H05"],
-      "audioCueIds": ["A05", "SFX15", "SFX16", "SFX17"],
-      "nextSceneIds": ["S07"]
+      "audioCueIds": ["A05", "SFX15", "SFX16", "SFX17", "SFX30"],
+      "nextSceneIds": ["S07"],
+      "readAloud": "Der Schneefall hält inne. Zwischen den Grabsteinen steht eine Frau in Weiß. Sie hebt die Hand, als wolle sie euch nicht begrüßen, sondern zurückhalten.",
+      "gmNotes": ["Die Erscheinung greift nicht an und spricht nicht mit Worten.", "Zeige H05 erst nach der ersten Reaktion; die Rückseite enthält die Spielleitungserklärung."],
+      "npcIds": [],
+      "clueIds": ["C09"],
+      "soundPreset": "Erscheinung",
+      "stuckPrompts": ["Die Frau zeigt auf den Klöppel und dann auf den Glockenturm.", "Wenn jemand näher tritt, erlischt die nächste Laterne."],
+      "escalation": 4,
+      "checklist": ["Erscheinung zeigen", "Warnung beschreiben", "Kabinettfoto geben", "Vor Mitternacht ankündigen"],
+      "art": "scene-white-woman-graphic-novel.png"
     },
     {
       "id": "S07",
@@ -77,8 +201,17 @@
       "duration": "15-25 Minuten",
       "goal": "Die Hinweise werden zusammengelegt. Die Figuren wählen ihren Weg zum Finale.",
       "handoutIds": ["H10"],
-      "audioCueIds": ["A05", "M03", "SFX18"],
-      "nextSceneIds": ["S08"]
+      "audioCueIds": ["A05", "M03", "SFX18", "SFX29"],
+      "nextSceneIds": ["S08"],
+      "readAloud": "Kurz vor Mitternacht steht das Dorf still. Auf dem Tisch liegen Frachtzettel, Liedblatt, Plan und Brief wie Teile eines Mechanismus.",
+      "gmNotes": ["H10 ist ein Spoiler-Handout. Lies es nur vor, wenn die Gruppe die Verbindung selbst nicht findet.", "Jeder der drei Wege führt ins Finale; die Wahl bestimmt, welcher Preis sichtbar wird."],
+      "npcIds": ["N01", "N02", "N03", "N04"],
+      "clueIds": ["C10", "C11"],
+      "soundPreset": "Wahrheit",
+      "stuckPrompts": ["Rosa legt den Brief neben das Liedblatt und sagt: Sie wollte es beenden.", "Martin nennt die drei Orte: Turm, Feuer, Wasser."],
+      "escalation": 4,
+      "checklist": ["Spoiler-Schalter prüfen", "Hinweise sortieren lassen", "Finalweg wählen", "Finale-Preset bereithalten"],
+      "art": "scene-village-graphic-novel.png"
     },
     {
       "id": "S08",
@@ -87,8 +220,17 @@
       "duration": "35-55 Minuten",
       "goal": "Die Figuren verhindern die Befreiung des Widerhalls und entscheiden über Elisabeths Schicksal.",
       "handoutIds": ["H11"],
-      "audioCueIds": ["A08", "M04", "M05", "SFX19", "SFX20", "SFX21", "SFX22"],
-      "nextSceneIds": ["S09"]
+      "audioCueIds": ["A08", "A10", "M04", "M05", "SFX19", "SFX20", "SFX21", "SFX22", "SFX28", "SFX31"],
+      "nextSceneIds": ["S09"],
+      "readAloud": "Der Frost zieht in konzentrischen Linien über den Boden. Über dem Wasser hängt die Glocke, und irgendwo darunter atmet etwas im gleichen Takt.",
+      "gmNotes": ["Baue drei klare Optionen an: Schlagfolge brechen, Klöppel schmelzen oder Flutstollen öffnen.", "Ein Fehlschlag kostet eine Ressource oder eine Erinnerung, aber beendet die Geschichte nicht sofort."],
+      "npcIds": ["N01", "N02", "N03", "N04", "N05"],
+      "clueIds": ["C05", "C06", "C07", "C10", "C11"],
+      "soundPreset": "Finale",
+      "stuckPrompts": ["Der Klöppel zeigt mit seiner Spitze zum richtigen Weg.", "Die Weiße Frau hebt drei Finger: Turm, Feuer, Wasser."],
+      "escalation": 5,
+      "checklist": ["Finale-Karte geben", "Drei Wege benennen", "Herzschlag starten", "Bannung oder Scheitern auslösen"],
+      "art": "scene-finale-graphic-novel.png"
     },
     {
       "id": "S09",
@@ -98,7 +240,16 @@
       "goal": "Die Folgen der gewählten Lösung werden gezeigt.",
       "handoutIds": [],
       "audioCueIds": ["M06"],
-      "nextSceneIds": []
+      "nextSceneIds": [],
+      "readAloud": "Am Morgen taut der Schnee in dünnen Rinnsalen. Krähenfels hat wieder Geräusche, aber niemand kann sagen, ob die Glocke wirklich still ist.",
+      "gmNotes": ["Gib jeder Figur einen kurzen persönlichen Nachhall.", "Beende mit einem offenen, kleinen Geräusch statt mit einer Erklärung."],
+      "npcIds": ["N01", "N05"],
+      "clueIds": [],
+      "soundPreset": "Epilog",
+      "stuckPrompts": ["Ein letzter Tropfen fällt im Takt 3-1-2-4.", "Jakob findet eine rostrote Faser im Schnee."],
+      "escalation": 0,
+      "checklist": ["Folgen der Wahl erzählen", "Figuren nach dem Nachhall fragen", "Epilog-Cue starten"],
+      "art": "scene-village-graphic-novel.png"
     }
   ],
   "handouts": [
@@ -122,6 +273,8 @@
     {"id": "A06", "title": "Kapelle und Friedhof", "scene": "S03", "category": "ambient", "file": "A06_Kapelle_und_Friedhof.m4a", "mode": "loop", "gain": -0.24, "fadeMs": 2500, "isClue": false, "printFallbackId": null},
     {"id": "A07", "title": "Weiße Spur im Wald", "scene": "S05", "category": "ambient", "file": "A07_Weisse_Spur_im_Wald.m4a", "mode": "loop", "gain": -0.23, "fadeMs": 2500, "isClue": false, "printFallbackId": null},
     {"id": "A08", "title": "Finale im Froststurm", "scene": "S08", "category": "ambient", "file": "A08_Finale_Froststurm.m4a", "mode": "loop", "gain": -0.2, "fadeMs": 1800, "isClue": false, "printFallbackId": null},
+    {"id": "A09", "title": "Grubenluft Layer", "scene": "S05", "category": "ambient", "file": "A09_Grubenluft_Layer.m4a", "mode": "loop", "gain": -0.34, "fadeMs": 2200, "isClue": false, "printFallbackId": null},
+    {"id": "A10", "title": "Frostspannung Layer", "scene": "S08", "category": "ambient", "file": "A10_Frostspannung_Layer.m4a", "mode": "loop", "gain": -0.32, "fadeMs": 1600, "isClue": false, "printFallbackId": null},
     {"id": "M01", "title": "Ankunft in Krähenfels", "scene": "S01", "category": "music", "file": "M01_Ankunft_in_Kraehenfels.m4a", "mode": "loop", "gain": -0.28, "fadeMs": 2500, "isClue": false, "printFallbackId": null},
     {"id": "M02", "title": "Das Dorf verschweigt etwas", "scene": "S02", "category": "music", "file": "M02_Das_Dorf_verschweigt_etwas.m4a", "mode": "loop", "gain": -0.3, "fadeMs": 2500, "isClue": false, "printFallbackId": null},
     {"id": "M03", "title": "Die Weiße Frau naht", "scene": "S06", "category": "music", "file": "M03_Die_Weisse_Frau_naht.m4a", "mode": "loop", "gain": -0.28, "fadeMs": 1800, "isClue": false, "printFallbackId": null},
@@ -149,6 +302,15 @@
     {"id": "SFX19", "title": "Herzschlag im Frost", "scene": "S08", "category": "sfx", "file": "SFX19_Herzschlag.wav", "mode": "loop", "gain": -0.28, "fadeMs": 500, "isClue": false, "printFallbackId": null},
     {"id": "SFX20", "title": "Eisbruch", "scene": "S08", "category": "sfx", "file": "SFX20_Eisbruch.wav", "mode": "oneShot", "gain": -0.14, "fadeMs": 0, "isClue": false, "printFallbackId": null},
     {"id": "SFX21", "title": "Bannung gelingt", "scene": "S08", "category": "sfx", "file": "SFX21_Bannung.wav", "mode": "oneShot", "gain": -0.16, "fadeMs": 0, "isClue": false, "printFallbackId": null},
-    {"id": "SFX22", "title": "Bannung scheitert", "scene": "S08", "category": "sfx", "file": "SFX22_Scheitern.wav", "mode": "oneShot", "gain": -0.16, "fadeMs": 0, "isClue": false, "printFallbackId": null}
+    {"id": "SFX22", "title": "Bannung scheitert", "scene": "S08", "category": "sfx", "file": "SFX22_Scheitern.wav", "mode": "oneShot", "gain": -0.16, "fadeMs": 0, "isClue": false, "printFallbackId": null},
+    {"id": "SFX23", "title": "Fensterladen im Wind", "scene": "S02", "category": "sfx", "file": "SFX23_Fensterladen_im_Wind.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": false, "printFallbackId": null},
+    {"id": "SFX24", "title": "Fernes Läuten", "scene": "S03", "category": "sfx", "file": "SFX24_Fernes_Laeuten.wav", "mode": "oneShot", "gain": -0.26, "fadeMs": 0, "isClue": true, "printFallbackId": "H06"},
+    {"id": "SFX25", "title": "Holz unter Spannung", "scene": "S04", "category": "sfx", "file": "SFX25_Holz_unter_Spannung.wav", "mode": "oneShot", "gain": -0.22, "fadeMs": 0, "isClue": true, "printFallbackId": "H07"},
+    {"id": "SFX26", "title": "Wasser im Flutstollen", "scene": "S05", "category": "sfx", "file": "SFX26_Wasser_im_Flutstollen.wav", "mode": "loop", "gain": -0.3, "fadeMs": 450, "isClue": false, "printFallbackId": "H08"},
+    {"id": "SFX27", "title": "Wiederhallende Schritte", "scene": "S05", "category": "sfx", "file": "SFX27_Wiederhallende_Schritte.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": true, "printFallbackId": "H09"},
+    {"id": "SFX28", "title": "Klopfen unter dem Boden", "scene": "S05", "category": "sfx", "file": "SFX28_Klopfen_unter_Boden.wav", "mode": "oneShot", "gain": -0.16, "fadeMs": 0, "isClue": true, "printFallbackId": "H09"},
+    {"id": "SFX29", "title": "Verzerrte Glockenresonanz", "scene": "S03", "category": "sfx", "file": "SFX29_Glockenresonanz.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": true, "printFallbackId": "H06"},
+    {"id": "SFX30", "title": "Kurzer Atem im Raum", "scene": "S06", "category": "sfx", "file": "SFX30_Atem_im_Raum.wav", "mode": "oneShot", "gain": -0.2, "fadeMs": 0, "isClue": false, "printFallbackId": null},
+    {"id": "SFX31", "title": "Resonanz bricht ab", "scene": "S08", "category": "sfx", "file": "SFX31_Resonanzabbruch.wav", "mode": "oneShot", "gain": -0.14, "fadeMs": 0, "isClue": false, "printFallbackId": null}
   ]
 }

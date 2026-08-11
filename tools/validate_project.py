@@ -32,12 +32,18 @@ def main() -> None:
     scenes = manifest["scenes"]
     handouts = manifest["handouts"]
     cues = manifest["audioCues"]
+    npcs = manifest.get("npcs", [])
+    clues = manifest.get("clues", [])
     scene_ids = {scene["id"] for scene in scenes}
     handout_ids = {handout["id"] for handout in handouts}
     cue_ids = {cue["id"] for cue in cues}
+    npc_ids = {npc["id"] for npc in npcs}
+    clue_ids = {clue["id"] for clue in clues}
     if len(scene_ids) != len(scenes): fail("Duplicate scene id")
     if len(handout_ids) != len(handouts): fail("Duplicate handout id")
     if len(cue_ids) != len(cues): fail("Duplicate audio cue id")
+    if len(npc_ids) != len(npcs): fail("Duplicate NPC id")
+    if len(clue_ids) != len(clues): fail("Duplicate clue id")
 
     for scene in scenes:
         missing = set(scene["handoutIds"]) - handout_ids
@@ -46,6 +52,24 @@ def main() -> None:
         if missing: fail(f"{scene['id']} references missing audio cues: {sorted(missing)}")
         missing = set(scene["nextSceneIds"]) - scene_ids
         if missing: fail(f"{scene['id']} references missing next scenes: {sorted(missing)}")
+        missing = set(scene.get("npcIds", [])) - npc_ids
+        if missing: fail(f"{scene['id']} references missing NPCs: {sorted(missing)}")
+        missing = set(scene.get("clueIds", [])) - clue_ids
+        if missing: fail(f"{scene['id']} references missing clues: {sorted(missing)}")
+        if not scene.get("readAloud"): fail(f"{scene['id']} has no read-aloud prompt")
+        if not scene.get("checklist"): fail(f"{scene['id']} has no GM checklist")
+
+    for npc in npcs:
+        missing = set(npc.get("givesHandoutIds", [])) - handout_ids
+        if missing: fail(f"{npc['id']} references missing handouts: {sorted(missing)}")
+    for clue in clues:
+        fallback = clue.get("handoutId")
+        if fallback is not None and fallback not in handout_ids:
+            fail(f"Clue {clue['id']} has invalid handout reference")
+
+    app_manifest_path = ROOT / "app" / "Kraehenfels" / "Resources" / "manifest.json"
+    if app_manifest_path.read_text(encoding="utf-8") != manifest_path.read_text(encoding="utf-8"):
+        fail("App manifest is out of sync with content manifest")
 
     generated = ROOT / "audio" / "generated"
     bundled = ROOT / "app" / "Kraehenfels" / "Resources" / "Audio"
@@ -56,7 +80,7 @@ def main() -> None:
         if cue.get("isClue") and fallback not in handout_ids:
             fail(f"Clue {cue['id']} has invalid printed fallback")
 
-    for name in ("01_Karte_Spieler.pdf", "01_Karte_SL.pdf", "01_Grubenplan_H08.pdf", "01_Grubenplan_SL.pdf", "02_Handouts.pdf", "03_Figurenbau.pdf", "10_SL_Abenteuer.pdf", "11_SL_Schnellreferenz.pdf", "14_Soundboard-Cues.pdf"):
+    for name in ("01_Karte_Spieler.pdf", "01_Karte_SL.pdf", "01_Grubenplan_H08.pdf", "01_Grubenplan_SL.pdf", "02_Handouts.pdf", "03_Figurenbau.pdf", "10_SL_Abenteuer.pdf", "11_SL_Schnellreferenz.pdf", "12_SL_Am_Tisch.pdf", "14_Soundboard-Cues.pdf"):
         path = ROOT / "outputs" / name
         if not path.exists(): fail(f"Missing PDF: {name}")
         pages = len(PdfReader(str(path)).pages)
@@ -65,7 +89,11 @@ def main() -> None:
 
     for path in [ROOT / "content" / "scenario.md", ROOT / "content" / "handouts.md", ROOT / "content" / "character_creation.md"]:
         path.read_text(encoding="utf-8")
-    print(f"OK: {len(scenes)} scenes, {len(handouts)} handouts, {len(cues)} audio cues")
+    art_dir = ROOT / "app" / "Kraehenfels" / "Resources" / "Art"
+    for scene in scenes:
+        art = scene.get("art")
+        if art and not (art_dir / art).exists(): fail(f"Missing scene art: {art}")
+    print(f"OK: {len(scenes)} scenes, {len(handouts)} handouts, {len(npcs)} NPCs, {len(clues)} clues, {len(cues)} audio cues")
 
 
 if __name__ == "__main__":

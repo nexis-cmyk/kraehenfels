@@ -24,6 +24,9 @@ targets:
       - path: Kraehenfels/Resources/Audio
         type: folder
         buildPhase: resources
+      - path: Kraehenfels/Resources/Art
+        type: folder
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: de.kraehenfels.spielleitung

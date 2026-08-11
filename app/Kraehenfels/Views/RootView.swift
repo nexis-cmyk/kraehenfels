@@ -56,23 +56,33 @@ struct RootView: View {
             if let scene = content.scene(for: currentSceneID) {
                 NavigationLink(destination: SceneDetailView(scene: scene)) {
                     FrostCard {
-                        HStack(alignment: .top, spacing: 14) {
-                            Image(systemName: "circle.dotted.circle")
-                                .font(.title2)
-                                .foregroundStyle(FrostTheme.frost)
-                                .frame(width: 28)
-                            VStack(alignment: .leading, spacing: 5) {
+                        VStack(alignment: .leading, spacing: 13) {
+                            HStack {
                                 SectionLabel(title: "Aktuelle Szene")
-                                Text(scene.title)
-                                    .font(.title3.weight(.semibold))
-                                    .foregroundStyle(.white)
-                                Text(scene.duration)
-                                    .font(.caption)
+                                Spacer()
+                                Text("\(completedCount)/\(content.manifest.scenes.count) abgeschlossen")
+                                    .font(.caption.monospaced())
                                     .foregroundStyle(FrostTheme.quiet)
                             }
-                            Spacer()
-                            Image(systemName: "arrow.up.right")
-                                .foregroundStyle(FrostTheme.cobalt)
+                            HStack(alignment: .top, spacing: 14) {
+                                Image(systemName: scene.escalation >= 4 ? "exclamationmark.triangle.fill" : "circle.dotted.circle")
+                                    .font(.title2)
+                                    .foregroundStyle(scene.escalation >= 4 ? FrostTheme.warning : FrostTheme.frost)
+                                    .frame(width: 28)
+                                VStack(alignment: .leading, spacing: 5) {
+                                    Text(scene.title)
+                                        .font(.title3.weight(.semibold))
+                                        .foregroundStyle(.white)
+                                    Text(scene.duration)
+                                        .font(.caption)
+                                        .foregroundStyle(FrostTheme.quiet)
+                                }
+                                Spacer()
+                                Image(systemName: "arrow.up.right")
+                                    .foregroundStyle(FrostTheme.cobalt)
+                            }
+                            ProgressView(value: Double(completedCount), total: Double(max(content.manifest.scenes.count, 1)))
+                                .tint(FrostTheme.cobalt)
                         }
                     }
                 }
@@ -135,5 +145,9 @@ struct RootView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    private var completedCount: Int {
+        completedSceneIDs.split(separator: ",").filter { !$0.isEmpty }.count
     }
 }
