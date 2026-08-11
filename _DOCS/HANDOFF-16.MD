@@ -28,3 +28,7 @@ Der iOS-Compile-Check für Commit `35a58eb` und der Release-Workflow für Tag `v
 ## Nachträglicher Tisch-Check
 
 Die große SL-Fassung enthielt nach der Cue-Reduktion noch zwei alte Verweise. S01 nennt jetzt ausschließlich `A01`, `SFX01` und `SFX04`; S04 ausschließlich `A03` und `SFX10`. Die Ein-Seiten-Referenz nennt außerdem für jede Ausgabe direkt den NSC oder die Fundstelle des jeweiligen Handouts.
+
+## Spielstart-Ergänzung
+
+`00_Spielstart.pdf` wurde um eine zweite Spielleitungsseite erweitert. Sie führt eine neue Spielleitung in 90 Sekunden durch Tischaufbau, wörtlichen Einstieg, die ersten fünf Minuten, Notfallregel und Finale-Prinzip. Dadurch ist der Einstieg nicht mehr auf mehrere PDFs verteilt.

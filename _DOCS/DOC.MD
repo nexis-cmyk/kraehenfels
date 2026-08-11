@@ -30,6 +30,8 @@ Die iPhone-App nutzt `SessionStore` für dieselben Arbeitsnotizen. Die Daten ble
 
 Die einseitige SL-Referenz `12_SL_Am_Tisch.pdf` führt für jede Szene nicht nur Handout, Sound und Eskalation, sondern auch die konkrete Fundstelle oder den NSC auf, der den Hinweis geben kann. Sie ist die verbindliche Tisch-Navigation für eine unerfahrene Spielleitung.
 
+`00_Spielstart.pdf` enthält zusätzlich eine zweite Spielleitungsseite für die ersten 90 Sekunden: Tischaufbau, wörtlicher Einstieg, die ersten fünf Minuten, Notfallregel und die drei dramaturgischen Grundregeln. Sie verweist bei Unsicherheit direkt auf `12_SL_Am_Tisch.pdf`.
+
 ## Gelieferte Artefakte
 
 - `outputs/01_Karte_Spieler.pdf` und `outputs/01_Karte_SL.pdf`

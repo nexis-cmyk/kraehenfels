@@ -1036,7 +1036,39 @@ def build_start_pdf(path: Path) -> None:
         p("<b>Safety</b><br/>Vorher kurz absprechen: keine Gewalt gegen Kinder, keine sexualisierte Gewalt, keine detaillierte Folter. Ein Stoppsignal genügt. Horror darf leiser werden, ohne dass jemand die Runde erklären muss.", styles["KBody"]),
         Spacer(1, 7 * mm),
         p("<para alignment='center'><font size='16'>Die Glocke schweigt.<br/>Der Berg antwortet trotzdem.</font></para>", styles["KBody"]),
+        PageBreak(),
     ]
+    story += title_block("Dein Start in 90 Sekunden", "Diese Seite liegt neben dir, bis die Kutsche umkippt.")
+    start_cards = [
+        [
+            p("<b>1 · Tisch aufbauen</b><br/><br/>Lege Spielerkarte und Figurenbau aus. H01 bleibt im Umschlag bei dir. H02 bis H09 liegen verdeckt in Reihenfolge bereit. H10 und H11 bleiben außer Sicht. Öffne in der App <b>Panne</b>, stelle die Lautstärke leise ein.", styles["KSmall"]),
+            p("<b>2 · Das sagst du zuerst</b><br/><br/><i>Ihr seid drei Reisende in einer Postkutsche nach Freiburg. Sagt kurz: Wer seid ihr, warum reist ihr und was fällt euch an der Person links von euch zuerst auf?</i><br/><br/>Dann lies den Vorlesetext von S01 vor.", styles["KSmall"]),
+        ],
+        [
+            p("<b>3 · Die ersten fünf Minuten</b><br/><br/>Starte A01. Lies S01. Frage danach nur: <i>Was tut ihr?</i> Gib H01, sobald jemand die Kiste oder den Bruch untersucht. Starte SFX01 genau beim Umkippen, SFX04 bei der Spur. Ein Wurf entscheidet nur, wie es aussieht – nie, ob H01 gefunden wird.", styles["KSmall"]),
+            p("<b>Wenn du nicht weißt, was jetzt passiert</b><br/><br/>Schau auf <b>12_SL_Am_Tisch.pdf</b>. Nenne den nächsten sichtbaren Impuls. Gib den Hinweis der Szene. Lass einen NSC handeln. Stelle dann wieder die Frage: <i>Was tut ihr?</i><br/><br/>Du musst keine Lösung verstecken und keinen perfekten Plan haben.", styles["KSmall"]),
+        ],
+        [
+            p("<b>Deine drei Regeln</b><br/><br/>1. Beschreibe kurz und konkret, dann frage nach einer Handlung.<br/>2. Bei guten Ideen: lass sie funktionieren oder gib eine Spur.<br/>3. Bei einem Fehlschlag: Kosten statt Sackgasse – Zeit, Lärm, Kälte oder Misstrauen.", styles["KSmall"]),
+            p("<b>Der wichtigste Moment</b><br/><br/>S06 ist keine Kampfbegegnung. Die Weiße Frau warnt. Sie zeigt auf Klöppel und Grube, greift nicht an und spricht nicht. Im Finale haben die Spieler immer drei echte Wege: Glocke, Schmiede oder Flutstollen.<br/><br/>Nach dem Finale: Stille lassen, dann Epilog fragen.", styles["KSmall"]),
+        ],
+    ]
+    start_table = Table(start_cards, colWidths=[84 * mm, 84 * mm], rowHeights=[52 * mm, 53 * mm, 53 * mm])
+    start_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (0, 0), colors.HexColor("#F4EBD8")),
+        ("BACKGROUND", (1, 0), (1, 0), PALE),
+        ("BACKGROUND", (0, 1), (0, 1), PALE),
+        ("BACKGROUND", (1, 1), (1, 1), colors.HexColor("#F4EBD8")),
+        ("BACKGROUND", (0, 2), (0, 2), colors.HexColor("#F4EBD8")),
+        ("BACKGROUND", (1, 2), (1, 2), PALE),
+        ("BOX", (0, 0), (-1, -1), 0.85, UMBER),
+        ("INNERGRID", (0, 0), (-1, -1), 0.55, LINE),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 5 * mm),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 5 * mm),
+        ("TOPPADDING", (0, 0), (-1, -1), 5 * mm),
+    ]))
+    story += [start_table]
     temp_dir = ROOT / "_TMP"
     temp_dir.mkdir(exist_ok=True)
     cover = temp_dir / "kraehenfels-spielstart-cover.pdf"
