@@ -80,6 +80,8 @@ Die Browser-Version lässt sich vor dem Sideloaden lokal testen. Sie verwendet d
 
 Die aktuellen Audios sind Platzhalter. Der Master-Prompt fuer eine komplette Neuerzeugung liegt in [`_DOCS/AUDIO-REBUILD-MASTER-PROMPT.md`](_DOCS/AUDIO-REBUILD-MASTER-PROMPT.md). Wenn neue Dateien vorliegen, muessen ihre Dateinamen den vorhandenen Cue-Dateien entsprechen. WAV-Dateien mit gleichem Basisnamen sind ebenfalls okay, das Import-Skript wandelt sie passend um.
 
+Fuer den ersten Spielabend ist der einfache Weg wahrscheinlich besser: [`_DOCS/AUDIO-SIMPLE-PACK.md`](_DOCS/AUDIO-SIMPLE-PACK.md) reduziert das Paket auf 5 Loops, 1 Hintergrundthema und 12 starke Effektknoepfe. Der Simple-Pack-Import baut daraus trotzdem alle App-Dateien.
+
 ```powershell
 python tools/import_audio_replacements.py "C:\Pfad\zu\neuen-sounds" --sync-web
 python tools/build_web_preview.py
@@ -87,6 +89,12 @@ python tools/validate_project.py
 ```
 
 Das Skript schreibt nach `audio/generated/`, `app/Kraehenfels/Resources/Audio/` und mit `--sync-web` auch nach `web/assets/audio/`.
+
+Simple-Pack-Import:
+
+```powershell
+python tools/import_audio_replacements.py "C:\Pfad\zu\simple-sounds" --simple-pack --sync-web
+```
 
 ## Lizenzhinweise
 
