@@ -39,6 +39,7 @@ Die Drucksachen und Audios lassen sich unter Windows erzeugen:
 
 ```powershell
 python tools/build_print_pack.py
+python tools/build_invitation.py
 python audio/generate_audio.py
 ```
 
@@ -59,6 +60,7 @@ Ein Tag wie `v2.0.0` oder der Button **Run workflow** mit einer Versionsnummer s
 Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: Schnee, Tannen, Kirche, Grube, gealtertes Papier, ein Kabinettfoto von Elisabeth Abele und eine Glockenradierung. Die Dorfkarte ist eine realistische Luftansicht mit sichtbarem Gelände, Bach, Gebäuden und Grubenweg. Die Handouts sind als zwei ausschneidbare A5-Requisiten pro Seite angelegt: Kutschschein, Wochenblatt, Kirchenbuch, Foto, Liedblatt, Werkbuch, Feldplan, Aussage, Brief und Ritualkarte besitzen jeweils ein eigenes Layout.
 
 - `00_Spielstart.pdf`: kurze Vorbereitung für die erste Spielleitung
+- `Einladung_Kraehenfels.pdf` und `Einladung_Kraehenfels.png`: druckbare Spieleinladung mit Abenteuerteaser und Charaktervorbereitung
 - `01_Karte_Spieler.pdf`: spoilerfreie Tischkarte
 - `01_Karte_SL.pdf`: geheime Karte mit Flutstollen, Kammer und Wahrheit
 - `01_Grubenplan_H08.pdf` und `01_Grubenplan_SL.pdf`: beschädigter Vermessungsplan mit optionalem SL-Overlay
