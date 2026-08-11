@@ -29,8 +29,8 @@ python tools/build_web_preview.py
 python tools/validate_project.py
 ```
 
-## Noch ausstehend
+## Veröffentlichung
 
-- ZIP-Druckpaket aktualisieren und die bestehende Drive-Datei ersetzen.
-- Änderungen committen, eine v2.0.1-IPA veröffentlichen und den AltStore-Feed mit deren Größe und SHA-256 aktualisieren.
-- Release-IPA auf Manifest, Art und Audio prüfen.
+Das Druckpaket wurde als `Kraehenfels-Druckpaket.zip` neu gebaut und die bestehende Drive-Datei mit derselben ID ersetzt. Die Größe dort ist 68.576.369 Byte.
+
+Die Release-IPA v2.0.1 ist veröffentlicht. Sie wurde nach dem Download kontrolliert: Manifest-Version 2.0.1, sieben Szenenbilder und 46 Audiodateien. Ihre SHA-256 lautet `eacccecaf86838e5013c7ef1864aaf2e0782cc479f660b36d8b68815fe75b3dc`. `altstore/source.json` verweist auf exakt diese Datei.
