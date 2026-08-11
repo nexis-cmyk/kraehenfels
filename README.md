@@ -78,6 +78,8 @@ Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.z
 
 Die Browser-Version lässt sich vor dem Sideloaden lokal testen. Sie verwendet dieselben Szenen, NPCs, Handouts und Audiodateien wie die iPhone-App. Die genaue Startanleitung steht in [`web/README.md`](web/README.md).
 
+Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `https://nexis-cmyk.github.io/kraehenfels/`. Dort kannst du sie unterwegs als Web-App ausprobieren.
+
 ## Audio
 
 Das Soundboard nutzt ein bewusst kleines, tischpraktisches Set: fünf Atmosphären, ein Musikstück und zwölf Effekte. Die Quellclips liegen nur temporär unter `_TMP/mixkit_audio/`. `tools/build_mixkit_simple_pack.py` schneidet und kombiniert sie zu den 18 Dateien unter `audio/mixkit_simple_pack/`. Der Import verteilt diese danach auf alle 46 technischen Cue-Dateien für App und Web-Testversion. Die vollständige Quellenliste steht in [`_DOCS/AUDIO-SOURCES.md`](_DOCS/AUDIO-SOURCES.md).

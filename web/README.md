@@ -2,6 +2,8 @@
 
 Die Web-Testversion ist eine offlinefähige Vorschau des Spielleiter-Leitstands. Sie nutzt dieselben Szenen, Handouts, NPCs und Audio-Dateien wie die iPhone-App.
 
+Die veröffentlichte Testversion liegt nach dem GitHub-Pages-Workflow unter `https://nexis-cmyk.github.io/kraehenfels/`. Beim ersten Öffnen braucht sie Internet, danach stehen die bereits geladenen Inhalte offline zur Verfügung.
+
 ## Lokal testen
 
 Im Projektordner einmal die Web-Dateien aktualisieren:
