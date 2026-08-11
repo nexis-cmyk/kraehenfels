@@ -27,7 +27,7 @@ Die App bleibt frei navigierbar. Sie zeigt Vorlesetext, SL-Notizen, NPC-Zuständ
 
 ## Audio
 
-Der aktive Satz besteht aus 18 unterscheidbaren Dateien: sechs Atmosphären, zwei Musikflächen und zehn One-Shots. Die Namen und Produktionsabsichten stehen in [`SOUND-PROMPTS-V3.md`](SOUND-PROMPTS-V3.md). `tools/build_audio_v3.py` schreibt synchron nach `audio/generated/`, in das iOS-Bundle und in die Web-App. Der Audio-Selbsttest bleibt in SwiftUI und Web-Leitstand sichtbar.
+Der aktive Satz besteht aus 18 unterscheidbaren Dateien: sechs Atmosphären, zwei Musikflächen und zehn One-Shots. Die aktuelle Produktionsfassung steht in [`SOUND-PROMPTS-V4.md`](SOUND-PROMPTS-V4.md). `tools/import_audio_replacements.py` schreibt die normalisierten Dateien synchron nach `audio/generated/`, in das iOS-Bundle und in die Web-App. Der Audio-Selbsttest bleibt in SwiftUI und Web-Leitstand sichtbar.
 
 ## Druckpaket
 

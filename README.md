@@ -89,7 +89,7 @@ Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `h
 
 ## Audio
 
-Das Soundboard nutzt ein bewusst kleines, unterscheidbares Set aus sechs Atmosphären, zwei Musikflächen und zehn One-Shots. Die V3-Dateien tragen sprechende Namen wie `V3_A02_Dorf_Nacht.m4a` und werden automatisch in App, Web-Version und Soundboard-PDF synchronisiert. Die Prompt- und Quellenabsicht steht in [`_DOCS/SOUND-PROMPTS-V3.md`](_DOCS/SOUND-PROMPTS-V3.md).
+Das Soundboard nutzt ein bewusst kleines, unterscheidbares Set aus sechs Atmosphären, zwei Musikflächen und zehn One-Shots. Die neue V4-Abmischung wurde mit eigenständigen Foley- und Atmosphären-Prompts erzeugt. Die Bundle-Namen bleiben `V3_*`, damit die installierte App-Struktur kompatibel bleibt. Die Prompt- und Quellenabsicht steht in [`_DOCS/SOUND-PROMPTS-V4.md`](_DOCS/SOUND-PROMPTS-V4.md).
 
 Wenn du später eigene oder KI-generierte Dateien einsetzen möchtest, ersetzt du nur die V3-Datei mit demselben Namen und startest anschließend den Audio- und Web-Build erneut.
 
