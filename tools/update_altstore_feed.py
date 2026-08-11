@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import plistlib
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -21,11 +23,20 @@ def main() -> None:
 
     data = json.loads(args.template.read_text(encoding="utf-8"))
     ipa_bytes = args.ipa.read_bytes()
-    version = args.tag.removeprefix("v")
+    with zipfile.ZipFile(args.ipa) as archive:
+        info_plist = plistlib.loads(archive.read("Payload/Kraehenfels.app/Info.plist"))
+    version = str(info_plist["CFBundleShortVersionString"])
+    build_version = str(info_plist["CFBundleVersion"])
+    requested_version = args.tag.removeprefix("v")
+    if version != requested_version:
+        raise ValueError(
+            f"IPA version {version} does not match release tag {requested_version}."
+        )
     release_url = f"https://github.com/{args.repo}/releases/download/v{version}/Kraehenfels.ipa"
     raw_root = f"https://raw.githubusercontent.com/{args.repo}/main"
     app = data["apps"][0]
     app["version"] = version
+    app["buildVersion"] = build_version
     app["versionDate"] = datetime.now(timezone.utc).date().isoformat()
     app["downloadURL"] = release_url
     app["iconURL"] = f"{raw_root}/altstore/icon.png"
