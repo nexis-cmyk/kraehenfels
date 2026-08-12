@@ -30,13 +30,15 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: de.kraehenfels.spielleitung
-        MARKETING_VERSION: "3.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "3.2.0"
+        CURRENT_PROJECT_VERSION: "2"
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Krähenfels
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: true
         INFOPLIST_KEY_UILaunchScreen_Generation: true
+        INFOPLIST_KEY_UIBackgroundModes:
+          - audio
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         TARGETED_DEVICE_FAMILY: "1"
     scheme:

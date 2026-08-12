@@ -542,7 +542,8 @@ def build_sl_adventure(path: Path, data: dict) -> None:
     story.append(Paragraph("Konrad Gruber verdreht das alte Gastrecht. Die Reisenden sollen als Gäste aufgenommen, eingeschlossen und an der Alten Eiche geopfert werden. Der Knochenhirsch ist der gebundene Waldgeist in seiner verdorbenen Form.", BODY))
     story.append(Spacer(1, 6 * mm))
     for scene in data["scenes"]:
-        story.extend([Paragraph(f"{scene['id']} · {scene['title']}", text_style(scene["id"], 15, 18, COBALT, bold=True)), Paragraph(f"<b>Ziel:</b> {scene['goal']}", BODY), Paragraph(f"<b>Vorlesen:</b> {scene['readAloud']}", BODY), Paragraph("<b>SL-Notizen:</b> " + " · ".join(scene["gmNotes"]), SMALL), Paragraph(f"<b>Hinweise:</b> {', '.join(scene['clueIds']) or 'keine'} · <b>Handouts:</b> {', '.join(scene['handoutIds']) or 'keine'} · <b>Sound:</b> {scene['soundPreset']}", SMALL), Spacer(1, 4 * mm)])
+        audio_line = " · ".join(f"<b>{entry['cueId']}</b>: {entry['playWhen']}" for entry in scene.get("audioPlan", []))
+        story.extend([Paragraph(f"{scene['id']} · {scene['title']}", text_style(scene["id"], 15, 18, COBALT, bold=True)), Paragraph(f"<b>Ziel:</b> {scene['goal']}", BODY), Paragraph(f"<b>Vorlesen:</b> {scene['readAloud']}", BODY), Paragraph("<b>SL-Notizen:</b> " + " · ".join(scene["gmNotes"]), SMALL), Paragraph(f"<b>Hinweise:</b> {', '.join(scene['clueIds']) or 'keine'} · <b>Handouts:</b> {', '.join(scene['handoutIds']) or 'keine'}", SMALL), Paragraph(f"<b>Sound-Regie:</b> {audio_line}", SMALL), Spacer(1, 4 * mm)])
     doc.build(story)
 
 
@@ -557,8 +558,25 @@ def build_reference(path: Path, data: dict, mode: str) -> None:
         for level in data["threatLevels"]:
             story.append(Paragraph(f"<b>{level['level']} · {level['title']}</b> · {level['detail']} · Auslöser: {level['trigger']}", SMALL))
     else:
-        story = [Paragraph("Am Tisch", TITLE), Paragraph("Die eine Seite für den Abend", text_style("atsub", 11, 14, RUST, bold=True))]
-        story.extend([Paragraph("1. Vorlesen, dann fragen: Was tut ihr?", BODY), Paragraph("2. Pflichtspur geben, auch wenn der Wurf misslingt.", BODY), Paragraph("3. Eskalation manuell erhöhen, wenn die Gruppe einen Fakt offen ausspricht.", BODY), Paragraph("4. Bei Stillstand den Fallback des nächsten Faktums verwenden.", BODY), Paragraph("5. Vor dem Finale die drei Wege sichtbar benennen.", BODY), Spacer(1, 6 * mm), Paragraph("Drei Finale", text_style("endings", 14, 17, INK, bold=True))])
+        compact = text_style("table_compact", 6.8, 8.2, INK)
+        compact_bold = text_style("table_compact_bold", 6.8, 8.2, INK, bold=True)
+        compact_head = text_style("table_compact_head", 6.8, 8.2, FROST, bold=True)
+        story = [Paragraph("Am Tisch", TITLE), Paragraph("Was jetzt wichtig ist", text_style("atsub", 11, 14, RUST, bold=True))]
+        story.extend([Paragraph("Vorlesen, nach einer Handlung fragen und Pflichtspuren auch bei einem misslungenen Wurf geben. Dorfspannung nur erhöhen, wenn eine Wahrheit offen ausgesprochen wird oder Gruber handeln muss.", BODY), Spacer(1, 4 * mm)])
+        rows = [[Paragraph("Szene", compact_head), Paragraph("Gerade wichtig", compact_head), Paragraph("Nächster Hinweis", compact_head), Paragraph("Nächster Sound", compact_head), Paragraph("Stufe", compact_head)]]
+        for scene in data["scenes"]:
+            shock = next((entry for entry in scene.get("audioPlan", []) if entry["cueId"].startswith("SFX")), None)
+            sound = f"{shock['cueId']}: {shock['playWhen']}" if shock else f"{scene['audioPlan'][0]['cueId']}: {scene['audioPlan'][0]['playWhen']}"
+            rows.append([
+                Paragraph(f"<b>{scene['id']}</b><br/>{scene['shortTitle']}", compact),
+                Paragraph(scene["recommendation"], compact),
+                Paragraph(", ".join(scene["clueIds"]) or "Nachhall statt Hinweis", compact),
+                Paragraph(sound, compact),
+                Paragraph(str(scene["escalation"]), compact_bold),
+            ])
+        table = Table(rows, colWidths=[22 * mm, 59 * mm, 31 * mm, 56 * mm, 12 * mm], repeatRows=1)
+        table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, 0), PANEL), ("GRID", (0, 0), (-1, -1), 0.25, PAPER_DARK), ("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 3), ("RIGHTPADDING", (0, 0), (-1, -1), 3), ("TOPPADDING", (0, 1), (-1, -1), 4), ("BOTTOMPADDING", (0, 1), (-1, -1), 4), ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F2EEE4")])]))
+        story.extend([table, Spacer(1, 5 * mm), Paragraph("Drei Finale", text_style("endings", 14, 17, INK, bold=True))])
         for ending in data["endings"]:
             story.append(Paragraph(f"<b>{ending['title']}</b> · {ending['summary']} Preis: {ending['cost']}", BODY))
     doc.build(story)
@@ -566,13 +584,31 @@ def build_reference(path: Path, data: dict, mode: str) -> None:
 
 def build_audio_sheet(path: Path, data: dict) -> None:
     doc = SimpleDocTemplate(str(path), pagesize=A4, rightMargin=15 * mm, leftMargin=15 * mm, topMargin=15 * mm, bottomMargin=15 * mm)
-    story = [Paragraph("Soundboard-Cues", TITLE), Paragraph("Kompakt filmisch · Keine plötzlichen Spitzen", text_style("audsub", 11, 14, RUST, bold=True))]
-    rows = [["ID", "Cue", "Einsatz", "Beschreibung"]]
-    for cue in data["audioCues"]:
-        rows.append([cue["id"], cue["title"], cue["category"], cue.get("description", "")])
-    table = Table(rows, colWidths=[14 * mm, 44 * mm, 23 * mm, 92 * mm], repeatRows=1)
-    table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, 0), PANEL), ("TEXTCOLOR", (0, 0), (-1, 0), FROST), ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"), ("FONTSIZE", (0, 0), (-1, -1), 7.3), ("LEADING", (0, 0), (-1, -1), 9), ("GRID", (0, 0), (-1, -1), 0.25, PAPER_DARK), ("VALIGN", (0, 0), (-1, -1), "TOP"), ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F2EEE4")])]))
-    story.extend([Spacer(1, 6 * mm), table])
+    cell = text_style("audio_cell", 7.1, 8.6, INK)
+    cell_bold = text_style("audio_cell_bold", 7.1, 8.6, INK, bold=True)
+    header_cell = text_style("audio_header", 7.1, 8.6, FROST, bold=True)
+    layer_labels = {"musicBed": "Grundmusik", "musicLayer": "Musik-Layer", "ambient": "Atmosphäre", "sfx": "Effekt"}
+    story = [
+        Paragraph("Sound-Regie", TITLE),
+        Paragraph("Wann du welchen Cue spielst", text_style("audsub", 11, 14, RUST, bold=True)),
+        Paragraph("M01 vor dem ersten Vorlesetext starten und durch den ganzen Abend laufen lassen. Mit VORLESEN in der App absenken. STOP beendet im Notfall alle vier Audio-Layer sofort.", BODY),
+        Spacer(1, 5 * mm),
+    ]
+    cues = {cue["id"]: cue for cue in data["audioCues"]}
+    rows = [[Paragraph("Szene", header_cell), Paragraph("Cue", header_cell), Paragraph("Wann abspielen?", header_cell), Paragraph("Dein Einsatz", header_cell)]]
+    for scene in data["scenes"]:
+        for plan in scene.get("audioPlan", []):
+            cue = cues[plan["cueId"]]
+            optional = " · OPTIONAL" if plan.get("optional") else ""
+            rows.append([
+                Paragraph(f"<b>{scene['id']}</b><br/>{scene['shortTitle']}", cell),
+                Paragraph(f"<b>{cue['id']} · {cue['title']}</b><br/>{layer_labels[cue['layer']]}{optional}", cell),
+                Paragraph(plan["playWhen"], cell),
+                Paragraph(plan["gmInstruction"], cell),
+            ])
+    table = Table(rows, colWidths=[25 * mm, 42 * mm, 54 * mm, 54 * mm], repeatRows=1)
+    table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, 0), PANEL), ("TEXTCOLOR", (0, 0), (-1, 0), FROST), ("GRID", (0, 0), (-1, -1), 0.25, PAPER_DARK), ("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 4), ("RIGHTPADDING", (0, 0), (-1, -1), 4), ("TOPPADDING", (0, 1), (-1, -1), 5), ("BOTTOMPADDING", (0, 1), (-1, -1), 5), ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F2EEE4")])]))
+    story.append(table)
     doc.build(story)
 
 

@@ -6,7 +6,7 @@
 
 ## Kanonische Quelle
 
-Die verbindliche Quelle liegt in [`adventure/canon.json`](../adventure/canon.json). Sie enthält Phasen, Figuren-Verbindungen (technisch weiterhin `travelHooks`), Eskalation, Fakten, drei Enden, Orte, Szenen, NPCs, Hinweise, Handouts und Audio-Cues. Die Dateien unter `content/`, in `app/.../Resources/` und unter `web/data/` werden mit `python tools/build_content_v3.py` daraus erzeugt. Ortsakten, Beweismatrix und Run-Sheet liegen in `adventure/locations/`, `adventure/evidence/`, `adventure/indexes/` und `adventure/session/`.
+Die verbindliche Quelle liegt in [`adventure/canon.json`](../adventure/canon.json). Sie enthält Phasen, Figuren-Verbindungen (technisch weiterhin `travelHooks`), Eskalation, Fakten, drei Enden, Orte, Szenen, NPCs, Hinweise, Handouts und Audio-Cues. `python tools/build_content_v5.py` schreibt den Kanon in `content/` und in das native App-Bundle. `web/data/manifest.json` bleibt für den eingefrorenen Web-Teststand 3.1.0 unverändert. Ortsakten, Beweismatrix und Run-Sheet liegen in `adventure/locations/`, `adventure/evidence/`, `adventure/indexes/` und `adventure/session/`.
 
 ## Geschichte
 
@@ -27,9 +27,9 @@ Die App bleibt frei navigierbar. Sie zeigt Vorlesetext, SL-Notizen, NPC-Zuständ
 
 ## Audio
 
-Der aktive Satz besteht aus 18 unterscheidbaren Dateien: sechs Atmosphären, zwei Musikflächen und zehn One-Shots. Die aktuelle Produktionsfassung steht in [`SOUND-PROMPTS-V4.md`](SOUND-PROMPTS-V4.md). `tools/import_audio_replacements.py` schreibt die normalisierten Dateien synchron nach `audio/generated/`, in das iOS-Bundle und in die Web-App. Der Audio-Selbsttest bleibt in SwiftUI und Web-Leitstand sichtbar.
+Der native Satz besteht aus 20 unterscheidbaren Dateien: acht Atmosphären, einem dauerhaften Musikbett, einem Prozessions-Layer und zehn One-Shots. `tools/process_audio_v5.py` normalisiert sie nach `audio/generated/` und in das iOS-Bundle. `tools/validate_audio_v5.py` prüft Dauer, 48-kHz-Stereoformat, Lautheit, True Peak, Loop-Naht, Dateihashes und akustische Fingerprints. Der letzte technische Lauf meldet 20 gültige Dateien und keine Dublette. Ein separater Hörtest in der App bleibt vor dem finalen Release Pflicht.
 
-Die geplante native V5-Neufassung ist in [`AUDIO-V5-PLAN.md`](AUDIO-V5-PLAN.md) verbindlich zusammengeführt. Sie wird als App-Version 3.2.0 umgesetzt. Die öffentliche Web-App bleibt auf Version 3.1.0 eingefroren und nimmt nicht am V5-Build teil.
+Der Player hält vier Ebenen getrennt. Ein Szenen-Preset wechselt nur die Ortsatmosphäre. M01 bleibt über Szenenwechsel hinweg aktiv, M02 kann im letzten Drittel daruntergelegt werden, und One-Shots überlappen die laufenden Flächen. Vorlesen senkt nur Musik ab. STOP beendet alles. Die genaue Fassung steht in [`AUDIO-V5-PLAN.md`](AUDIO-V5-PLAN.md), die Quellen in [`AUDIO-SOURCES-V5.md`](AUDIO-SOURCES-V5.md) und der Prüfbericht in [`AUDIO-V5-QA.md`](AUDIO-V5-QA.md).
 
 ## Druckpaket
 
@@ -47,17 +47,14 @@ Geliefert werden:
 ## Reproduzierbarer Build
 
 ```powershell
-python tools/build_content_v3.py
-python tools/build_visual_assets_v3.py
-python tools/build_audio_v3.py
-python tools/build_print_pack.py
-python tools/build_invitation.py
-python tools/build_web_preview.py
-python tools/build_archives_v3.py
+python tools/build_content_v5.py
+python tools/process_audio_v5.py
+python tools/validate_audio_v5.py
+python tools/build_print_pack_v3.py
 python tools/validate_project.py
 ```
 
-`tools/validate_project.py` prüft IDs und Querverweise, Manifest-Synchronität, Szene- und Kartenbilder, alle 18 Audio-Dateien, Duplikate innerhalb einer Szene, PDF-Lesbarkeit und die Spoilertrennung der Spielerunterlagen. Der Kartensatz umfasst MAP01 bis MAP06.
+`tools/validate_project.py` prüft IDs und Querverweise, die native Manifest-Synchronität, den eingefrorenen Web-Stand, Szene- und Kartenbilder, alle 20 Audio-Dateien, Dubletten im gesamten nativen Paket, Cue-Zeitpunkte, kritische Szenenzuordnungen, PDF-Lesbarkeit und die Spoilertrennung der Spielerunterlagen. Der Kartensatz umfasst MAP01 bis MAP06.
 
 ## Qualitätsregeln
 

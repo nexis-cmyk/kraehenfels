@@ -25,6 +25,11 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
             Section("Session") {
+                NavigationLink {
+                    AudioCheckView()
+                } label: {
+                    Label("Alle 20 Cues prüfen", systemImage: "checklist.checked")
+                }
                 Button {
                     audio.runSelfTest()
                 } label: {
@@ -45,6 +50,9 @@ struct SettingsView: View {
                 }
                 Button("Alle Sounds stoppen") { audio.stopAll() }
                     .foregroundStyle(FrostTheme.warning)
+                Text(audio.activeLayerSummary)
+                    .font(.caption)
+                    .foregroundStyle(FrostTheme.cobalt)
                 Text("Die App spielt keine Sprache ab. Alle Hinweise bleiben zusätzlich auf Papier vorhanden.")
                     .font(.caption)
                     .foregroundStyle(.secondary)

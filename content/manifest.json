@@ -6,7 +6,7 @@
     "system": "How to be a Hero",
     "setting": "Schwarzwald, November 1890",
     "language": "de",
-    "version": "3.1.0",
+    "version": "3.2.0-rc1",
     "minimumIOS": "17.0"
   },
   "phases": [
@@ -654,6 +654,7 @@
         "H01"
       ],
       "audioCueIds": [
+        "M01",
         "A01",
         "SFX01",
         "SFX02"
@@ -671,7 +672,7 @@
         "C01",
         "C02"
       ],
-      "soundPreset": "Kutsche",
+      "soundPreset": "Krähenfels-Motiv",
       "stuckPrompts": [
         "Die Achse zeigt gerade Sägespuren.",
         "Eine Laterne im Wald führt zum Dorf, aber nicht zurück zur Hauptstraße."
@@ -688,7 +689,37 @@
       "locationIds": [
         "LOC_ROAD"
       ],
-      "recommendation": "Lass die Spieler zuerst handeln. Gib den Kutschauftrag unabhängig vom Würfelwurf."
+      "recommendation": "Lass die Spieler zuerst handeln. Gib den Kutschauftrag unabhängig vom Würfelwurf.",
+      "audioPlan": [
+        {
+          "cueId": "M01",
+          "playWhen": "Vor dem ersten Vorlesetext.",
+          "stopWhen": "Nach dem letzten Satz des Epilogs.",
+          "gmInstruction": "Das ist das dauerhafte Grundmotiv. Nur zum Vorlesen absenken, nicht bei jedem Szenenwechsel neu starten.",
+          "optional": false
+        },
+        {
+          "cueId": "A01",
+          "playWhen": "Sobald alle am Tisch sitzen.",
+          "stopWhen": "Beim Eintritt in das Gasthaus.",
+          "gmInstruction": "Leise starten. Stimmen müssen jederzeit klar darüber liegen.",
+          "optional": false
+        },
+        {
+          "cueId": "SFX01",
+          "playWhen": "Nach dem Satz: Ein Knacken läuft durch die Kutsche.",
+          "stopWhen": "Endet selbst.",
+          "gmInstruction": "Einmal auslösen und danach eine Sekunde nichts sagen.",
+          "optional": false
+        },
+        {
+          "cueId": "SFX02",
+          "playWhen": "Direkt nach dem Achsenbruch.",
+          "stopWhen": "Endet selbst.",
+          "gmInstruction": "Nur einmal. Die Pferde galoppieren nicht davon.",
+          "optional": false
+        }
+      ]
     },
     {
       "id": "S02",
@@ -702,7 +733,8 @@
       ],
       "audioCueIds": [
         "A02",
-        "SFX03"
+        "SFX03",
+        "SFX04"
       ],
       "nextSceneIds": [
         "S03",
@@ -741,7 +773,30 @@
       "locationIds": [
         "LOC_INN"
       ],
-      "recommendation": "Gib keine falsche Sicherheit. Die Gruppe darf sofort frei ermitteln."
+      "recommendation": "Gib keine falsche Sicherheit. Die Gruppe darf sofort frei ermitteln.",
+      "audioPlan": [
+        {
+          "cueId": "A02",
+          "playWhen": "Wenn Gruber die Tür öffnet.",
+          "stopWhen": "Wenn die Gruppe das Gasthaus verlässt.",
+          "gmInstruction": "Warm, aber nicht gemütlich laut mischen.",
+          "optional": false
+        },
+        {
+          "cueId": "SFX03",
+          "playWhen": "Wenn nachts die Zimmertür von außen verriegelt wird.",
+          "stopWhen": "Endet selbst.",
+          "gmInstruction": "Blicke nach dem Geräusch nicht sofort zur Gruppe. Lass sie reagieren.",
+          "optional": false
+        },
+        {
+          "cueId": "SFX04",
+          "playWhen": "Optional nach einer längeren Stille im Gasthaus.",
+          "stopWhen": "Endet selbst.",
+          "gmInstruction": "Nur als Vorzeichen nutzen. Noch kein Wesen zeigen.",
+          "optional": true
+        }
+      ]
     },
     {
       "id": "S03",
@@ -754,7 +809,7 @@
       ],
       "audioCueIds": [
         "A04",
-        "SFX05"
+        "SFX10"
       ],
       "nextSceneIds": [
         "S06"
@@ -770,7 +825,7 @@
       "clueIds": [
         "C05"
       ],
-      "soundPreset": "Kirche",
+      "soundPreset": "Kirche ohne Glocke",
       "stuckPrompts": [
         "Falk liest die Eidzeile vor, wenn jemand das Wort Gast ausspricht.",
         "Hinter dem Altar liegt eine zweite Abschrift."
@@ -787,7 +842,23 @@
       "locationIds": [
         "LOC_CHURCH"
       ],
-      "recommendation": "Die Spieler müssen nicht würfeln, um die Eidzeile zu finden."
+      "recommendation": "Die Spieler müssen nicht würfeln, um die Eidzeile zu finden.",
+      "audioPlan": [
+        {
+          "cueId": "A04",
+          "playWhen": "Beim Öffnen der Kirchentür.",
+          "stopWhen": "Beim Verlassen der Kirche.",
+          "gmInstruction": "Sehr leise halten, damit die Leere des Raums trägt.",
+          "optional": false
+        },
+        {
+          "cueId": "SFX10",
+          "playWhen": "Unmittelbar nachdem Falk das Wort Gastrecht ausgesprochen hat.",
+          "stopWhen": "Endet selbst.",
+          "gmInstruction": "Nur einmal. Die Kirche besitzt sichtbar keine funktionsfähige Glocke.",
+          "optional": false
+        }
+      ]
     },
     {
       "id": "S04",
@@ -799,7 +870,7 @@
         "H06"
       ],
       "audioCueIds": [
-        "A03",
+        "A05",
         "SFX05"
       ],
       "nextSceneIds": [
@@ -833,7 +904,23 @@
       "locationIds": [
         "LOC_SMITHY"
       ],
-      "recommendation": "Lass Marta eine praktische Frage stellen: Was soll mit dem Eisen geschehen?"
+      "recommendation": "Lass Marta eine praktische Frage stellen: Was soll mit dem Eisen geschehen?",
+      "audioPlan": [
+        {
+          "cueId": "A05",
+          "playWhen": "Wenn Marta die Gruppe hereinlässt.",
+          "stopWhen": "Beim Verlassen der Schmiede.",
+          "gmInstruction": "Der Amboss bleibt still, bis du SFX05 auslöst.",
+          "optional": false
+        },
+        {
+          "cueId": "SFX05",
+          "playWhen": "Wenn Marta die drei schwarzen Nägel zeigt.",
+          "stopWhen": "Endet selbst.",
+          "gmInstruction": "Ein Schlag. Danach erklärt Marta den Preis des Eisens.",
+          "optional": false
+        }
+      ]
     },
     {
       "id": "S05",
@@ -847,8 +934,7 @@
         "H10"
       ],
       "audioCueIds": [
-        "A05",
-        "SFX04",
+        "A06",
         "SFX06"
       ],
       "nextSceneIds": [
@@ -868,7 +954,7 @@
         "C09",
         "C11"
       ],
-      "soundPreset": "Wald",
+      "soundPreset": "Waldspur",
       "stuckPrompts": [
         "Lenis Zeichnung zeigt die Alte Eiche mit offenem Schrein.",
         "Elias sagt die drei Verben: öffnen, erinnern, brechen."
@@ -885,7 +971,23 @@
       "locationIds": [
         "LOC_WOODS"
       ],
-      "recommendation": "Die Spuren sind ein sicherer Hinweis, kein Verfolgungswurf."
+      "recommendation": "Die Spuren sind ein sicherer Hinweis, kein Verfolgungswurf.",
+      "audioPlan": [
+        {
+          "cueId": "A06",
+          "playWhen": "Hinter den letzten Häusern.",
+          "stopWhen": "Beim Eintritt ins Rathausarchiv oder am Szenenwechsel.",
+          "gmInstruction": "Nicht mit Prozessionsschritten verwechseln. Diese Fläche bleibt leer.",
+          "optional": false
+        },
+        {
+          "cueId": "SFX06",
+          "playWhen": "Nachdem die Spur ihre Richtung scheinbar gewechselt hat.",
+          "stopWhen": "Endet selbst.",
+          "gmInstruction": "Leise auslösen. Nicht verraten, hinter welcher Figur er war.",
+          "optional": false
+        }
+      ]
     },
     {
       "id": "S06",
@@ -898,8 +1000,8 @@
         "H09"
       ],
       "audioCueIds": [
-        "A03",
-        "M01",
+        "A07",
+        "M02",
         "SFX07"
       ],
       "nextSceneIds": [
@@ -921,7 +1023,7 @@
         "C06",
         "C10"
       ],
-      "soundPreset": "Verdacht",
+      "soundPreset": "Rathausarchiv",
       "stuckPrompts": [
         "Die milden Winter stehen direkt neben den Namen der verschwundenen Gäste.",
         "Falk nennt Grubers Vater als ersten Eidbrecher."
@@ -938,7 +1040,30 @@
       "locationIds": [
         "LOC_ARCHIVE"
       ],
-      "recommendation": "Wenn zwei Fakten verbunden sind, erhöhe die Eskalation manuell auf 4."
+      "recommendation": "Wenn zwei Fakten verbunden sind, erhöhe die Eskalation manuell auf 4.",
+      "audioPlan": [
+        {
+          "cueId": "A07",
+          "playWhen": "Sobald die Bücher auf dem Tisch liegen.",
+          "stopWhen": "Wenn draußen die Prozession sichtbar wird.",
+          "gmInstruction": "Trocken und nah mischen. M02 später darunter einblenden.",
+          "optional": false
+        },
+        {
+          "cueId": "M02",
+          "playWhen": "Wenn die Gruppe versteht, dass sich das Dorf versammelt.",
+          "stopWhen": "Nach der Entscheidung an der Eiche.",
+          "gmInstruction": "Unter M01 legen. Im Finale langsam anheben, niemals darüber springen lassen.",
+          "optional": false
+        },
+        {
+          "cueId": "SFX07",
+          "playWhen": "Wenn die erste Reihe auf der Dorfstraße sichtbar wird.",
+          "stopWhen": "Endet selbst.",
+          "gmInstruction": "M02 kurz davor leise starten. Dann diesen Cue einmal spielen.",
+          "optional": false
+        }
+      ]
     },
     {
       "id": "S07",
@@ -948,9 +1073,10 @@
       "goal": "Die Gruppe entscheidet zwischen Widerruf, Erneuerung und Zerstörung.",
       "handoutIds": [],
       "audioCueIds": [
-        "A06",
+        "A08",
         "M02",
-        "SFX08"
+        "SFX08",
+        "SFX09"
       ],
       "nextSceneIds": [
         "S08"
@@ -993,7 +1119,37 @@
       "locationIds": [
         "LOC_WOODS"
       ],
-      "recommendation": "Lege die drei Endkarten erst aus, wenn die Gruppe ihre Entscheidung ausgesprochen hat."
+      "recommendation": "Lege die drei Endkarten erst aus, wenn die Gruppe ihre Entscheidung ausgesprochen hat.",
+      "audioPlan": [
+        {
+          "cueId": "A08",
+          "playWhen": "Sobald die Eiche vollständig sichtbar ist.",
+          "stopWhen": "Wenn die Entscheidung gefallen ist.",
+          "gmInstruction": "Die Natur ist der Vordergrund. M02 bleibt darunter.",
+          "optional": false
+        },
+        {
+          "cueId": "M02",
+          "playWhen": "Wenn die Gruppe versteht, dass sich das Dorf versammelt.",
+          "stopWhen": "Nach der Entscheidung an der Eiche.",
+          "gmInstruction": "Unter M01 legen. Im Finale langsam anheben, niemals darüber springen lassen.",
+          "optional": false
+        },
+        {
+          "cueId": "SFX08",
+          "playWhen": "Beim ersten vollständigen Anblick des Knochenhirsches.",
+          "stopWhen": "Endet selbst.",
+          "gmInstruction": "Erst auslösen, wenn du das Wesen wirklich zeigst.",
+          "optional": false
+        },
+        {
+          "cueId": "SFX09",
+          "playWhen": "Nur beim Ende Zerstörung, sobald die Reliquie endgültig bricht.",
+          "stopWhen": "Endet selbst.",
+          "gmInstruction": "Bei Widerruf oder Erneuerung niemals abspielen.",
+          "optional": true
+        }
+      ]
     },
     {
       "id": "S08",
@@ -1004,7 +1160,7 @@
       "handoutIds": [],
       "audioCueIds": [
         "A03",
-        "SFX09"
+        "M01"
       ],
       "nextSceneIds": [],
       "readAloud": "Am Morgen taut der Schnee in dünnen Rinnsalen. Krähenfels hat wieder Geräusche. Nur die Frage, wer hier künftig Gäste schützt, bleibt unbeantwortet.",
@@ -1021,7 +1177,7 @@
         "N06"
       ],
       "clueIds": [],
-      "soundPreset": "Epilog",
+      "soundPreset": "Dorf am Morgen",
       "stuckPrompts": [
         "Ein Tropfen fällt aus der Alten Eiche.",
         "Im Gästebuch ist eine rote Linie verschwunden."
@@ -1037,7 +1193,23 @@
       "locationIds": [
         "LOC_WOODS"
       ],
-      "recommendation": "Lass nach dem letzten Satz drei Atemzüge Stille."
+      "recommendation": "Lass nach dem letzten Satz drei Atemzüge Stille.",
+      "audioPlan": [
+        {
+          "cueId": "A03",
+          "playWhen": "Mit dem ersten Satz des Epilogs.",
+          "stopWhen": "Nach dem letzten persönlichen Nachhall.",
+          "gmInstruction": "Keine Schockeffekte mehr. Der Morgen soll echt wirken.",
+          "optional": false
+        },
+        {
+          "cueId": "M01",
+          "playWhen": "Vor dem ersten Vorlesetext.",
+          "stopWhen": "Nach dem letzten Satz des Epilogs.",
+          "gmInstruction": "Das ist das dauerhafte Grundmotiv. Nur zum Vorlesen absenken, nicht bei jedem Szenenwechsel neu starten.",
+          "optional": false
+        }
+      ]
     }
   ],
   "locations": [
@@ -1140,237 +1312,363 @@
   "audioCues": [
     {
       "id": "A01",
-      "title": "Kutschenstraße im Schneesturm",
+      "title": "Kutschenstraße",
       "scene": "S01",
       "category": "ambient",
-      "file": "V3_A01_Kutschenstrasse.m4a",
+      "scope": "native",
+      "layer": "ambient",
+      "file": "V5_A01_Kutschenstrasse.m4a",
       "mode": "loop",
       "gain": -0.22,
-      "fadeMs": 2200,
-      "isClue": false,
-      "printFallbackId": null,
-      "description": "Wind, Holz, entfernte Pferde und gedämpfte Räder."
-    },
-    {
-      "id": "A02",
-      "title": "Gasthaus bei geschlossener Tür",
-      "scene": "S02",
-      "category": "ambient",
-      "file": "V3_A02_Gasthaus.m4a",
-      "mode": "loop",
-      "gain": -0.3,
       "fadeMs": 1800,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Feuer, niedrige Stimmen, Geschirr und ein Raum, der zu aufmerksam still wird."
+      "description": "Winterwind, Wagenholz, Geschirr und ruhige Pferde auf der nächtlichen Straße.",
+      "playWhen": "Sobald alle am Tisch sitzen.",
+      "stopWhen": "Beim Eintritt in das Gasthaus.",
+      "gmInstruction": "Leise starten. Stimmen müssen jederzeit klar darüber liegen."
+    },
+    {
+      "id": "A02",
+      "title": "Gasthaus",
+      "scene": "S02",
+      "category": "ambient",
+      "scope": "native",
+      "layer": "ambient",
+      "file": "V5_A02_Gasthaus.m4a",
+      "mode": "loop",
+      "gain": -0.3,
+      "fadeMs": 1600,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Herdfeuer, altes Gebälk, Geschirr und undeutliche Gäste im Hintergrund.",
+      "playWhen": "Wenn Gruber die Tür öffnet.",
+      "stopWhen": "Wenn die Gruppe das Gasthaus verlässt.",
+      "gmInstruction": "Warm, aber nicht gemütlich laut mischen."
     },
     {
       "id": "A03",
-      "title": "Krähenfels am Tag",
-      "scene": "S04",
+      "title": "Dorf am Morgen",
+      "scene": "S08",
       "category": "ambient",
-      "file": "V3_A03_Dorf.m4a",
+      "scope": "native",
+      "layer": "ambient",
+      "file": "V5_A03_Dorf_am_Morgen.m4a",
       "mode": "loop",
       "gain": -0.28,
-      "fadeMs": 2000,
+      "fadeMs": 1800,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Winterwind, einzelne Schritte, entfernte Arbeit und ungewöhnlich wenige Vögel."
+      "description": "Kalter Morgenwind, fernes Dorfleben und das erste Tauwasser.",
+      "playWhen": "Mit dem ersten Satz des Epilogs.",
+      "stopWhen": "Nach dem letzten persönlichen Nachhall.",
+      "gmInstruction": "Keine Schockeffekte mehr. Der Morgen soll echt wirken."
     },
     {
       "id": "A04",
       "title": "Kirche ohne Glocke",
       "scene": "S03",
       "category": "ambient",
-      "file": "V3_A04_Kirche.m4a",
+      "scope": "native",
+      "layer": "ambient",
+      "file": "V5_A04_Kirche_ohne_Glocke.m4a",
       "mode": "loop",
       "gain": -0.32,
-      "fadeMs": 2200,
-      "isClue": false,
-      "printFallbackId": null,
-      "description": "Holz, kalter Raum, Wind im Turm und ein kaum hörbares Metallknacken."
-    },
-    {
-      "id": "A05",
-      "title": "Waldspur im Schnee",
-      "scene": "S05",
-      "category": "ambient",
-      "file": "V3_A05_Waldspur.m4a",
-      "mode": "loop",
-      "gain": -0.3,
       "fadeMs": 2000,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Tiefer Waldwind, Äste, entfernte Schritte und das Gefühl einer falschen Richtung."
+      "description": "Kalte Steinkirche, undichte Türen, arbeitendes Holz und ein ferner Rabe.",
+      "playWhen": "Beim Öffnen der Kirchentür.",
+      "stopWhen": "Beim Verlassen der Kirche.",
+      "gmInstruction": "Sehr leise halten, damit die Leere des Raums trägt."
+    },
+    {
+      "id": "A05",
+      "title": "Schmiede",
+      "scene": "S04",
+      "category": "ambient",
+      "scope": "native",
+      "layer": "ambient",
+      "file": "V5_A05_Schmiede.m4a",
+      "mode": "loop",
+      "gain": -0.27,
+      "fadeMs": 1600,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Esse, Blasebalg und kühlendes Metall zwischen zwei Arbeiten.",
+      "playWhen": "Wenn Marta die Gruppe hereinlässt.",
+      "stopWhen": "Beim Verlassen der Schmiede.",
+      "gmInstruction": "Der Amboss bleibt still, bis du SFX05 auslöst."
     },
     {
       "id": "A06",
-      "title": "Alte Eiche vor dem Morgen",
-      "scene": "S07",
+      "title": "Waldspur",
+      "scene": "S05",
       "category": "ambient",
-      "file": "V3_A06_Alte_Eiche.m4a",
+      "scope": "native",
+      "layer": "ambient",
+      "file": "V5_A06_Waldspur.m4a",
       "mode": "loop",
-      "gain": -0.26,
+      "gain": -0.3,
       "fadeMs": 1800,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Sturm, Holzspannung, tiefer Atem und ein langsames, organisches Dröhnen."
+      "description": "Tiefer Winterwald, Schnee und weiter Raum ohne menschliche Schritte.",
+      "playWhen": "Hinter den letzten Häusern.",
+      "stopWhen": "Beim Eintritt ins Rathausarchiv oder am Szenenwechsel.",
+      "gmInstruction": "Nicht mit Prozessionsschritten verwechseln. Diese Fläche bleibt leer."
+    },
+    {
+      "id": "A07",
+      "title": "Rathausarchiv",
+      "scene": "S06",
+      "category": "ambient",
+      "scope": "native",
+      "layer": "ambient",
+      "file": "V5_A07_Rathausarchiv.m4a",
+      "mode": "loop",
+      "gain": -0.31,
+      "fadeMs": 1600,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Papier, Ofenmetall, altes Holz und Wind an kleinen Fenstern.",
+      "playWhen": "Sobald die Bücher auf dem Tisch liegen.",
+      "stopWhen": "Wenn draußen die Prozession sichtbar wird.",
+      "gmInstruction": "Trocken und nah mischen. M02 später darunter einblenden."
+    },
+    {
+      "id": "A08",
+      "title": "Alte Eiche",
+      "scene": "S07",
+      "category": "ambient",
+      "scope": "native",
+      "layer": "ambient",
+      "file": "V5_A08_Alte_Eiche.m4a",
+      "mode": "loop",
+      "gain": -0.27,
+      "fadeMs": 1800,
+      "isClue": false,
+      "printFallbackId": null,
+      "description": "Wind im hohlen Stamm, arbeitende Eiche, Schnee an Wurzeln und eine lose Eisenkette.",
+      "playWhen": "Sobald die Eiche vollständig sichtbar ist.",
+      "stopWhen": "Wenn die Entscheidung gefallen ist.",
+      "gmInstruction": "Die Natur ist der Vordergrund. M02 bleibt darunter."
     },
     {
       "id": "M01",
-      "title": "Etwas stimmt nicht",
-      "scene": "S06",
+      "title": "Krähenfels-Motiv",
+      "scene": "S01",
       "category": "music",
-      "file": "V3_M01_Verdacht.m4a",
+      "scope": "native",
+      "layer": "musicBed",
+      "file": "V5_M01_Kraehenfels_Motiv.m4a",
       "mode": "loop",
-      "gain": -0.32,
-      "fadeMs": 2500,
+      "gain": -0.34,
+      "fadeMs": 2600,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Leise dunkle Fläche ohne Melodie, für Ermittlungen unter Druck."
+      "description": "Leises Zweitonmotiv aus Cello, Filzklavier und gestrichenem Bordun.",
+      "playWhen": "Vor dem ersten Vorlesetext.",
+      "stopWhen": "Nach dem letzten Satz des Epilogs.",
+      "gmInstruction": "Das ist das dauerhafte Grundmotiv. Nur zum Vorlesen absenken, nicht bei jedem Szenenwechsel neu starten."
     },
     {
       "id": "M02",
       "title": "Die Prozession",
-      "scene": "S07",
+      "scene": "S06",
       "category": "music",
-      "file": "V3_M02_Prozession.m4a",
+      "scope": "native",
+      "layer": "musicLayer",
+      "file": "V5_M02_Prozession.m4a",
       "mode": "loop",
-      "gain": -0.34,
+      "gain": -0.38,
       "fadeMs": 1800,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Langsame, tiefe Pulsbewegung ohne Sprache und ohne plötzlichen Laut."
+      "description": "Tiefe Streicher, ferner Holzpuls und gedämpfte Rahmentrommel.",
+      "playWhen": "Wenn die Gruppe versteht, dass sich das Dorf versammelt.",
+      "stopWhen": "Nach der Entscheidung an der Eiche.",
+      "gmInstruction": "Unter M01 legen. Im Finale langsam anheben, niemals darüber springen lassen."
     },
     {
       "id": "SFX01",
       "title": "Achse bricht",
       "scene": "S01",
       "category": "sfx",
-      "file": "V3_SFX01_Achse.wav",
+      "scope": "native",
+      "layer": "sfx",
+      "file": "V5_SFX01_Achse_bricht.wav",
       "mode": "oneShot",
-      "gain": -0.18,
+      "gain": -0.14,
       "fadeMs": 0,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Kurzes Holzsplittern mit Wagenmetall."
+      "description": "Wagenholz spannt sich, bricht einmal und lässt Metall kurz rasseln.",
+      "playWhen": "Nach dem Satz: Ein Knacken läuft durch die Kutsche.",
+      "stopWhen": "Endet selbst.",
+      "gmInstruction": "Einmal auslösen und danach eine Sekunde nichts sagen."
     },
     {
       "id": "SFX02",
       "title": "Pferde scheuen",
       "scene": "S01",
       "category": "sfx",
-      "file": "V3_SFX02_Pferde.wav",
+      "scope": "native",
+      "layer": "sfx",
+      "file": "V5_SFX02_Pferde_scheuen.wav",
       "mode": "oneShot",
-      "gain": -0.22,
+      "gain": -0.12,
       "fadeMs": 0,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Hufe, Geschirr und ein kurzer erschreckter Laut."
+      "description": "Schnauben, ein Huf im Schnee und straffes Geschirr.",
+      "playWhen": "Direkt nach dem Achsenbruch.",
+      "stopWhen": "Endet selbst.",
+      "gmInstruction": "Nur einmal. Die Pferde galoppieren nicht davon."
     },
     {
       "id": "SFX03",
       "title": "Riegel von außen",
       "scene": "S02",
       "category": "sfx",
-      "file": "V3_SFX03_Riegel.wav",
+      "scope": "native",
+      "layer": "sfx",
+      "file": "V5_SFX03_Riegel_von_aussen.wav",
       "mode": "oneShot",
-      "gain": -0.2,
+      "gain": -0.16,
       "fadeMs": 0,
       "isClue": true,
       "printFallbackId": "H03",
-      "description": "Schwerer Holzriegel, der außerhalb des Zimmers geschlossen wird."
+      "description": "Ein schwerer Eisenriegel läuft durch zwei Halterungen und fällt zu.",
+      "playWhen": "Wenn nachts die Zimmertür von außen verriegelt wird.",
+      "stopWhen": "Endet selbst.",
+      "gmInstruction": "Blicke nach dem Geräusch nicht sofort zur Gruppe. Lass sie reagieren."
     },
     {
       "id": "SFX04",
       "title": "Geweih an der Tür",
-      "scene": "S05",
+      "scene": "S02",
       "category": "sfx",
-      "file": "V3_SFX04_Geweih.wav",
-      "mode": "oneShot",
-      "gain": -0.25,
-      "fadeMs": 0,
-      "isClue": true,
-      "printFallbackId": "H07",
-      "description": "Trockener Knochenkratzer auf altem Holz, gefolgt von einem Astknacken."
-    },
-    {
-      "id": "SFX05",
-      "title": "Ein einzelner Schmiedeschlag",
-      "scene": "S04",
-      "category": "sfx",
-      "file": "V3_SFX05_Schmiedeschlag.wav",
+      "scope": "native",
+      "layer": "sfx",
+      "file": "V5_SFX04_Geweih_an_der_Tuer.wav",
       "mode": "oneShot",
       "gain": -0.2,
       "fadeMs": 0,
       "isClue": true,
+      "printFallbackId": "H07",
+      "description": "Trockenes Geweih schabt über Holz und tippt zweimal leicht an.",
+      "playWhen": "Optional nach einer längeren Stille im Gasthaus.",
+      "stopWhen": "Endet selbst.",
+      "gmInstruction": "Nur als Vorzeichen nutzen. Noch kein Wesen zeigen."
+    },
+    {
+      "id": "SFX05",
+      "title": "Ein Schmiedeschlag",
+      "scene": "S04",
+      "category": "sfx",
+      "scope": "native",
+      "layer": "sfx",
+      "file": "V5_SFX05_Einzelner_Schmiedeschlag.wav",
+      "mode": "oneShot",
+      "gain": -0.12,
+      "fadeMs": 0,
+      "isClue": true,
       "printFallbackId": "H06",
-      "description": "Naher Ambossanschlag mit langer Metallresonanz."
+      "description": "Genau ein Hammerhieb auf heißes Eisen mit kurzem Ambossring.",
+      "playWhen": "Wenn Marta die drei schwarzen Nägel zeigt.",
+      "stopWhen": "Endet selbst.",
+      "gmInstruction": "Ein Schlag. Danach erklärt Marta den Preis des Eisens."
     },
     {
       "id": "SFX06",
-      "title": "Stimme ohne Sprecher",
+      "title": "Atem hinter der Figur",
       "scene": "S05",
       "category": "sfx",
-      "file": "V3_SFX06_Stimme.wav",
+      "scope": "native",
+      "layer": "sfx",
+      "file": "V5_SFX06_Atem_hinter_der_Figur.wav",
       "mode": "oneShot",
-      "gain": -0.28,
+      "gain": -0.22,
       "fadeMs": 0,
       "isClue": true,
       "printFallbackId": "H08",
-      "description": "Atem, entfernte menschliche Silben ohne verständliche Sprache und ein verzögerter Hall."
+      "description": "Ein einzelner naher menschlicher Atemzug ohne Worte.",
+      "playWhen": "Nachdem die Spur ihre Richtung scheinbar gewechselt hat.",
+      "stopWhen": "Endet selbst.",
+      "gmInstruction": "Leise auslösen. Nicht verraten, hinter welcher Figur er war."
     },
     {
       "id": "SFX07",
-      "title": "Masken auf dem Weg",
+      "title": "Prozessionsschritte",
       "scene": "S06",
       "category": "sfx",
-      "file": "V3_SFX07_Prozession.wav",
+      "scope": "native",
+      "layer": "sfx",
+      "file": "V5_SFX07_Prozessionsschritte.wav",
       "mode": "oneShot",
-      "gain": -0.25,
+      "gain": -0.18,
       "fadeMs": 0,
       "isClue": true,
       "printFallbackId": "H07",
-      "description": "Viele langsame Schritte, Holzmasken und eine einzelne entfernte Laterne."
+      "description": "Viele langsame Lederstiefel im Schnee, Wolle und knarrende Holzmasken.",
+      "playWhen": "Wenn die erste Reihe auf der Dorfstraße sichtbar wird.",
+      "stopWhen": "Endet selbst.",
+      "gmInstruction": "M02 kurz davor leise starten. Dann diesen Cue einmal spielen."
     },
     {
       "id": "SFX08",
       "title": "Knochenhirsch hebt den Kopf",
       "scene": "S07",
       "category": "sfx",
-      "file": "V3_SFX08_Knochenhirsch.wav",
-      "mode": "oneShot",
-      "gain": -0.3,
-      "fadeMs": 0,
-      "isClue": false,
-      "printFallbackId": null,
-      "description": "Tiefe Atembewegung, Geweih, Schritt im Schnee und ein kurzer Druckabfall."
-    },
-    {
-      "id": "SFX09",
-      "title": "Die Bindung bricht",
-      "scene": "S08",
-      "category": "sfx",
-      "file": "V3_SFX09_Bindung.wav",
+      "scope": "native",
+      "layer": "sfx",
+      "file": "V5_SFX08_Knochenhirsch.wav",
       "mode": "oneShot",
       "gain": -0.2,
       "fadeMs": 0,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Holz und Eisen geben nach, der Druck fällt ab, danach nur Tauwasser."
+      "description": "Trockenes Halsgelenk, Gewicht im Schnee, Geweih am Ast und ein hohler Atem.",
+      "playWhen": "Beim ersten vollständigen Anblick des Knochenhirsches.",
+      "stopWhen": "Endet selbst.",
+      "gmInstruction": "Erst auslösen, wenn du das Wesen wirklich zeigst."
     },
     {
-      "id": "SFX10",
-      "title": "Atem des Waldes",
-      "scene": "S08",
+      "id": "SFX09",
+      "title": "Die Bindung reißt",
+      "scene": "S07",
       "category": "sfx",
-      "file": "V3_SFX10_Waldatem.wav",
+      "scope": "native",
+      "layer": "sfx",
+      "file": "V5_SFX09_Bindung_reisst.wav",
       "mode": "oneShot",
-      "gain": -0.28,
+      "gain": -0.12,
       "fadeMs": 0,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Langsames Einatmen zwischen Bäumen, das sich in normalen Wind auflöst."
+      "description": "Leder spannt und reißt, Eisen springt frei, der Druck fällt ab.",
+      "playWhen": "Nur beim Ende Zerstörung, sobald die Reliquie endgültig bricht.",
+      "stopWhen": "Endet selbst.",
+      "gmInstruction": "Bei Widerruf oder Erneuerung niemals abspielen."
+    },
+    {
+      "id": "SFX10",
+      "title": "Falscher Glockenschlag",
+      "scene": "S03",
+      "category": "sfx",
+      "scope": "native",
+      "layer": "sfx",
+      "file": "V5_SFX10_Falscher_Glockenschlag.wav",
+      "mode": "oneShot",
+      "gain": -0.17,
+      "fadeMs": 0,
+      "isClue": true,
+      "printFallbackId": "H04",
+      "description": "Ein einzelner historischer Glockenschlag mit leicht schwebender Verstimmung.",
+      "playWhen": "Unmittelbar nachdem Falk das Wort Gastrecht ausgesprochen hat.",
+      "stopWhen": "Endet selbst.",
+      "gmInstruction": "Nur einmal. Die Kirche besitzt sichtbar keine funktionsfähige Glocke."
     }
   ]
 }

@@ -4,21 +4,13 @@ import Foundation
 
 @MainActor
 final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
-    @Published var masterVolume: Double = 0.45 {
-        didSet { updateVolumes() }
-    }
-    @Published var ambientVolume: Double = 0.72 {
-        didSet { updateVolumes() }
-    }
-    @Published var musicVolume: Double = 0.62 {
-        didSet { updateVolumes() }
-    }
-    @Published var effectsVolume: Double = 0.82 {
-        didSet { updateVolumes() }
-    }
-    @Published var safetyMode = false {
-        didSet { updateVolumes() }
-    }
+    @Published var masterVolume: Double = 0.48 { didSet { updateVolumes() } }
+    @Published var ambientVolume: Double = 0.68 { didSet { updateVolumes() } }
+    @Published var musicVolume: Double = 0.54 { didSet { updateVolumes() } }
+    @Published var effectsVolume: Double = 0.84 { didSet { updateVolumes() } }
+    @Published var safetyMode = false { didSet { updateVolumes() } }
+    @Published var readAloudDuck = false { didSet { updateVolumes() } }
+
     @Published private(set) var activeCueIDs: Set<String> = []
     @Published private(set) var lastError: String?
     @Published private(set) var lastEvent: String?
@@ -27,29 +19,41 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     private var players: [String: AVAudioPlayer] = [:]
     private var cueByPlayerKey: [String: AudioCue] = [:]
+    private var observers: [NSObjectProtocol] = []
 
     override init() {
         super.init()
+        observeAudioSession()
         _ = configureSession()
     }
 
+    deinit {
+        observers.forEach { NotificationCenter.default.removeObserver($0) }
+    }
+
+    var activeLayerSummary: String {
+        let active = cueByPlayerKey.values.filter { activeCueIDs.contains($0.id) }
+        let layers = Set(active.map(\.layer))
+        if layers.isEmpty { return "Keine Layer aktiv" }
+        let ordered = ["musicBed", "musicLayer", "ambient", "sfx"]
+        return ordered.filter(layers.contains).compactMap(layerLabel).joined(separator: " · ")
+    }
+
     func play(_ cue: AudioCue) {
-        play(cue, replacingCategory: true)
+        switch cue.layer {
+        case "ambient": playLoop(cue, replacingLayer: true)
+        case "musicBed", "musicLayer": playLoop(cue, replacingLayer: false)
+        default: playOneShot(cue)
+        }
     }
 
     func playPreset(_ cues: [AudioCue]) {
-        guard configureSession() else { return }
-        stopCategory("ambient")
-        stopCategory("music")
-        let layers = cues.filter { $0.category == "ambient" || $0.category == "music" }
-        if layers.isEmpty {
-            lastEvent = "Für dieses Preset gibt es keine Atmosphäre oder Musik."
+        guard let ambient = cues.first(where: { $0.layer == "ambient" }) else {
+            lastEvent = "Diese Szene hat keine eigene Atmosphäre."
             return
         }
-        for cue in layers {
-            play(cue, replacingCategory: false)
-        }
-        lastEvent = "Preset gestartet: \(layers.map(\.title).joined(separator: " + "))"
+        playLoop(ambient, replacingLayer: true)
+        lastEvent = "Atmosphäre gestartet: \(ambient.title)"
     }
 
     func runSelfTest() {
@@ -58,14 +62,16 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
             title: "Audio-Selbsttest",
             scene: "",
             category: "sfx",
-            file: "V3_SFX05_Schmiedeschlag.wav",
+            layer: "sfx",
+            file: "V5_TEST_Audio.wav",
             mode: "oneShot",
-            gain: -0.05,
+            gain: 0,
             fadeMs: 0,
             isClue: false,
-            printFallbackId: nil
+            printFallbackId: nil,
+            description: "Ein klarer kurzer Testton."
         )
-        play(testCue)
+        playOneShot(testCue)
     }
 
     func clearDiagnostics() {
@@ -73,25 +79,24 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         lastEvent = nil
     }
 
-    func stop(_ cue: AudioCue) {
-        players[cue.id]?.stop()
-        players[cue.id] = nil
-        cueByPlayerKey[cue.id] = nil
-        activeCueIDs.remove(cue.id)
+    func stop(_ cue: AudioCue, fade: Bool = true) {
+        let keys = cueByPlayerKey.compactMap { key, value in value.id == cue.id ? key : nil }
+        keys.forEach { stopPlayer(key: $0, fadeMilliseconds: fade ? cue.fadeMs : 0) }
     }
 
     func toggle(_ cue: AudioCue) {
-        if activeCueIDs.contains(cue.id) { stop(cue) } else { play(cue) }
+        if cue.mode == "oneShot" {
+            playOneShot(cue)
+        } else if isPlaying(cue) {
+            stop(cue)
+        } else {
+            play(cue)
+        }
     }
 
-    func stopCategory(_ category: String) {
-        let ids = cueByPlayerKey.compactMap { key, cue in cue.category == category ? key : nil }
-        ids.forEach { id in
-            players[id]?.stop()
-            players[id] = nil
-            cueByPlayerKey[id] = nil
-            activeCueIDs.remove(id)
-        }
+    func stopLayer(_ layer: String, fadeMilliseconds: Int = 500) {
+        let keys = cueByPlayerKey.compactMap { key, cue in cue.layer == layer ? key : nil }
+        keys.forEach { stopPlayer(key: $0, fadeMilliseconds: fadeMilliseconds) }
     }
 
     func stopAll() {
@@ -106,26 +111,120 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         activeCueIDs.contains(cue.id)
     }
 
+    func toggleReadAloudDuck() {
+        readAloudDuck.toggle()
+        lastEvent = readAloudDuck ? "Musik zum Vorlesen abgesenkt." : "Normale Mischung wiederhergestellt."
+    }
+
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         guard let key = players.first(where: { $0.value === player })?.key else { return }
+        let cueID = cueByPlayerKey[key]?.id
         players[key] = nil
         cueByPlayerKey[key] = nil
-        activeCueIDs.remove(key)
-        if !flag {
-            lastError = "Der Cue wurde unterbrochen: \(key)."
+        refreshActiveCueIDs()
+        if !flag, let cueID {
+            lastError = "Der Cue wurde unterbrochen: \(cueID)."
         }
+    }
+
+    private func playLoop(_ cue: AudioCue, replacingLayer: Bool) {
+        guard configureSession() else { return }
+        if isPlaying(cue) {
+            lastEvent = "Läuft bereits: \(cue.title)"
+            return
+        }
+        if replacingLayer {
+            stopLayer(cue.layer, fadeMilliseconds: cue.fadeMs)
+        }
+        guard let player = makePlayer(for: cue) else { return }
+        player.numberOfLoops = -1
+        player.volume = 0
+        players[cue.id] = player
+        cueByPlayerKey[cue.id] = cue
+        refreshActiveCueIDs()
+        guard player.play() else {
+            lastError = "Der Cue konnte nicht gestartet werden: \(cue.file)"
+            removePlayer(key: cue.id)
+            return
+        }
+        player.setVolume(volume(for: cue), fadeDuration: Double(cue.fadeMs) / 1000)
+        lastEvent = "Gestartet: \(cue.title)"
+    }
+
+    private func playOneShot(_ cue: AudioCue) {
+        guard configureSession(), let player = makePlayer(for: cue) else { return }
+        let key = "\(cue.id)#\(UUID().uuidString)"
+        player.numberOfLoops = 0
+        player.volume = volume(for: cue)
+        players[key] = player
+        cueByPlayerKey[key] = cue
+        refreshActiveCueIDs()
+        guard player.play() else {
+            lastError = "Der Cue konnte nicht gestartet werden: \(cue.file)"
+            removePlayer(key: key)
+            return
+        }
+        lastEvent = "Ausgelöst: \(cue.title)"
+    }
+
+    private func makePlayer(for cue: AudioCue) -> AVAudioPlayer? {
+        lastError = nil
+        let resource = cue.file as NSString
+        guard let url = Bundle.main.url(
+            forResource: resource.deletingPathExtension,
+            withExtension: resource.pathExtension,
+            subdirectory: "Audio"
+        ) else {
+            lastError = "Audio-Datei fehlt im App-Bundle: \(cue.file)"
+            lastEvent = "Nicht geladen: \(cue.file)"
+            return nil
+        }
+        do {
+            let player = try AVAudioPlayer(contentsOf: url)
+            player.delegate = self
+            player.prepareToPlay()
+            lastLoadedResource = cue.file
+            return player
+        } catch {
+            lastError = "Audio-Datei konnte nicht geöffnet werden (\(cue.file)): \(error.localizedDescription)"
+            lastEvent = "Nicht geöffnet: \(cue.file)"
+            return nil
+        }
+    }
+
+    private func stopPlayer(key: String, fadeMilliseconds: Int) {
+        guard let player = players[key] else { return }
+        let delay = Double(max(0, fadeMilliseconds)) / 1000
+        if delay > 0, player.isPlaying {
+            player.setVolume(0, fadeDuration: delay)
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self, weak player] in
+                guard let self, let player, self.players[key] === player else { return }
+                player.stop()
+                self.removePlayer(key: key)
+            }
+        } else {
+            player.stop()
+            removePlayer(key: key)
+        }
+    }
+
+    private func removePlayer(key: String) {
+        players[key] = nil
+        cueByPlayerKey[key] = nil
+        refreshActiveCueIDs()
+    }
+
+    private func refreshActiveCueIDs() {
+        activeCueIDs = Set(cueByPlayerKey.values.map(\.id))
     }
 
     @discardableResult
     private func configureSession() -> Bool {
         let session = AVAudioSession.sharedInstance()
         do {
-            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
+            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
             try session.setActive(true)
-            let route = session.currentRoute.outputs.map(\.portName).joined(separator: ", ")
-            let routeText = route.isEmpty ? "kein Ausgabegerät" : route
-            let volumeText = session.outputVolume <= 0.001 ? " · iPhone-Lautstärke ist stumm" : ""
-            sessionStatus = "Ausgabe: \(routeText)\(volumeText)"
+            updateSessionStatus()
             return true
         } catch {
             sessionStatus = "Audio-Ausgabe konnte nicht aktiviert werden."
@@ -134,60 +233,68 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
 
-    private func play(_ cue: AudioCue, replacingCategory: Bool) {
-        lastError = nil
-        guard configureSession() else { return }
-        let resource = cue.file as NSString
-        guard let url = Bundle.main.url(forResource: resource.deletingPathExtension, withExtension: resource.pathExtension, subdirectory: "Audio") else {
-            lastError = "Audio-Datei fehlt im App-Bundle: \(cue.file)"
-            lastEvent = "Nicht geladen: \(cue.file)"
-            return
+    private func observeAudioSession() {
+        let center = NotificationCenter.default
+        observers.append(center.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.updateSessionStatus() }
+        })
+        observers.append(center.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: .main) { [weak self] notification in
+            Task { @MainActor in self?.handleInterruption(notification) }
+        })
+    }
+
+    private func handleInterruption(_ notification: Notification) {
+        guard let raw = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: raw) else { return }
+        if type == .began {
+            lastEvent = "Audio durch einen Anruf oder eine andere App unterbrochen."
+        } else {
+            _ = configureSession()
+            lastEvent = "Audio-Ausgabe ist wieder bereit. Laufende Layer bei Bedarf neu starten."
         }
-        if replacingCategory && (cue.category == "ambient" || cue.category == "music") {
-            stopCategory(cue.category)
-        }
-        if let old = players[cue.id] {
-            old.stop()
-            players[cue.id] = nil
-        }
-        do {
-            let player = try AVAudioPlayer(contentsOf: url)
-            player.delegate = self
-            player.numberOfLoops = cue.mode == "loop" ? -1 : 0
-            player.volume = volume(for: cue)
-            player.prepareToPlay()
-            players[cue.id] = player
-            cueByPlayerKey[cue.id] = cue
-            activeCueIDs.insert(cue.id)
-            guard player.play() else {
-                lastError = "Der Cue konnte nicht gestartet werden: \(cue.file)"
-                stop(cue)
-                return
+    }
+
+    private func updateSessionStatus() {
+        let session = AVAudioSession.sharedInstance()
+        let outputs = session.currentRoute.outputs.map { output in
+            switch output.portType {
+            case .bluetoothA2DP, .bluetoothLE, .bluetoothHFP: return "Bluetooth: \(output.portName)"
+            case .headphones: return "Kopfhörer: \(output.portName)"
+            default: return output.portName
             }
-            lastLoadedResource = cue.file
-            lastEvent = "Geladen: \(cue.title)"
-        } catch {
-            lastError = "Audio-Datei konnte nicht geöffnet werden (\(cue.file)): \(error.localizedDescription)"
-            lastEvent = "Nicht geöffnet: \(cue.file)"
+        }
+        let route = outputs.isEmpty ? "kein Ausgabegerät" : outputs.joined(separator: ", ")
+        let muted = session.outputVolume <= 0.001 ? " · iPhone-Lautstärke ist stumm" : ""
+        sessionStatus = "Ausgabe: \(route)\(muted)"
+    }
+
+    private func updateVolumes() {
+        for (key, player) in players {
+            guard let cue = cueByPlayerKey[key] else { continue }
+            player.setVolume(volume(for: cue), fadeDuration: 0.18)
         }
     }
 
     private func volume(for cue: AudioCue) -> Float {
         let linearGain = pow(10.0, cue.gain / 20.0)
         let safetyFactor = safetyMode ? 0.58 : 1.0
-        let categoryVolume: Double
-        switch cue.category {
-        case "ambient": categoryVolume = ambientVolume
-        case "music": categoryVolume = musicVolume
-        default: categoryVolume = effectsVolume
+        let duckFactor = readAloudDuck && cue.layer.hasPrefix("music") ? 0.30 : 1.0
+        let layerVolume: Double
+        switch cue.layer {
+        case "ambient": layerVolume = ambientVolume
+        case "musicBed", "musicLayer": layerVolume = musicVolume
+        default: layerVolume = effectsVolume
         }
-        return Float(max(0.0, min(1.0, masterVolume * categoryVolume * linearGain * safetyFactor)))
+        return Float(min(1, max(0, masterVolume * layerVolume * safetyFactor * duckFactor * linearGain)))
     }
 
-    private func updateVolumes() {
-        for (id, player) in players {
-            guard let cue = cueByPlayerKey[id] else { continue }
-            player.volume = volume(for: cue)
+    private func layerLabel(_ layer: String) -> String? {
+        switch layer {
+        case "musicBed": return "Grundmusik"
+        case "musicLayer": return "Prozession"
+        case "ambient": return "Atmosphäre"
+        case "sfx": return "Effekt"
+        default: return nil
         }
     }
 }

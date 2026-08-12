@@ -37,6 +37,9 @@ struct RootView: View {
             }
         }
         .tint(FrostTheme.cobalt)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AudioTransportBar()
+        }
     }
 
     private var header: some View {

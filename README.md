@@ -7,7 +7,7 @@ Das Repository enthält:
 - das vollständige Abenteuer mit SL-Schnellreferenz
 - eine spoilerfreie Dorfkarte, eine markierte SL-Karte und drei Detailkarten
 - Handouts und einen geführten Charakterbau
-- einsatzfertige Atmosphären, Musik und Soundeffekte aus dokumentierten Mixkit-Quellen
+- 20 neu erzeugte, technisch geprüfte Atmosphären, Musik-Layer und Soundeffekte
 - eine native iOS-Begleitapp ab iOS 17 mit Szenenleitstand, Nachtstand, NPCs, Pflichtspuren, Vorlesetexten, Tischnotizen und Audio-Selbsttest
 - GitHub Actions für Tests, IPA-Build und AltStore-Feed
 - eine offlinefähige Web-Testversion für Leitstand und Soundboard
@@ -37,20 +37,17 @@ Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-
 
 ## Lokaler Build
 
-Die komplette V3-Ausgabe lässt sich unter Windows erzeugen:
+Die native Audio-V5-Fassung wird unter Windows so erzeugt:
 
 ```powershell
-python tools/build_content_v3.py
-python tools/build_visual_assets_v3.py
-python tools/build_audio_v3.py
-python tools/build_print_pack.py
-python tools/build_invitation.py
-python tools/build_web_preview.py
-python tools/build_archives_v3.py
+python tools/build_content_v5.py
+python tools/process_audio_v5.py
+python tools/validate_audio_v5.py
+python tools/build_print_pack_v3.py
 python tools/validate_project.py
 ```
 
-Danach liegen die PDFs unter `outputs/` und die Audio-Dateien unter `audio/generated/`. Für die App werden die erzeugten Audios nach `app/Kraehenfels/Resources/Audio/` kopiert. Das Projekt wird auf macOS mit XcodeGen erzeugt:
+Danach liegen die PDFs unter `outputs/` und die Audio-Dateien unter `audio/generated/`. Der Audio-Build kopiert die Cues zugleich nach `app/Kraehenfels/Resources/Audio/`. Die Web-App bleibt absichtlich auf 3.1.0 und wird von diesen Befehlen nicht verändert. Das iOS-Projekt wird auf macOS mit XcodeGen erzeugt:
 
 ```bash
 brew install xcodegen
@@ -83,30 +80,19 @@ Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.z
 
 ## Web-Testversion
 
-Die Browser-Version lässt sich vor dem Sideloaden lokal testen. Sie verwendet dieselben Szenen, NPCs, Handouts und Audiodateien wie die iPhone-App. Die genaue Startanleitung steht in [`web/README.md`](web/README.md).
+Die Browser-Version bleibt als eingefrorener Teststand 3.1.0 erhalten. Audio V5 und der neue vierkanalige Player erscheinen nur in der nativen iPhone-App. Die lokale Startanleitung steht in [`web/README.md`](web/README.md).
 
 Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `https://nexis-cmyk.github.io/kraehenfels/`. Dafür muss Pages einmal im Repository freigeschaltet werden: **Settings → Pages → Build and deployment → Source: GitHub Actions → Save**. Danach kannst du sie unterwegs als Web-App ausprobieren.
 
 ## Audio
 
-Das Soundboard nutzt ein bewusst kleines, unterscheidbares Set aus sechs Atmosphären, zwei Musikflächen und zehn One-Shots. Die neue V4-Abmischung wurde mit eigenständigen Foley- und Atmosphären-Prompts erzeugt. Die Bundle-Namen bleiben `V3_*`, damit die installierte App-Struktur kompatibel bleibt. Die Prompt- und Quellenabsicht steht in [`_DOCS/SOUND-PROMPTS-V4.md`](_DOCS/SOUND-PROMPTS-V4.md).
+Audio V5 umfasst acht Ortsatmosphären, ein durchgehendes Krähenfels-Motiv, einen zusätzlichen Prozessions-Layer und zehn One-Shots. Die Dateien wurden neu erzeugt, auf 48 kHz normalisiert und auf Dubletten geprüft. Der technische Prüfbericht steht in [`_DOCS/AUDIO-V5-QA.md`](_DOCS/AUDIO-V5-QA.md), Prompts und Herkunft in [`_DOCS/AUDIO-SOURCES-V5.md`](_DOCS/AUDIO-SOURCES-V5.md).
 
-Wenn du später eigene oder KI-generierte Dateien einsetzen möchtest, ersetzt du nur die V3-Datei mit demselben Namen und startest anschließend den Audio- und Web-Build erneut.
-
-```powershell
-python tools/import_audio_replacements.py "C:\Pfad\zu\neuen-sounds" --sync-web
-python tools/build_web_preview.py
-python tools/validate_project.py
-```
-
-Das Skript schreibt nach `audio/generated/`, `app/Kraehenfels/Resources/Audio/` und mit `--sync-web` auch nach `web/assets/audio/`.
-
-Simple-Pack-Import:
+Die App behandelt Grundmusik, Prozessionsmusik, Atmosphäre und Effekte unabhängig. Ein Szenen-Preset tauscht deshalb nur die Atmosphäre aus. M01 läuft auf Wunsch durch den ganzen Abend, die Vorlesen-Taste senkt Musik ab, und STOP beendet alle Ebenen sofort. Unter Einstellungen gibt es einen Hörtest, mit dem jeder Cue auf iPhone und Bluetooth-Box als passend oder falsch markiert werden kann.
 
 ```powershell
-python tools/build_mixkit_simple_pack.py
-python tools/import_audio_replacements.py "C:\Pfad\zu\simple-sounds" --simple-pack --sync-web
-python tools/build_web_preview.py
+python tools/process_audio_v5.py
+python tools/validate_audio_v5.py
 python tools/validate_project.py
 ```
 

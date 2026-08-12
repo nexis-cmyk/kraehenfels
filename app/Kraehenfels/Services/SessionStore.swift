@@ -29,6 +29,7 @@ final class SessionStore: ObservableObject {
         var npcStates: [String: Int]
         var threatLevel: Int
         var selectedHooks: [String: String]
+        var audioRatings: [String: Int]?
     }
 
     private let storageKey = "kraehenfels.sessionJournal.v3"
@@ -78,6 +79,10 @@ final class SessionStore: ObservableObject {
         didSet { persist() }
     }
 
+    @Published var audioRatings: [String: Int] {
+        didSet { persist() }
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         if let data = defaults.data(forKey: storageKey),
@@ -93,6 +98,7 @@ final class SessionStore: ObservableObject {
             npcStates = snapshot.npcStates
             threatLevel = Self.normalizedThreat(snapshot.threatLevel)
             selectedHooks = snapshot.selectedHooks
+            audioRatings = snapshot.audioRatings ?? [:]
         } else {
             playerNames = ["", "", ""]
             sessionNote = ""
@@ -105,6 +111,7 @@ final class SessionStore: ObservableObject {
             npcStates = [:]
             threatLevel = 0
             selectedHooks = [:]
+            audioRatings = [:]
         }
     }
 
@@ -149,6 +156,7 @@ final class SessionStore: ObservableObject {
         npcStates = [:]
         threatLevel = 0
         selectedHooks = [:]
+        audioRatings = [:]
     }
 
     func setThreatLevel(_ level: Int) {
@@ -175,6 +183,14 @@ final class SessionStore: ObservableObject {
         npcStates[npcID] = min(max(state, 0), 2)
     }
 
+    func setAudioRating(_ cueID: String, rating: Int) {
+        audioRatings[cueID] = min(max(rating, -1), 1)
+    }
+
+    func clearAudioRatings() {
+        audioRatings = [:]
+    }
+
     private func persist() {
         let snapshot = Snapshot(
             playerNames: Self.normalizedNames(playerNames),
@@ -187,7 +203,8 @@ final class SessionStore: ObservableObject {
             completedChecklistIDs: Array(completedChecklistIDs).sorted(),
             npcStates: npcStates,
             threatLevel: Self.normalizedThreat(threatLevel),
-            selectedHooks: selectedHooks
+            selectedHooks: selectedHooks,
+            audioRatings: audioRatings
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: storageKey)

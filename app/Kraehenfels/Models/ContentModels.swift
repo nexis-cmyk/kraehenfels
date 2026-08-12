@@ -132,6 +132,7 @@ struct SceneEntry: Codable, Identifiable, Hashable {
     let goal: String
     let handoutIds: [String]
     let audioCueIds: [String]
+    let audioPlan: [AudioPlanEntry]
     let nextSceneIds: [String]
     let readAloud: String
     let gmNotes: [String]
@@ -155,6 +156,7 @@ struct SceneEntry: Codable, Identifiable, Hashable {
         goal = try container.decode(String.self, forKey: .goal)
         handoutIds = try container.decodeIfPresent([String].self, forKey: .handoutIds) ?? []
         audioCueIds = try container.decodeIfPresent([String].self, forKey: .audioCueIds) ?? []
+        audioPlan = try container.decodeIfPresent([AudioPlanEntry].self, forKey: .audioPlan) ?? []
         nextSceneIds = try container.decodeIfPresent([String].self, forKey: .nextSceneIds) ?? []
         readAloud = try container.decodeIfPresent(String.self, forKey: .readAloud) ?? ""
         gmNotes = try container.decodeIfPresent([String].self, forKey: .gmNotes) ?? []
@@ -171,9 +173,27 @@ struct SceneEntry: Codable, Identifiable, Hashable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, title, shortTitle, duration, goal, handoutIds, audioCueIds, nextSceneIds
+        case id, title, shortTitle, duration, goal, handoutIds, audioCueIds, audioPlan, nextSceneIds
         case readAloud, gmNotes, npcIds, clueIds, soundPreset, stuckPrompts, escalation, checklist, art
         case phaseId, locationIds, recommendation
+    }
+}
+
+struct AudioPlanEntry: Codable, Identifiable, Hashable {
+    var id: String { cueId }
+    let cueId: String
+    let playWhen: String
+    let stopWhen: String
+    let gmInstruction: String
+    let optional: Bool
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        cueId = try container.decode(String.self, forKey: .cueId)
+        playWhen = try container.decodeIfPresent(String.self, forKey: .playWhen) ?? ""
+        stopWhen = try container.decodeIfPresent(String.self, forKey: .stopWhen) ?? ""
+        gmInstruction = try container.decodeIfPresent(String.self, forKey: .gmInstruction) ?? ""
+        optional = try container.decodeIfPresent(Bool.self, forKey: .optional) ?? false
     }
 }
 
@@ -265,6 +285,8 @@ struct AudioCue: Codable, Identifiable, Hashable {
     let title: String
     let scene: String
     let category: String
+    let scope: String
+    let layer: String
     let file: String
     let mode: String
     let gain: Double
@@ -272,12 +294,17 @@ struct AudioCue: Codable, Identifiable, Hashable {
     let isClue: Bool
     let printFallbackId: String?
     let description: String
+    let playWhen: String
+    let stopWhen: String
+    let gmInstruction: String
 
-    init(id: String, title: String, scene: String, category: String, file: String, mode: String, gain: Double, fadeMs: Int, isClue: Bool, printFallbackId: String?, description: String = "") {
+    init(id: String, title: String, scene: String, category: String, scope: String = "native", layer: String? = nil, file: String, mode: String, gain: Double, fadeMs: Int, isClue: Bool, printFallbackId: String?, description: String = "", playWhen: String = "", stopWhen: String = "", gmInstruction: String = "") {
         self.id = id
         self.title = title
         self.scene = scene
         self.category = category
+        self.scope = scope
+        self.layer = layer ?? category
         self.file = file
         self.mode = mode
         self.gain = gain
@@ -285,6 +312,9 @@ struct AudioCue: Codable, Identifiable, Hashable {
         self.isClue = isClue
         self.printFallbackId = printFallbackId
         self.description = description
+        self.playWhen = playWhen
+        self.stopWhen = stopWhen
+        self.gmInstruction = gmInstruction
     }
 
     init(from decoder: Decoder) throws {
@@ -293,6 +323,8 @@ struct AudioCue: Codable, Identifiable, Hashable {
         title = try container.decode(String.self, forKey: .title)
         scene = try container.decode(String.self, forKey: .scene)
         category = try container.decode(String.self, forKey: .category)
+        scope = try container.decodeIfPresent(String.self, forKey: .scope) ?? "native"
+        layer = try container.decodeIfPresent(String.self, forKey: .layer) ?? category
         file = try container.decode(String.self, forKey: .file)
         mode = try container.decode(String.self, forKey: .mode)
         gain = try container.decodeIfPresent(Double.self, forKey: .gain) ?? 0
@@ -300,24 +332,30 @@ struct AudioCue: Codable, Identifiable, Hashable {
         isClue = try container.decodeIfPresent(Bool.self, forKey: .isClue) ?? false
         printFallbackId = try container.decodeIfPresent(String.self, forKey: .printFallbackId)
         description = try container.decodeIfPresent(String.self, forKey: .description) ?? ""
+        playWhen = try container.decodeIfPresent(String.self, forKey: .playWhen) ?? ""
+        stopWhen = try container.decodeIfPresent(String.self, forKey: .stopWhen) ?? ""
+        gmInstruction = try container.decodeIfPresent(String.self, forKey: .gmInstruction) ?? ""
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, title, scene, category, file, mode, gain, fadeMs, isClue, printFallbackId, description
+        case id, title, scene, category, scope, layer, file, mode, gain, fadeMs, isClue, printFallbackId, description
+        case playWhen, stopWhen, gmInstruction
     }
 
     var categoryLabel: String {
-        switch category {
+        switch layer {
         case "ambient": return "Atmosphäre"
-        case "music": return "Musik"
+        case "musicBed": return "Grundmusik"
+        case "musicLayer": return "Musik-Layer"
         default: return "Effekt"
         }
     }
 
     var iconName: String {
-        switch category {
+        switch layer {
         case "ambient": return "wind"
-        case "music": return "music.note"
+        case "musicBed": return "music.note"
+        case "musicLayer": return "waveform.path"
         default: return "sparkles"
         }
     }

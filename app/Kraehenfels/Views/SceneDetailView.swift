@@ -309,30 +309,36 @@ struct SceneDetailView: View {
 
     private var audioPanel: some View {
         VStack(alignment: .leading, spacing: 11) {
-            if content.cues(for: scene).isEmpty {
-                SectionLabel(title: "Soundboard")
-                Label("Epilog: Nach dem Finale bewusst Stille lassen.", systemImage: "speaker.slash.fill")
+            HStack {
+                SectionLabel(title: "Sound-Regie")
+                Spacer()
+                Button {
+                    audio.playPreset(content.cues(for: scene))
+                } label: {
+                    Label("Atmosphäre", systemImage: "wind")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(FrostTheme.frost)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(FrostTheme.cobalt.opacity(0.8))
+            }
+            HStack(spacing: 7) {
+                Circle()
+                    .fill(audio.activeCueIDs.isEmpty ? FrostTheme.quiet : Color.green)
+                    .frame(width: 7, height: 7)
+                Text(audio.activeLayerSummary)
+                    .font(.caption)
+                    .foregroundStyle(FrostTheme.quiet)
+            }
+            if scene.audioPlan.isEmpty {
+                Label("Für diese Szene ist bewusst kein Cue vorgesehen.", systemImage: "speaker.slash.fill")
                     .font(.subheadline)
                     .foregroundStyle(FrostTheme.quiet)
             } else {
-                HStack {
-                    SectionLabel(title: "Soundboard")
-                    Spacer()
-                    Button {
-                        audio.playPreset(content.cues(for: scene))
-                    } label: {
-                        Label("Preset", systemImage: "play.fill")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(FrostTheme.frost)
+                ForEach(Array(scene.audioPlan.enumerated()), id: \.element.id) { index, plan in
+                    if let cue = content.cue(for: plan.cueId) {
+                        CueRow(cue: cue, plan: plan, index: index + 1)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(FrostTheme.cobalt.opacity(0.8))
-                }
-                Text(audio.sessionStatus)
-                    .font(.caption)
-                    .foregroundStyle(FrostTheme.quiet)
-                ForEach(content.cues(for: scene)) { cue in
-                    CueRow(cue: cue)
                 }
             }
             if let error = audio.lastError {
@@ -346,16 +352,6 @@ struct SceneDetailView: View {
                     .foregroundStyle(FrostTheme.cobalt)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            Button {
-                audio.stopAll()
-            } label: {
-                Label("Alle Sounds stoppen", systemImage: "stop.fill")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(FrostTheme.warning)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 6)
-            }
-            .accessibilityHint("Stoppt Atmosphäre, Musik und Effekte")
         }
     }
 
@@ -462,33 +458,61 @@ struct SceneDetailView: View {
 
 private struct CueRow: View {
     let cue: AudioCue
+    let plan: AudioPlanEntry
+    let index: Int
     @EnvironmentObject private var audio: AudioEngine
 
     var body: some View {
-        Button {
-            audio.toggle(cue)
-        } label: {
-            HStack(spacing: 12) {
+        FrostCard {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 12) {
+                    Text("\(index)")
+                        .font(.caption.monospaced().weight(.bold))
+                        .foregroundStyle(FrostTheme.ink)
+                        .frame(width: 25, height: 25)
+                        .background(FrostTheme.cobalt, in: Circle())
                 Image(systemName: audio.isPlaying(cue) ? "pause.fill" : cue.iconName)
                     .foregroundStyle(audio.isPlaying(cue) ? FrostTheme.frost : FrostTheme.cobalt)
                     .frame(width: 25)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(cue.title)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.white)
-                    Text("\(cue.id) · \(cue.categoryLabel)\(cue.isClue ? " · Hinweis" : "")")
+                        HStack(spacing: 6) {
+                            Text(cue.title)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.white)
+                            if plan.optional {
+                                Text("OPTIONAL")
+                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                    .foregroundStyle(FrostTheme.warning)
+                            }
+                        }
+                        Text("\(cue.id) · \(cue.categoryLabel)\(cue.isClue ? " · Hinweis" : "")")
                         .font(.caption)
                         .foregroundStyle(cue.isClue ? FrostTheme.warning : FrostTheme.quiet)
                 }
                 Spacer()
-                Text(audio.isPlaying(cue) ? "Läuft" : "Start")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(audio.isPlaying(cue) ? FrostTheme.frost : FrostTheme.quiet)
+                    Button { audio.toggle(cue) } label: {
+                        Image(systemName: audio.isPlaying(cue) && cue.mode == "loop" ? "pause.fill" : "play.fill")
+                            .font(.body.weight(.bold))
+                            .foregroundStyle(FrostTheme.ink)
+                            .frame(width: 44, height: 44)
+                            .background(FrostTheme.frost, in: Circle())
+                    }
+                    .accessibilityLabel("\(cue.title) abspielen")
+                }
+                VStack(alignment: .leading, spacing: 5) {
+                    Label(plan.playWhen, systemImage: "clock.badge.checkmark")
+                        .foregroundStyle(.white.opacity(0.92))
+                    Label(plan.gmInstruction, systemImage: "person.wave.2")
+                        .foregroundStyle(FrostTheme.cobalt)
+                    if cue.mode == "loop" {
+                        Label(plan.stopWhen, systemImage: "stop.circle")
+                            .foregroundStyle(FrostTheme.quiet)
+                    }
+                }
+                .font(.caption)
+                .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(13)
-            .background(FrostTheme.panel, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
         }
-        .buttonStyle(.plain)
         .accessibilityLabel("\(cue.title), \(cue.categoryLabel)")
         .accessibilityValue(audio.isPlaying(cue) ? "Läuft" : "Gestoppt")
     }

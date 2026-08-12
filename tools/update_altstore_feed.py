@@ -27,18 +27,24 @@ def main() -> None:
         info_plist = plistlib.loads(archive.read("Payload/Kraehenfels.app/Info.plist"))
     version = str(info_plist["CFBundleShortVersionString"])
     build_version = str(info_plist["CFBundleVersion"])
-    requested_version = args.tag.removeprefix("v")
-    if version != requested_version:
+    release_version = args.tag.removeprefix("v")
+    app_version = release_version.split("-", 1)[0]
+    if version != app_version:
         raise ValueError(
-            f"IPA version {version} does not match release tag {requested_version}."
+            f"IPA version {version} does not match release tag {release_version}."
         )
-    release_url = f"https://github.com/{args.repo}/releases/download/v{version}/Kraehenfels.ipa"
+    release_url = (
+        f"https://github.com/{args.repo}/releases/download/"
+        f"v{release_version}/Kraehenfels.ipa"
+    )
     raw_root = f"https://raw.githubusercontent.com/{args.repo}/main"
     app = data["apps"][0]
     app["version"] = version
     app["buildVersion"] = build_version
     app["versionDate"] = datetime.now(timezone.utc).date().isoformat()
     app["downloadURL"] = release_url
+    if "-" in release_version:
+        app["versionDescription"] = f"Release Candidate {release_version}"
     app["iconURL"] = f"{raw_root}/altstore/icon.png"
     app["size"] = len(ipa_bytes)
     app["sha256"] = hashlib.sha256(ipa_bytes).hexdigest()

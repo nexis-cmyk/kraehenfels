@@ -28,4 +28,19 @@ final class ContentStore: ObservableObject {
     func cues(for scene: SceneEntry) -> [AudioCue] {
         scene.audioCueIds.compactMap { id in manifest.audioCues.first(where: { $0.id == id }) }
     }
+
+    func cue(for id: String) -> AudioCue? {
+        manifest.audioCues.first(where: { $0.id == id })
+    }
+
+    func plannedCues(for scene: SceneEntry) -> [(AudioPlanEntry, AudioCue)] {
+        scene.audioPlan.compactMap { plan in
+            guard let cue = cue(for: plan.cueId) else { return nil }
+            return (plan, cue)
+        }
+    }
+
+    var musicBed: AudioCue? {
+        manifest.audioCues.first(where: { $0.layer == "musicBed" })
+    }
 }
