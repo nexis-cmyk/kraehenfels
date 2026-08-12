@@ -2,7 +2,7 @@
 
 ## Stand
 
-Die native Fassung ist auf `3.2.0-rc1` vorbereitet. Die Web-App bleibt bewusst auf `3.1.0`. Der Kanon enthält jetzt für jede Szene eine geordnete `audioPlan`-Liste mit Zeitpunkt, Stop-Bedingung, Spielleiteranweisung und Optional-Markierung.
+Die native Fassung `3.2.0-rc1` ist veröffentlicht. Die Web-App bleibt bewusst auf `3.1.0`. Der Kanon enthält jetzt für jede Szene eine geordnete `audioPlan`-Liste mit Zeitpunkt, Stop-Bedingung, Spielleiteranweisung und Optional-Markierung.
 
 ## Umgesetzt
 
@@ -16,13 +16,14 @@ Die native Fassung ist auf `3.2.0-rc1` vorbereitet. Die Web-App bleibt bewusst a
 - Audio-Check für alle 20 Cues mit lokaler Bewertung `Passt` oder `Falsch` ergänzt.
 - Eigener hörbarer Testton, Routinganzeige, Bluetooth-Ausgabe, Unterbrechungs- und Routenbehandlung ergänzt.
 - Gedruckter Sound-Regieplan neu erzeugt und visuell geprüft.
+- GitHub-Xcode-Build und iOS-Simulator-Unit-Tests erfolgreich abgeschlossen.
+- IPA und separaten RC-AltStore-Feed veröffentlicht: `https://github.com/nexis-cmyk/kraehenfels/releases/tag/v3.2.0-rc1`.
 
 ## Noch vor einem finalen Release
 
-1. GitHub Actions muss XcodeGen, Swift-Tests und den unsignierten IPA-Build auf macOS ausführen.
-2. `3.2.0-rc1` auf dem iPhone installieren.
-3. In Einstellungen den Selbsttest ausführen und im Audio-Check alle 20 Cues über iPhone-Lautsprecher und die tatsächliche Bluetooth-Box bewerten.
-4. Jeden als `Falsch` markierten Cue gezielt ersetzen. Erst danach `3.2.0` veröffentlichen und den dauerhaften AltStore-Feed aktualisieren.
+1. `3.2.0-rc1` auf dem iPhone installieren.
+2. In Einstellungen den Selbsttest ausführen und im Audio-Check alle 20 Cues über iPhone-Lautsprecher und die tatsächliche Bluetooth-Box bewerten.
+3. Jeden als `Falsch` markierten Cue gezielt ersetzen. Erst danach `3.2.0` veröffentlichen und den dauerhaften AltStore-Feed aktualisieren.
 
 ## Reproduzierbare Befehle
 
