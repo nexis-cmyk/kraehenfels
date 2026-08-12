@@ -23,13 +23,15 @@ Die drei Reisenden stranden nach einer manipulierten Kutschenpanne im Schwarzwal
 - `tools/`: reproduzierbare Build- und Validierungsskripte
 - `outputs/`: finale PDFs, ZIP-Archive und Einladung
 
-Die App bleibt frei navigierbar. Sie zeigt Vorlesetext, SL-Notizen, NPC-Zustände, Pflichtspuren, Fakten, Figuren-Verbindungen, Karten, Sound-Presets und Stillstandshilfen. Sie entscheidet keine Handlung automatisch. Hinweise werden nie durch einen einzelnen misslungenen Wurf blockiert.
+Die App bleibt frei navigierbar. Der Einstieg über `GMStartView` führt zuerst durch Vorbereitung, Materialtrennung, Sicherheitscheck und die drei Schnellstartfiguren. `GuidedGMView` zeigt danach pro Szene klar getrennte Karten für Vorlesen, SL-Information, Spieleraktion, Auslöser, Hinweis, Würfelprobe und nächsten Schritt. Materialien, Karten, NPC-Dossiers, Fakten und Regeln bleiben direkt aus dem aktuellen Schritt erreichbar. Der Ablauf entscheidet keine Handlung automatisch. Hinweise werden nie durch einen einzelnen misslungenen Wurf blockiert.
+
+Der Leitstand führt die kanonischen Wege aus dem Gasthaus getrennt: Kirche, Schmiede und Waldspur sind in beliebiger Reihenfolge möglich. Das Archiv wird erst nach zwei besuchten Ermittlungsorten angeboten. Im Finale kann die Spielleitung zwischen der geführten Gefahrenszene und einem vollständigen HTBAH-Kampf umschalten. Der Türzustand des Gästezimmers und die Würfelhistorie werden im Sitzungsjournal gespeichert.
 
 ## Audio
 
-Der native Satz besteht aus 20 unterscheidbaren Dateien: acht Atmosphären, einem dauerhaften Musikbett, einem Prozessions-Layer und zehn One-Shots. `tools/process_audio_v5.py` normalisiert sie nach `audio/generated/` und in das iOS-Bundle. `tools/validate_audio_v5.py` prüft Dauer, 48-kHz-Stereoformat, Lautheit, True Peak, Loop-Naht, Dateihashes und akustische Fingerprints. Der letzte technische Lauf meldet 20 gültige Dateien und keine Dublette. Ein separater Hörtest in der App bleibt vor dem finalen Release Pflicht.
+Der native Satz besteht aus 20 unterscheidbaren Dateien: acht Atmosphären, einem dauerhaften Musikbett, einem Prozessions-Layer und zehn One-Shots. `tools/process_audio_v5.py` baut die acht abgenommenen V5-Dateien. `tools/generate_audio_v6.py` ersetzt die zwölf markierten Problem-Cues mit reproduzierbaren lokalen Assemblies und schreibt die V6-Metadaten. `tools/validate_audio_v6.py` prüft Dauer, 48-kHz-Stereoformat, Lautheit, True Peak, Loop-Naht, Dateihashes und akustische Fingerprints. Der aktuelle Lauf meldet 20 gültige Dateien und keine Dublette. Ein separater Hörtest in der App bleibt vor dem finalen Release Pflicht.
 
-Der Player hält vier Ebenen getrennt. Ein Szenen-Preset wechselt nur die Ortsatmosphäre. M01 bleibt über Szenenwechsel hinweg aktiv, M02 kann im letzten Drittel daruntergelegt werden, und One-Shots überlappen die laufenden Flächen. Vorlesen senkt nur Musik ab. STOP beendet alles. Die genaue Fassung steht in [`AUDIO-V5-PLAN.md`](AUDIO-V5-PLAN.md), die Quellen in [`AUDIO-SOURCES-V5.md`](AUDIO-SOURCES-V5.md) und der Prüfbericht in [`AUDIO-V5-QA.md`](AUDIO-V5-QA.md).
+Der Player hält vier Ebenen getrennt. Ein Szenen-Preset wechselt nur die Ortsatmosphäre. M01 bleibt über Szenenwechsel hinweg aktiv, M02 kann im letzten Drittel daruntergelegt werden, und One-Shots überlappen die laufenden Flächen. Vorlesen senkt nur Musik ab. STOP beendet alles. Die genaue Fassung steht in [`AUDIO-V5-PLAN.md`](AUDIO-V5-PLAN.md), die V6-Zuordnung in [`AUDIO-SOURCES-V6.md`](AUDIO-SOURCES-V6.md) und der Prüfbericht in [`AUDIO-V6-QA.md`](AUDIO-V6-QA.md).
 
 ## Druckpaket
 

@@ -4,16 +4,29 @@ struct RulesView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("How to be a Hero")
-                    .font(.system(size: 31, weight: .bold, design: .rounded))
-                    .foregroundStyle(FrostTheme.frost)
-                rule("Probe", "W100 gleich oder kleiner als der Wert ist Erfolg. Unteres Zehntel ist ein kritischer Erfolg. Ab 90 plus einem Zehntel ist es ein kritischer Patzer.")
-                rule("Begabung", "Punkte der Begabung addieren, durch 10 teilen und kaufmännisch runden. Begabung auf passende Fähigkeiten addieren, maximal bis 100.")
-                rule("Geistesblitz", "Begabung durch 10. Ein Punkt erlaubt einen neuen Wurf bei einer misslungenen, nicht kritischen Probe. Erneuert sich zum nächsten Abenteuer.")
-                rule("Lebenspunkte", "100 LP. Unter 10 LP bewusstlos. Bei 0 tot. Mehr als 60 Schaden in einem Angriff macht bewusstlos.")
-                rule("Improvisation", "Ein Fehlschlag verschärft die Lage, blockiert aber keine wichtige Spur. Kosten können Zeit, Wärme, Vertrauen oder einen Geistesblitz sein.")
+                VStack(alignment: .leading, spacing: 7) {
+                    Text("HOW TO BE A HERO")
+                        .font(.caption.weight(.bold))
+                        .tracking(1.5)
+                        .foregroundStyle(FrostTheme.cobalt)
+                    Text("Kurzregeln für Krähenfels")
+                        .font(.system(size: 31, weight: .bold, design: .rounded))
+                        .foregroundStyle(FrostTheme.frost)
+                    Text("Die App führt dich durch die passende Probe. Diese Seite erklärt, warum sie so funktioniert.")
+                        .font(.subheadline)
+                        .foregroundStyle(FrostTheme.quiet)
+                }
+                rule("Wann würfeln?", "Nur wenn eine Handlung unsicher ist und ein Misserfolg etwas verändert. Pflicht-Hinweise werden niemals hinter einem Wurf versteckt.")
+                rule("Zielwert bestimmen", "Passt eine gelernte Fähigkeit, würfelt die Figur auf deren Wert. Fehlt eine passende Fähigkeit, würfelt sie auf die zugehörige Begabung: Handeln, Wissen oder Soziales. Der Zielwert steht auf dem Figurenblatt.")
+                rule("Probe", "W100 gleich oder kleiner als der verwendete Wert ist Erfolg. Kritischer Erfolg ist das untere Zehntel des Wertes. Kritischer Misserfolg beginnt bei 90 plus einem Zehntel des verwendeten Wertes und reicht bis 100.")
+                rule("Begabung", "Eine Begabungsprobe ist erlaubt, wenn keine gelernte Fähigkeit passt. Sie kann keinen kritischen Erfolg erzielen. Ein kritischer Misserfolg bleibt auch bei einer Begabung möglich.")
+                rule("Geistesblitz", "Die Punkte jeder Begabung entsprechen ihrem Wert geteilt durch 10 und kaufmännisch gerundet. Ein Punkt erlaubt einen neuen Wurf auf eine misslungene, nicht kritisch misslungene Probe derselben Begabung. Eingesetzte Punkte sind verbraucht.")
+                rule("Kampf", "Initiative ist W10 plus Handeln und wird vor jedem Kampf neu gewürfelt. Wer überrascht wurde, setzt die erste Runde aus. Ein Angriff ist eine passende Fertigkeitsprobe. Einmal pro Runde darf eine Figur auf Handeln parieren. Kritische Angriffe und Schusswaffen sind nicht parierbar.")
+                rule("Schaden und Lebenspunkte", "Jede Figur startet mit 100 LP. Unter 10 LP wird sie bewusstlos, bei 0 LP stirbt sie. Ein einzelner Treffer mit mehr als 60 Schaden macht sofort bewusstlos. Schaden wird mit der zur Waffe passenden Zahl an W10 ausgewürfelt; kritische Angriffe verdoppeln den Schaden.")
+                rule("Improvisation", "Ein Fehlschlag verschärft die Lage, blockiert aber keine wichtige Spur. Kosten können Zeit, Wärme, Vertrauen, Lebenspunkte oder ein Geistesblitz sein.")
             }
             .padding(20)
+            .safeAreaPadding(.bottom, 88)
         }
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle("Regeln")

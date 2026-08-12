@@ -1,4 +1,4 @@
-"""Build the Krähenfels 3.0 printable player and GM pack."""
+"""Build the Krähenfels 3.3 printable player and GM pack."""
 
 from __future__ import annotations
 
@@ -116,14 +116,14 @@ def build_start(path: Path, data: dict) -> None:
     paragraph(c, "Ein detektivischer Folk-Horror für drei Reisende und eine Spielleitung. Schwarzwald, November 1890. Eure Kutsche hat die Straße verlassen. Das Dorf wartet bereits.", 18 * mm, 22 * mm, width - 36 * mm, 55 * mm, text_style("start", 12, 16, FROST))
     c.setFillColor(QUIET)
     c.setFont("Helvetica", 8)
-    c.drawString(18 * mm, 12 * mm, "How to be a Hero · W100 · Version 3.0.0")
+    c.drawString(18 * mm, 12 * mm, "How to be a Hero · W100 · Version 3.3.0-rc1")
     c.showPage()
     page_title(c, "Spielstart", "Für die Spielleitung · 20 Minuten Vorbereitung")
     y = height - 55 * mm
     steps = [
-        ("Tisch", "Lege die Spielerkarte, Figurenbögen und H01 bis H08 verdeckt bereit. H09 bleibt bei dir."),
-        ("Figuren", "Die drei Spieler erstellen eigene HTBAH-Figuren und wählen je eine Figuren-Verbindung aus der Akte."),
-        ("Einstieg", "Starte A01 leise. Lies S01 vor. Frage nur: Was tut ihr? Gib H01 unabhängig vom Würfelwurf."),
+        ("Tisch", "Lege die Spielerkarte, drei vorbereitete Schnellstart-Figuren sowie H01 bis H08 und H10 verdeckt bereit. H09 bleibt bei dir."),
+        ("Figuren", "Verteile Clara, Otto und Jakob. Die leeren Alternativbögen sind nur für Figuren, die vorab selbst gebaut wurden."),
+        ("Einstieg", "Starte M01 leise. Lies S01 vor. Frage nur: Was tut ihr? Gib H01 unabhängig vom Würfelwurf. A01 beginnt erst beim Aufbruch."),
         ("Leitung", "Setze die Dorfspannung manuell. Die App zeigt Empfehlungen, entscheidet aber nie an deiner Stelle."),
         ("Grenzen", "Kinder bleiben sicher. Gewalt bleibt unheimlich und dosiert. Sprich vor Beginn kurz über Stoppsignale."),
     ]
@@ -143,7 +143,7 @@ def build_characters(path: Path) -> None:
     c = canvas.Canvas(str(path), pagesize=A4)
     width, height = A4
     for page in range(2):
-        page_title(c, "Figurenbau", "How to be a Hero · W100")
+        page_title(c, "Alternative Figuren", "Optional · eigene Figuren vorab bauen")
         c.setFillColor(INK)
         c.roundRect(18 * mm, height - 85 * mm, width - 36 * mm, 32 * mm, 5 * mm, fill=1, stroke=0)
         c.setFillColor(FROST)

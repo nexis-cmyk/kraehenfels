@@ -158,7 +158,7 @@ struct CaseFileView: View {
     }
 
     private var completedFacts: Set<String> {
-        Set(content.manifest.facts.filter { fact in fact.clueIds.allSatisfy(session.checkedClueIDs.contains) }.map(\.id))
+        Set(content.completedFacts(for: session.checkedClueIDs).map(\.id))
     }
 }
 

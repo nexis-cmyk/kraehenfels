@@ -30,6 +30,13 @@ final class SessionStore: ObservableObject {
         var threatLevel: Int
         var selectedHooks: [String: String]
         var audioRatings: [String: Int]?
+        var guidedStepIndex: Int?
+        var completedGuideStepIDs: [String]?
+        var setupChecks: [String]?
+        var doorStates: [String: Bool]?
+        var rollHistory: [String: String]?
+        var selectedEndingID: String?
+        var finaleMode: String?
     }
 
     private let storageKey = "kraehenfels.sessionJournal.v3"
@@ -83,6 +90,34 @@ final class SessionStore: ObservableObject {
         didSet { persist() }
     }
 
+    @Published var guidedStepIndex: Int {
+        didSet { persist() }
+    }
+
+    @Published var completedGuideStepIDs: Set<String> {
+        didSet { persist() }
+    }
+
+    @Published var setupChecks: Set<String> {
+        didSet { persist() }
+    }
+
+    @Published var doorStates: [String: Bool] {
+        didSet { persist() }
+    }
+
+    @Published var rollHistory: [String: String] {
+        didSet { persist() }
+    }
+
+    @Published var selectedEndingID: String? {
+        didSet { persist() }
+    }
+
+    @Published var finaleMode: String {
+        didSet { persist() }
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         if let data = defaults.data(forKey: storageKey),
@@ -99,6 +134,13 @@ final class SessionStore: ObservableObject {
             threatLevel = Self.normalizedThreat(snapshot.threatLevel)
             selectedHooks = snapshot.selectedHooks
             audioRatings = snapshot.audioRatings ?? [:]
+            guidedStepIndex = max(0, snapshot.guidedStepIndex ?? 0)
+            completedGuideStepIDs = Set(snapshot.completedGuideStepIDs ?? [])
+            setupChecks = Set(snapshot.setupChecks ?? [])
+            doorStates = snapshot.doorStates ?? [:]
+            rollHistory = snapshot.rollHistory ?? [:]
+            selectedEndingID = snapshot.selectedEndingID
+            finaleMode = snapshot.finaleMode ?? "guided"
         } else {
             playerNames = ["", "", ""]
             sessionNote = ""
@@ -112,6 +154,13 @@ final class SessionStore: ObservableObject {
             threatLevel = 0
             selectedHooks = [:]
             audioRatings = [:]
+            guidedStepIndex = 0
+            completedGuideStepIDs = []
+            setupChecks = []
+            doorStates = [:]
+            rollHistory = [:]
+            selectedEndingID = nil
+            finaleMode = "guided"
         }
     }
 
@@ -157,6 +206,81 @@ final class SessionStore: ObservableObject {
         threatLevel = 0
         selectedHooks = [:]
         audioRatings = [:]
+        guidedStepIndex = 0
+        completedGuideStepIDs = []
+        setupChecks = []
+        doorStates = [:]
+        rollHistory = [:]
+        selectedEndingID = nil
+        finaleMode = "guided"
+    }
+
+    func beginGuidedSession() {
+        sessionNote = ""
+        sceneNotes = [:]
+        currentSceneID = "S01"
+        guidedStepIndex = 0
+        completedSceneIDs = []
+        checkedClueIDs = []
+        completedChecklistIDs = []
+        npcStates = [:]
+        threatLevel = 0
+        selectedEndingID = nil
+        finaleMode = "guided"
+        rollHistory = [:]
+        doorStates = ["inn.guestroom": true]
+        completedGuideStepIDs = []
+        nightPhaseIndex = 0
+    }
+
+    func advanceGuideStep(in sceneID: String, stepID: String, stepCount: Int) {
+        completedGuideStepIDs.insert(stepID)
+        if guidedStepIndex + 1 < stepCount {
+            guidedStepIndex += 1
+        } else {
+            completedSceneIDs.insert(sceneID)
+        }
+    }
+
+    func advanceToScene(_ sceneID: String, from currentID: String? = nil) {
+        if let currentID {
+            completedSceneIDs.insert(currentID)
+        }
+        currentSceneID = sceneID
+        guidedStepIndex = 0
+        switch sceneID {
+        case "S02": nightPhaseIndex = 0
+        case "S03", "S04", "S05": nightPhaseIndex = 1
+        case "S06": nightPhaseIndex = 2
+        case "S07": nightPhaseIndex = 3
+        case "S08": nightPhaseIndex = 4
+        default: break
+        }
+    }
+
+    func toggleSetup(_ id: String) {
+        if setupChecks.contains(id) {
+            setupChecks.remove(id)
+        } else {
+            setupChecks.insert(id)
+        }
+    }
+
+    func setDoor(_ id: String, isOpen: Bool) {
+        doorStates[id] = isOpen
+    }
+
+    func recordRoll(stepID: String, result: RollEvaluator.Result) {
+        rollHistory[stepID] = String(result.roll) + " / " + String(result.target) + " · " + result.label
+    }
+
+    func setSelectedEnding(_ endingID: String) {
+        selectedEndingID = endingID
+        finaleMode = "guided"
+    }
+
+    func setFinaleMode(_ mode: String) {
+        finaleMode = mode == "combat" ? "combat" : "guided"
     }
 
     func setThreatLevel(_ level: Int) {
@@ -204,7 +328,14 @@ final class SessionStore: ObservableObject {
             npcStates: npcStates,
             threatLevel: Self.normalizedThreat(threatLevel),
             selectedHooks: selectedHooks,
-            audioRatings: audioRatings
+            audioRatings: audioRatings,
+            guidedStepIndex: guidedStepIndex,
+            completedGuideStepIDs: Array(completedGuideStepIDs).sorted(),
+            setupChecks: Array(setupChecks).sorted(),
+            doorStates: doorStates,
+            rollHistory: rollHistory,
+            selectedEndingID: selectedEndingID,
+            finaleMode: finaleMode
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: storageKey)

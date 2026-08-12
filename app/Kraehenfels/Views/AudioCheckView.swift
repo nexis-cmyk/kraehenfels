@@ -18,6 +18,7 @@ struct AudioCheckView: View {
                     .frame(maxWidth: .infinity, minHeight: 44)
             }
             .padding(20)
+            .safeAreaPadding(.bottom, 88)
         }
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle("Audio-Check")
@@ -38,6 +39,29 @@ struct AudioCheckView: View {
                 Text("Hör jeden Cue einmal über die Box und einmal über das iPhone. Markiere nur, ob Klang und Beschreibung wirklich zusammenpassen.")
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.9))
+                Button {
+                    audio.runSelfTest()
+                } label: {
+                    Label("Testton abspielen", systemImage: "speaker.wave.3.fill")
+                        .font(.subheadline.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+                if let loaded = audio.lastLoadedResource {
+                    Text("Zuletzt geladen: \(loaded)")
+                        .font(.caption.monospaced())
+                        .foregroundStyle(FrostTheme.quiet)
+                }
+                if let event = audio.lastEvent {
+                    Text(event)
+                        .font(.caption)
+                        .foregroundStyle(FrostTheme.cobalt)
+                }
+                if let error = audio.lastError {
+                    Label(error, systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(FrostTheme.warning)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 ProgressView(value: Double(ratedCount), total: Double(max(content.manifest.audioCues.count, 1)))
                     .tint(ratedCount == content.manifest.audioCues.count ? .green : FrostTheme.cobalt)
                 Text(audio.sessionStatus)
@@ -68,6 +92,11 @@ struct AudioCheckView: View {
                             Text(cue.categoryLabel)
                                 .font(.caption2.weight(.bold))
                                 .foregroundStyle(FrostTheme.quiet)
+                            if cue.file.hasPrefix("V6_") {
+                                Text("V6")
+                                    .font(.caption2.monospaced().weight(.bold))
+                                    .foregroundStyle(FrostTheme.warning)
+                            }
                         }
                         Text(cue.title)
                             .font(.headline)

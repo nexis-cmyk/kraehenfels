@@ -54,26 +54,26 @@ def cue(
 
 
 AUDIO_CUES = [
-    cue("A01", "Kutschenstraße", "S01", "ambient", "V5_A01_Kutschenstrasse.m4a", "loop", -0.22, 1800, "Winterwind, Wagenholz, Geschirr und ruhige Pferde auf der nächtlichen Straße.", "Sobald alle am Tisch sitzen.", "Beim Eintritt in das Gasthaus.", "Leise starten. Stimmen müssen jederzeit klar darüber liegen."),
-    cue("A02", "Gasthaus", "S02", "ambient", "V5_A02_Gasthaus.m4a", "loop", -0.30, 1600, "Herdfeuer, altes Gebälk, Geschirr und undeutliche Gäste im Hintergrund.", "Wenn Gruber die Tür öffnet.", "Wenn die Gruppe das Gasthaus verlässt.", "Warm, aber nicht gemütlich laut mischen."),
+    cue("A01", "Kutschenstraße", "S01", "ambient", "V6_A01_Kutschenstrasse.m4a", "loop", -0.22, 1800, "Winterwind, rollendes Wagenholz, Geschirr und unruhige Pferde auf der nächtlichen Straße.", "Sobald alle am Tisch sitzen.", "Beim Eintritt in das Gasthaus.", "Leise starten. Stimmen müssen jederzeit klar darüber liegen."),
+    cue("A02", "Gasthaus", "S02", "ambient", "V6_A02_Gasthaus.m4a", "loop", -0.30, 1600, "Herdfeuer, altes Gebälk, Geschirr und ein gedämpftes Stimmenmeer ohne verständliche Worte.", "Wenn Gruber die Tür öffnet.", "Wenn die Gruppe das Gasthaus verlässt.", "Warm, aber nicht gemütlich laut mischen."),
     cue("A03", "Dorf am Morgen", "S08", "ambient", "V5_A03_Dorf_am_Morgen.m4a", "loop", -0.28, 1800, "Kalter Morgenwind, fernes Dorfleben und das erste Tauwasser.", "Mit dem ersten Satz des Epilogs.", "Nach dem letzten persönlichen Nachhall.", "Keine Schockeffekte mehr. Der Morgen soll echt wirken."),
     cue("A04", "Kirche ohne Glocke", "S03", "ambient", "V5_A04_Kirche_ohne_Glocke.m4a", "loop", -0.32, 2000, "Kalte Steinkirche, undichte Türen, arbeitendes Holz und ein ferner Rabe.", "Beim Öffnen der Kirchentür.", "Beim Verlassen der Kirche.", "Sehr leise halten, damit die Leere des Raums trägt."),
-    cue("A05", "Schmiede", "S04", "ambient", "V5_A05_Schmiede.m4a", "loop", -0.27, 1600, "Esse, Blasebalg und kühlendes Metall zwischen zwei Arbeiten.", "Wenn Marta die Gruppe hereinlässt.", "Beim Verlassen der Schmiede.", "Der Amboss bleibt still, bis du SFX05 auslöst."),
+    cue("A05", "Schmiede", "S04", "ambient", "V6_A05_Schmiede.m4a", "loop", -0.27, 1600, "Tiefe Esse, Blasebalg und einzelne Metallresonanzen zwischen zwei Arbeiten.", "Wenn Marta die Gruppe hereinlässt.", "Beim Verlassen der Schmiede.", "Der einzelne Schmiedeschlag bleibt SFX05 vorbehalten."),
     cue("A06", "Waldspur", "S05", "ambient", "V5_A06_Waldspur.m4a", "loop", -0.30, 1800, "Tiefer Winterwald, Schnee und weiter Raum ohne menschliche Schritte.", "Hinter den letzten Häusern.", "Beim Eintritt ins Rathausarchiv oder am Szenenwechsel.", "Nicht mit Prozessionsschritten verwechseln. Diese Fläche bleibt leer."),
     cue("A07", "Rathausarchiv", "S06", "ambient", "V5_A07_Rathausarchiv.m4a", "loop", -0.31, 1600, "Papier, Ofenmetall, altes Holz und Wind an kleinen Fenstern.", "Sobald die Bücher auf dem Tisch liegen.", "Wenn draußen die Prozession sichtbar wird.", "Trocken und nah mischen. M02 später darunter einblenden."),
-    cue("A08", "Alte Eiche", "S07", "ambient", "V5_A08_Alte_Eiche.m4a", "loop", -0.27, 1800, "Wind im hohlen Stamm, arbeitende Eiche, Schnee an Wurzeln und eine lose Eisenkette.", "Sobald die Eiche vollständig sichtbar ist.", "Wenn die Entscheidung gefallen ist.", "Die Natur ist der Vordergrund. M02 bleibt darunter."),
+    cue("A08", "Alte Eiche", "S07", "ambient", "V6_A08_Alte_Eiche.m4a", "loop", -0.27, 1800, "Froststurm, hohler Stamm, arbeitendes Holz und eine lose Eisenkette am Schrein.", "Sobald die Eiche vollständig sichtbar ist.", "Wenn die Entscheidung gefallen ist.", "Die Natur ist der Vordergrund. M02 bleibt darunter."),
     cue("M01", "Krähenfels-Motiv", "S01", "musicBed", "V5_M01_Kraehenfels_Motiv.m4a", "loop", -0.34, 2600, "Leises Zweitonmotiv aus Cello, Filzklavier und gestrichenem Bordun.", "Vor dem ersten Vorlesetext.", "Nach dem letzten Satz des Epilogs.", "Das ist das dauerhafte Grundmotiv. Nur zum Vorlesen absenken, nicht bei jedem Szenenwechsel neu starten."),
     cue("M02", "Die Prozession", "S06", "musicLayer", "V5_M02_Prozession.m4a", "loop", -0.38, 1800, "Tiefe Streicher, ferner Holzpuls und gedämpfte Rahmentrommel.", "Wenn die Gruppe versteht, dass sich das Dorf versammelt.", "Nach der Entscheidung an der Eiche.", "Unter M01 legen. Im Finale langsam anheben, niemals darüber springen lassen."),
-    cue("SFX01", "Achse bricht", "S01", "sfx", "V5_SFX01_Achse_bricht.wav", "oneShot", -0.14, 0, "Wagenholz spannt sich, bricht einmal und lässt Metall kurz rasseln.", "Nach dem Satz: Ein Knacken läuft durch die Kutsche.", "Endet selbst.", "Einmal auslösen und danach eine Sekunde nichts sagen."),
-    cue("SFX02", "Pferde scheuen", "S01", "sfx", "V5_SFX02_Pferde_scheuen.wav", "oneShot", -0.12, 0, "Schnauben, ein Huf im Schnee und straffes Geschirr.", "Direkt nach dem Achsenbruch.", "Endet selbst.", "Nur einmal. Die Pferde galoppieren nicht davon."),
+    cue("SFX01", "Achse bricht", "S01", "sfx", "V6_SFX01_Achse_bricht.wav", "oneShot", -0.14, 0, "Ein harter Holzbruch, schepperndes Geschirr und der Wagen kippt hörbar aus dem Takt.", "Nach dem Satz: Ein Knacken läuft durch die Kutsche.", "Endet selbst.", "Einmal auslösen und danach eine Sekunde nichts sagen."),
+    cue("SFX02", "Pferde scheuen", "S01", "sfx", "V6_SFX02_Pferde_scheuen.wav", "oneShot", -0.12, 0, "Zwei kurze Hufschläge im Schnee, ein erschrockenes Schnauben und straffes Geschirr.", "Direkt nach dem Achsenbruch.", "Endet selbst.", "Nur einmal. Die Pferde galoppieren nicht davon."),
     cue("SFX03", "Riegel von außen", "S02", "sfx", "V5_SFX03_Riegel_von_aussen.wav", "oneShot", -0.16, 0, "Ein schwerer Eisenriegel läuft durch zwei Halterungen und fällt zu.", "Wenn nachts die Zimmertür von außen verriegelt wird.", "Endet selbst.", "Blicke nach dem Geräusch nicht sofort zur Gruppe. Lass sie reagieren.", is_clue=True, fallback="H03"),
-    cue("SFX04", "Geweih an der Tür", "S02", "sfx", "V5_SFX04_Geweih_an_der_Tuer.wav", "oneShot", -0.20, 0, "Trockenes Geweih schabt über Holz und tippt zweimal leicht an.", "Optional nach einer längeren Stille im Gasthaus.", "Endet selbst.", "Nur als Vorzeichen nutzen. Noch kein Wesen zeigen.", is_clue=True, fallback="H07"),
-    cue("SFX05", "Ein Schmiedeschlag", "S04", "sfx", "V5_SFX05_Einzelner_Schmiedeschlag.wav", "oneShot", -0.12, 0, "Genau ein Hammerhieb auf heißes Eisen mit kurzem Ambossring.", "Wenn Marta die drei schwarzen Nägel zeigt.", "Endet selbst.", "Ein Schlag. Danach erklärt Marta den Preis des Eisens.", is_clue=True, fallback="H06"),
-    cue("SFX06", "Atem hinter der Figur", "S05", "sfx", "V5_SFX06_Atem_hinter_der_Figur.wav", "oneShot", -0.22, 0, "Ein einzelner naher menschlicher Atemzug ohne Worte.", "Nachdem die Spur ihre Richtung scheinbar gewechselt hat.", "Endet selbst.", "Leise auslösen. Nicht verraten, hinter welcher Figur er war.", is_clue=True, fallback="H08"),
+    cue("SFX04", "Geweih an der Tür", "S02", "sfx", "V6_SFX04_Geweih_an_der_Tuer.wav", "oneShot", -0.20, 0, "Trockenes Holz knarrt unter Gewicht, dann kratzt ein harter Rand zweimal über die Tür.", "Optional nach einer längeren Stille im Gasthaus.", "Endet selbst.", "Nur als Vorzeichen nutzen. Noch kein Wesen zeigen.", is_clue=True, fallback="H07"),
+    cue("SFX05", "Ein Schmiedeschlag", "S04", "sfx", "V6_SFX05_Einzelner_Schmiedeschlag.wav", "oneShot", -0.12, 0, "Genau ein Hammerhieb auf heißes Eisen mit kurzem, sauberem Ambossring.", "Wenn Marta die drei schwarzen Nägel zeigt.", "Endet selbst.", "Ein Schlag. Danach erklärt Marta den Preis des Eisens.", is_clue=True, fallback="H06"),
+    cue("SFX06", "Atem hinter der Figur", "S05", "sfx", "V6_SFX06_Atem_hinter_der_Figur.wav", "oneShot", -0.22, 0, "Ein einzelner naher Atemzug im Raum, ohne Stimme und ohne musikalischen Ton.", "Nachdem die Spur ihre Richtung scheinbar gewechselt hat.", "Endet selbst.", "Leise auslösen. Nicht verraten, hinter welcher Figur er war.", is_clue=True, fallback="H08"),
     cue("SFX07", "Prozessionsschritte", "S06", "sfx", "V5_SFX07_Prozessionsschritte.wav", "oneShot", -0.18, 0, "Viele langsame Lederstiefel im Schnee, Wolle und knarrende Holzmasken.", "Wenn die erste Reihe auf der Dorfstraße sichtbar wird.", "Endet selbst.", "M02 kurz davor leise starten. Dann diesen Cue einmal spielen.", is_clue=True, fallback="H07"),
-    cue("SFX08", "Knochenhirsch hebt den Kopf", "S07", "sfx", "V5_SFX08_Knochenhirsch.wav", "oneShot", -0.20, 0, "Trockenes Halsgelenk, Gewicht im Schnee, Geweih am Ast und ein hohler Atem.", "Beim ersten vollständigen Anblick des Knochenhirsches.", "Endet selbst.", "Erst auslösen, wenn du das Wesen wirklich zeigst."),
-    cue("SFX09", "Die Bindung reißt", "S07", "sfx", "V5_SFX09_Bindung_reisst.wav", "oneShot", -0.12, 0, "Leder spannt und reißt, Eisen springt frei, der Druck fällt ab.", "Nur beim Ende Zerstörung, sobald die Reliquie endgültig bricht.", "Endet selbst.", "Bei Widerruf oder Erneuerung niemals abspielen."),
-    cue("SFX10", "Falscher Glockenschlag", "S03", "sfx", "V5_SFX10_Falscher_Glockenschlag.wav", "oneShot", -0.17, 0, "Ein einzelner historischer Glockenschlag mit leicht schwebender Verstimmung.", "Unmittelbar nachdem Falk das Wort Gastrecht ausgesprochen hat.", "Endet selbst.", "Nur einmal. Die Kirche besitzt sichtbar keine funktionsfähige Glocke.", is_clue=True, fallback="H04"),
+    cue("SFX08", "Knochenhirsch hebt den Kopf", "S07", "sfx", "V6_SFX08_Knochenhirsch.wav", "oneShot", -0.20, 0, "Tiefes Gelenk, schweres Gewicht im Schnee, trockenes Holz und ein hohler Atemzug.", "Beim ersten vollständigen Anblick des Knochenhirsches.", "Endet selbst.", "Erst auslösen, wenn du das Wesen wirklich zeigst."),
+    cue("SFX09", "Die Bindung reißt", "S07", "sfx", "V6_SFX09_Bindung_reisst.wav", "oneShot", -0.12, 0, "Eine gespannte Resonanz bricht ab, Eisen springt frei und der Druck fällt hörbar aus dem Raum.", "Nur beim Ende Zerstörung, sobald die Reliquie endgültig bricht.", "Endet selbst.", "Bei Widerruf oder Erneuerung niemals abspielen."),
+    cue("SFX10", "Falscher Glockenschlag", "S03", "sfx", "V6_SFX10_Falscher_Glockenschlag.wav", "oneShot", -0.17, 0, "Ein einzelner tiefer Glockenschlag mit leicht schwebender, unnatürlicher Verstimmung.", "Unmittelbar nachdem Falk das Wort Gastrecht ausgesprochen hat.", "Endet selbst.", "Nur einmal. Die Kirche besitzt sichtbar keine funktionsfähige Glocke.", is_clue=True, fallback="H04"),
 ]
 
 
@@ -91,7 +91,7 @@ SCENE_AUDIO = {
 
 def main() -> None:
     manifest = json.loads(CANON.read_text(encoding="utf-8"))
-    manifest["meta"]["version"] = "3.2.0-rc1"
+    manifest["meta"]["version"] = "3.3.0-rc1"
     manifest["audioCues"] = AUDIO_CUES
     cues = {item["id"]: item for item in AUDIO_CUES}
     for scene in manifest["scenes"]:
@@ -114,7 +114,7 @@ def main() -> None:
     for output in NATIVE_OUTPUTS:
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(payload, encoding="utf-8")
-    print("Built native 3.2.0-rc1 content. Web 3.1.0 was not changed.")
+    print("Built native 3.3.0-rc1 content. Web 3.1.0 was not changed.")
 
 
 if __name__ == "__main__":

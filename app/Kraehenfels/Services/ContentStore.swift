@@ -40,6 +40,29 @@ final class ContentStore: ObservableObject {
         }
     }
 
+    func maps(for scene: SceneEntry) -> [MapEntry] {
+        let mapIDs = Set(scene.locationIds.compactMap { locationID in
+            manifest.locations.first(where: { $0.id == locationID })?.mapId
+        })
+        return manifest.maps.filter { mapIDs.contains($0.id) }
+    }
+
+    func factIsComplete(_ fact: FactEntry, with clues: Set<String>) -> Bool {
+        let found = fact.clueIds.filter { clues.contains($0) }.count
+        switch fact.id {
+        case "F01", "F02", "F03", "F05":
+            return found >= 1
+        case "F04":
+            return found >= 2
+        default:
+            return !fact.clueIds.isEmpty && fact.clueIds.allSatisfy(clues.contains)
+        }
+    }
+
+    func completedFacts(for clues: Set<String>) -> [FactEntry] {
+        manifest.facts.filter { factIsComplete($0, with: clues) }
+    }
+
     var musicBed: AudioCue? {
         manifest.audioCues.first(where: { $0.layer == "musicBed" })
     }

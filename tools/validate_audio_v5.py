@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run deterministic technical QA for the native Krähenfels V5 audio set."""
+"""Run deterministic technical QA for the native Krähenfels V6 audio set."""
 
 from __future__ import annotations
 
@@ -16,9 +16,9 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 AUDIO = ROOT / "app" / "Kraehenfels" / "Resources" / "Audio"
-METADATA = ROOT / "audio" / "v5" / "metadata.json"
-REPORT_JSON = ROOT / "_TMP" / "audio-v5-report.json"
-REPORT_MD = ROOT / "_DOCS" / "AUDIO-V5-QA.md"
+METADATA = ROOT / "audio" / "v6" / "metadata.json"
+REPORT_JSON = ROOT / "_TMP" / "audio-v6-report.json"
+REPORT_MD = ROOT / "_DOCS" / "AUDIO-V6-QA.md"
 FFMPEG = (
     ROOT
     / "_TMP"
@@ -229,7 +229,7 @@ def main() -> None:
     REPORT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     lines = [
-        "# Audio V5: technischer Prüfbericht",
+        "# Audio V6: technischer Prüfbericht",
         "",
         f"Stand: 12. August 2026. Paket: `{metadata['version']}`.",
         "",
@@ -253,12 +253,12 @@ def main() -> None:
             "",
             "## Noch offen vor dem finalen Release",
             "",
-            "Die technische Prüfung ersetzt keinen Hörtest. In `3.2.0-rc1` wird jeder Cue über die vorgesehene Bluetooth-Box und zusätzlich über den iPhone-Lautsprecher als passend oder falsch markiert.",
+            "Die technische Prüfung ersetzt keinen Hörtest. In `3.3.0-rc1` wird jeder Cue über die vorgesehene Bluetooth-Box und zusätzlich über den iPhone-Lautsprecher als passend oder falsch markiert.",
             "",
         ]
     )
     REPORT_MD.write_text("\n".join(lines), encoding="utf-8")
-    print(f"Audio V5 QA: {'PASS' if report['passed'] else 'REVIEW'} ({len(measurements)} assets, {len(duplicates)} similarity flags)")
+    print(f"Audio V6 QA: {'PASS' if report['passed'] else 'REVIEW'} ({len(measurements)} assets, {len(duplicates)} similarity flags)")
 
 
 if __name__ == "__main__":

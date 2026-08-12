@@ -41,7 +41,11 @@ def main() -> None:
         raise SystemExit(f"Missing print outputs: {', '.join(missing)}")
     write_archive(OUTPUT / "Kraehenfels-Druckpaket.zip", print_files, OUTPUT)
 
-    audio_files = [ROOT / "audio" / "generated" / file.name for file in (ROOT / "app" / "Kraehenfels" / "Resources" / "Audio").glob("V5_*") if "TEST" not in file.name]
+    audio_files = [
+        ROOT / "audio" / "generated" / file.name
+        for file in (ROOT / "app" / "Kraehenfels" / "Resources" / "Audio").glob("V[56]_*")
+        if "TEST" not in file.name
+    ]
     missing_audio = [file.name for file in audio_files if not file.exists()]
     if missing_audio:
         raise SystemExit(f"Missing generated audio: {', '.join(missing_audio)}")

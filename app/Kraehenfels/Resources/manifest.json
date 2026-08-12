@@ -6,7 +6,7 @@
     "system": "How to be a Hero",
     "setting": "Schwarzwald, November 1890",
     "language": "de",
-    "version": "3.2.0-rc1",
+    "version": "3.3.0-rc1",
     "minimumIOS": "17.0"
   },
   "phases": [
@@ -113,8 +113,7 @@
       "title": "Die Panne war geplant",
       "details": "Die Kutsche wurde auf Grubers Umleitung gelenkt und an der Achse beschädigt.",
       "clueIds": [
-        "C01",
-        "C02"
+        "C01"
       ],
       "fallback": "Die Achse zeigt frische, gerade Kerben. Gruber kennt die genaue Ankunftszeit."
     },
@@ -123,8 +122,7 @@
       "title": "Gäste verschwinden",
       "details": "Frühere Reisende wurden als Gäste aufgenommen und kamen nicht wieder heraus.",
       "clueIds": [
-        "C03",
-        "C04"
+        "C03"
       ],
       "fallback": "Elara nennt einen Namen, der im Gästebuch durchgestrichen wurde."
     },
@@ -133,8 +131,7 @@
       "title": "Das Gastrecht war der Schutz",
       "details": "Der alte Pakt verlangte, jeden Reisenden bis zum Morgen zu schützen.",
       "clueIds": [
-        "C05",
-        "C09"
+        "C05"
       ],
       "fallback": "Pfarrer Falk zeigt die Zeile: Ein Gast unter Dach gehört bis zum Hahnenschrei zum Dorf."
     },
@@ -155,8 +152,7 @@
       "details": "Die Gruppe kann das Dorf zum Widerruf bringen, das Gastrecht heilen oder die Bindung zerstören.",
       "clueIds": [
         "C09",
-        "C10",
-        "C11"
+        "C10"
       ],
       "fallback": "Elias kennt drei Wörter: öffnen, erinnern, brechen."
     }
@@ -252,10 +248,7 @@
         "Er führt das Opferbuch.",
         "Er trägt den Schlüssel zum Geweihschrein."
       ],
-      "givesHandoutIds": [
-        "H01",
-        "H05"
-      ],
+      "givesHandoutIds": [],
       "prompts": [
         "Lobt das Gastrecht, während er die Gästezimmer verriegelt.",
         "Bietet Hilfe an, sobald die Gruppe zu viel über frühere Reisende weiß."
@@ -285,8 +278,7 @@
         "Leni soll bei der ersten Prozession nicht aus dem Fenster sehen."
       ],
       "givesHandoutIds": [
-        "H03",
-        "H08"
+        "H03"
       ],
       "prompts": [
         "Antwortet erst, wenn die Gruppe ihr eine Fluchtmöglichkeit anbietet.",
@@ -357,7 +349,7 @@
       ],
       "cueIds": [
         "A04",
-        "SFX05"
+        "SFX10"
       ],
       "states": [
         "vorsichtig",
@@ -387,7 +379,7 @@
         "Verlangt eine klare Entscheidung, bevor sie das Eisen herausgibt."
       ],
       "cueIds": [
-        "A03",
+        "A05",
         "SFX05"
       ],
       "states": [
@@ -499,7 +491,7 @@
       "required": true,
       "handoutId": "H07",
       "factId": "F04",
-      "locationId": "LOC_INN"
+      "locationId": "LOC_WOODS"
     },
     {
       "id": "C09",
@@ -517,7 +509,7 @@
       "required": true,
       "handoutId": "H09",
       "factId": "F05",
-      "locationId": "LOC_WOODS"
+      "locationId": "LOC_ARCHIVE"
     },
     {
       "id": "C11",
@@ -723,7 +715,7 @@
     },
     {
       "id": "S02",
-      "title": "Das schwarze Keiler",
+      "title": "Der Schwarze Keiler",
       "shortTitle": "Gasthaus",
       "duration": "40 Minuten",
       "goal": "Die Figuren finden Unterkunft, treffen Gruber und Elara und bemerken das falsche Gastrecht.",
@@ -739,8 +731,7 @@
       "nextSceneIds": [
         "S03",
         "S04",
-        "S05",
-        "S06"
+        "S05"
       ],
       "readAloud": "Krähenfels liegt unter Schnee wie ein zugedecktes Geheimnis. Im schwarzen Keiler brennt Licht. Bürgermeister Gruber öffnet selbst und sagt, ihr hättet Glück gehabt.",
       "gmNotes": [
@@ -910,7 +901,7 @@
           "cueId": "A05",
           "playWhen": "Wenn Marta die Gruppe hereinlässt.",
           "stopWhen": "Beim Verlassen der Schmiede.",
-          "gmInstruction": "Der Amboss bleibt still, bis du SFX05 auslöst.",
+          "gmInstruction": "Der einzelne Schmiedeschlag bleibt SFX05 vorbehalten.",
           "optional": false
         },
         {
@@ -1317,13 +1308,13 @@
       "category": "ambient",
       "scope": "native",
       "layer": "ambient",
-      "file": "V5_A01_Kutschenstrasse.m4a",
+      "file": "V6_A01_Kutschenstrasse.m4a",
       "mode": "loop",
       "gain": -0.22,
       "fadeMs": 1800,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Winterwind, Wagenholz, Geschirr und ruhige Pferde auf der nächtlichen Straße.",
+      "description": "Winterwind, rollendes Wagenholz, Geschirr und unruhige Pferde auf der nächtlichen Straße.",
       "playWhen": "Sobald alle am Tisch sitzen.",
       "stopWhen": "Beim Eintritt in das Gasthaus.",
       "gmInstruction": "Leise starten. Stimmen müssen jederzeit klar darüber liegen."
@@ -1335,13 +1326,13 @@
       "category": "ambient",
       "scope": "native",
       "layer": "ambient",
-      "file": "V5_A02_Gasthaus.m4a",
+      "file": "V6_A02_Gasthaus.m4a",
       "mode": "loop",
       "gain": -0.3,
       "fadeMs": 1600,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Herdfeuer, altes Gebälk, Geschirr und undeutliche Gäste im Hintergrund.",
+      "description": "Herdfeuer, altes Gebälk, Geschirr und ein gedämpftes Stimmenmeer ohne verständliche Worte.",
       "playWhen": "Wenn Gruber die Tür öffnet.",
       "stopWhen": "Wenn die Gruppe das Gasthaus verlässt.",
       "gmInstruction": "Warm, aber nicht gemütlich laut mischen."
@@ -1389,16 +1380,16 @@
       "category": "ambient",
       "scope": "native",
       "layer": "ambient",
-      "file": "V5_A05_Schmiede.m4a",
+      "file": "V6_A05_Schmiede.m4a",
       "mode": "loop",
       "gain": -0.27,
       "fadeMs": 1600,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Esse, Blasebalg und kühlendes Metall zwischen zwei Arbeiten.",
+      "description": "Tiefe Esse, Blasebalg und einzelne Metallresonanzen zwischen zwei Arbeiten.",
       "playWhen": "Wenn Marta die Gruppe hereinlässt.",
       "stopWhen": "Beim Verlassen der Schmiede.",
-      "gmInstruction": "Der Amboss bleibt still, bis du SFX05 auslöst."
+      "gmInstruction": "Der einzelne Schmiedeschlag bleibt SFX05 vorbehalten."
     },
     {
       "id": "A06",
@@ -1443,13 +1434,13 @@
       "category": "ambient",
       "scope": "native",
       "layer": "ambient",
-      "file": "V5_A08_Alte_Eiche.m4a",
+      "file": "V6_A08_Alte_Eiche.m4a",
       "mode": "loop",
       "gain": -0.27,
       "fadeMs": 1800,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Wind im hohlen Stamm, arbeitende Eiche, Schnee an Wurzeln und eine lose Eisenkette.",
+      "description": "Froststurm, hohler Stamm, arbeitendes Holz und eine lose Eisenkette am Schrein.",
       "playWhen": "Sobald die Eiche vollständig sichtbar ist.",
       "stopWhen": "Wenn die Entscheidung gefallen ist.",
       "gmInstruction": "Die Natur ist der Vordergrund. M02 bleibt darunter."
@@ -1497,13 +1488,13 @@
       "category": "sfx",
       "scope": "native",
       "layer": "sfx",
-      "file": "V5_SFX01_Achse_bricht.wav",
+      "file": "V6_SFX01_Achse_bricht.wav",
       "mode": "oneShot",
       "gain": -0.14,
       "fadeMs": 0,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Wagenholz spannt sich, bricht einmal und lässt Metall kurz rasseln.",
+      "description": "Ein harter Holzbruch, schepperndes Geschirr und der Wagen kippt hörbar aus dem Takt.",
       "playWhen": "Nach dem Satz: Ein Knacken läuft durch die Kutsche.",
       "stopWhen": "Endet selbst.",
       "gmInstruction": "Einmal auslösen und danach eine Sekunde nichts sagen."
@@ -1515,13 +1506,13 @@
       "category": "sfx",
       "scope": "native",
       "layer": "sfx",
-      "file": "V5_SFX02_Pferde_scheuen.wav",
+      "file": "V6_SFX02_Pferde_scheuen.wav",
       "mode": "oneShot",
       "gain": -0.12,
       "fadeMs": 0,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Schnauben, ein Huf im Schnee und straffes Geschirr.",
+      "description": "Zwei kurze Hufschläge im Schnee, ein erschrockenes Schnauben und straffes Geschirr.",
       "playWhen": "Direkt nach dem Achsenbruch.",
       "stopWhen": "Endet selbst.",
       "gmInstruction": "Nur einmal. Die Pferde galoppieren nicht davon."
@@ -1551,13 +1542,13 @@
       "category": "sfx",
       "scope": "native",
       "layer": "sfx",
-      "file": "V5_SFX04_Geweih_an_der_Tuer.wav",
+      "file": "V6_SFX04_Geweih_an_der_Tuer.wav",
       "mode": "oneShot",
       "gain": -0.2,
       "fadeMs": 0,
       "isClue": true,
       "printFallbackId": "H07",
-      "description": "Trockenes Geweih schabt über Holz und tippt zweimal leicht an.",
+      "description": "Trockenes Holz knarrt unter Gewicht, dann kratzt ein harter Rand zweimal über die Tür.",
       "playWhen": "Optional nach einer längeren Stille im Gasthaus.",
       "stopWhen": "Endet selbst.",
       "gmInstruction": "Nur als Vorzeichen nutzen. Noch kein Wesen zeigen."
@@ -1569,13 +1560,13 @@
       "category": "sfx",
       "scope": "native",
       "layer": "sfx",
-      "file": "V5_SFX05_Einzelner_Schmiedeschlag.wav",
+      "file": "V6_SFX05_Einzelner_Schmiedeschlag.wav",
       "mode": "oneShot",
       "gain": -0.12,
       "fadeMs": 0,
       "isClue": true,
       "printFallbackId": "H06",
-      "description": "Genau ein Hammerhieb auf heißes Eisen mit kurzem Ambossring.",
+      "description": "Genau ein Hammerhieb auf heißes Eisen mit kurzem, sauberem Ambossring.",
       "playWhen": "Wenn Marta die drei schwarzen Nägel zeigt.",
       "stopWhen": "Endet selbst.",
       "gmInstruction": "Ein Schlag. Danach erklärt Marta den Preis des Eisens."
@@ -1587,13 +1578,13 @@
       "category": "sfx",
       "scope": "native",
       "layer": "sfx",
-      "file": "V5_SFX06_Atem_hinter_der_Figur.wav",
+      "file": "V6_SFX06_Atem_hinter_der_Figur.wav",
       "mode": "oneShot",
       "gain": -0.22,
       "fadeMs": 0,
       "isClue": true,
       "printFallbackId": "H08",
-      "description": "Ein einzelner naher menschlicher Atemzug ohne Worte.",
+      "description": "Ein einzelner naher Atemzug im Raum, ohne Stimme und ohne musikalischen Ton.",
       "playWhen": "Nachdem die Spur ihre Richtung scheinbar gewechselt hat.",
       "stopWhen": "Endet selbst.",
       "gmInstruction": "Leise auslösen. Nicht verraten, hinter welcher Figur er war."
@@ -1623,13 +1614,13 @@
       "category": "sfx",
       "scope": "native",
       "layer": "sfx",
-      "file": "V5_SFX08_Knochenhirsch.wav",
+      "file": "V6_SFX08_Knochenhirsch.wav",
       "mode": "oneShot",
       "gain": -0.2,
       "fadeMs": 0,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Trockenes Halsgelenk, Gewicht im Schnee, Geweih am Ast und ein hohler Atem.",
+      "description": "Tiefes Gelenk, schweres Gewicht im Schnee, trockenes Holz und ein hohler Atemzug.",
       "playWhen": "Beim ersten vollständigen Anblick des Knochenhirsches.",
       "stopWhen": "Endet selbst.",
       "gmInstruction": "Erst auslösen, wenn du das Wesen wirklich zeigst."
@@ -1641,13 +1632,13 @@
       "category": "sfx",
       "scope": "native",
       "layer": "sfx",
-      "file": "V5_SFX09_Bindung_reisst.wav",
+      "file": "V6_SFX09_Bindung_reisst.wav",
       "mode": "oneShot",
       "gain": -0.12,
       "fadeMs": 0,
       "isClue": false,
       "printFallbackId": null,
-      "description": "Leder spannt und reißt, Eisen springt frei, der Druck fällt ab.",
+      "description": "Eine gespannte Resonanz bricht ab, Eisen springt frei und der Druck fällt hörbar aus dem Raum.",
       "playWhen": "Nur beim Ende Zerstörung, sobald die Reliquie endgültig bricht.",
       "stopWhen": "Endet selbst.",
       "gmInstruction": "Bei Widerruf oder Erneuerung niemals abspielen."
@@ -1659,13 +1650,13 @@
       "category": "sfx",
       "scope": "native",
       "layer": "sfx",
-      "file": "V5_SFX10_Falscher_Glockenschlag.wav",
+      "file": "V6_SFX10_Falscher_Glockenschlag.wav",
       "mode": "oneShot",
       "gain": -0.17,
       "fadeMs": 0,
       "isClue": true,
       "printFallbackId": "H04",
-      "description": "Ein einzelner historischer Glockenschlag mit leicht schwebender Verstimmung.",
+      "description": "Ein einzelner tiefer Glockenschlag mit leicht schwebender, unnatürlicher Verstimmung.",
       "playWhen": "Unmittelbar nachdem Falk das Wort Gastrecht ausgesprochen hat.",
       "stopWhen": "Endet selbst.",
       "gmInstruction": "Nur einmal. Die Kirche besitzt sichtbar keine funktionsfähige Glocke."

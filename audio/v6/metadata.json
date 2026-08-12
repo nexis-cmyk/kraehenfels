@@ -1,0 +1,207 @@
+{
+  "version": "3.3.0-rc1",
+  "scope": "native-ios-only",
+  "generatedAt": "2026-08-12",
+  "assets": [
+    {
+      "id": "A01",
+      "title": "Kutschenstraße",
+      "source": "deterministic local V6 assembly",
+      "file": "V6_A01_Kutschenstrasse.m4a",
+      "category": "ambient",
+      "targetLufs": -25,
+      "provider": "Local deterministic assembly",
+      "selectedVariant": 1
+    },
+    {
+      "id": "A02",
+      "title": "Gasthaus",
+      "source": "deterministic local V6 assembly",
+      "file": "V6_A02_Gasthaus.m4a",
+      "category": "ambient",
+      "targetLufs": -25,
+      "provider": "Local deterministic assembly",
+      "selectedVariant": 1
+    },
+    {
+      "id": "A03",
+      "title": "Krähenfels am Morgen",
+      "source": "V5_A03_Dorf_am_Morgen.mp3",
+      "file": "V5_A03_Dorf_am_Morgen.m4a",
+      "category": "ambient",
+      "targetLufs": -25,
+      "provider": "ElevenLabs Sound Effects v2",
+      "selectedVariant": 1
+    },
+    {
+      "id": "A04",
+      "title": "Kirche ohne Glocke",
+      "source": "V5_A04_Kirche_ohne_Glocke_long.wav",
+      "file": "V5_A04_Kirche_ohne_Glocke.m4a",
+      "category": "ambient",
+      "targetLufs": -25,
+      "provider": "ElevenLabs Sound Effects v2",
+      "selectedVariant": 1
+    },
+    {
+      "id": "A05",
+      "title": "Schmiede",
+      "source": "deterministic local V6 assembly",
+      "file": "V6_A05_Schmiede.m4a",
+      "category": "ambient",
+      "targetLufs": -25,
+      "provider": "Local deterministic assembly",
+      "selectedVariant": 1
+    },
+    {
+      "id": "A06",
+      "title": "Waldspur",
+      "source": "V5_A06_Waldspur.mp3",
+      "file": "V5_A06_Waldspur.m4a",
+      "category": "ambient",
+      "targetLufs": -25,
+      "provider": "ElevenLabs Sound Effects v2",
+      "selectedVariant": 1
+    },
+    {
+      "id": "A07",
+      "title": "Rathausarchiv",
+      "source": "V5_A07_Rathausarchiv.mp3",
+      "file": "V5_A07_Rathausarchiv.m4a",
+      "category": "ambient",
+      "targetLufs": -25,
+      "provider": "ElevenLabs Sound Effects v2",
+      "selectedVariant": 1
+    },
+    {
+      "id": "A08",
+      "title": "Alte Eiche",
+      "source": "deterministic local V6 assembly",
+      "file": "V6_A08_Alte_Eiche.m4a",
+      "category": "ambient",
+      "targetLufs": -25,
+      "provider": "Local deterministic assembly",
+      "selectedVariant": 1
+    },
+    {
+      "id": "M01",
+      "title": "Krähenfels-Motiv",
+      "source": "V5_M01_Kraehenfels_Motiv_long.wav",
+      "file": "V5_M01_Kraehenfels_Motiv.m4a",
+      "category": "musicBed",
+      "targetLufs": -27,
+      "provider": "ElevenLabs Sound Effects v2",
+      "selectedVariant": 1
+    },
+    {
+      "id": "M02",
+      "title": "Die Prozession",
+      "source": "V5_M02_Prozession_long.wav",
+      "file": "V5_M02_Prozession.m4a",
+      "category": "musicLayer",
+      "targetLufs": -25,
+      "provider": "ElevenLabs Sound Effects v2",
+      "selectedVariant": 1
+    },
+    {
+      "id": "SFX01",
+      "title": "Achse bricht",
+      "source": "deterministic local V6 assembly",
+      "file": "V6_SFX01_Achse_bricht.wav",
+      "category": "sfx",
+      "targetLufs": -18,
+      "provider": "Local deterministic assembly",
+      "selectedVariant": 1
+    },
+    {
+      "id": "SFX02",
+      "title": "Pferde scheuen",
+      "source": "deterministic local V6 assembly",
+      "file": "V6_SFX02_Pferde_scheuen.wav",
+      "category": "sfx",
+      "targetLufs": -18,
+      "provider": "Local deterministic assembly",
+      "selectedVariant": 1
+    },
+    {
+      "id": "SFX03",
+      "title": "Riegel von außen",
+      "source": "V5_SFX03_Riegel_von_aussen.wav",
+      "file": "V5_SFX03_Riegel_von_aussen.wav",
+      "category": "sfx",
+      "targetLufs": -18,
+      "provider": "ElevenLabs Sound Effects v2",
+      "selectedVariant": 1
+    },
+    {
+      "id": "SFX04",
+      "title": "Geweih an der Gasthaustür",
+      "source": "deterministic local V6 assembly",
+      "file": "V6_SFX04_Geweih_an_der_Tuer.wav",
+      "category": "sfx",
+      "targetLufs": -18,
+      "provider": "Local deterministic assembly",
+      "selectedVariant": 1
+    },
+    {
+      "id": "SFX05",
+      "title": "Einzelner Schmiedeschlag",
+      "source": "deterministic local V6 assembly",
+      "file": "V6_SFX05_Einzelner_Schmiedeschlag.wav",
+      "category": "sfx",
+      "targetLufs": -18,
+      "provider": "Local deterministic assembly",
+      "selectedVariant": 1
+    },
+    {
+      "id": "SFX06",
+      "title": "Atem hinter einer Figur",
+      "source": "deterministic local V6 assembly",
+      "file": "V6_SFX06_Atem_hinter_der_Figur.wav",
+      "category": "sfx",
+      "targetLufs": -18,
+      "provider": "Local deterministic assembly",
+      "selectedVariant": 1
+    },
+    {
+      "id": "SFX07",
+      "title": "Prozessionsschritte",
+      "source": "V5_SFX07_Prozessionsschritte.wav",
+      "file": "V5_SFX07_Prozessionsschritte.wav",
+      "category": "sfx",
+      "targetLufs": -18,
+      "provider": "ElevenLabs Sound Effects v2",
+      "selectedVariant": 1
+    },
+    {
+      "id": "SFX08",
+      "title": "Knochenhirsch hebt den Kopf",
+      "source": "deterministic local V6 assembly",
+      "file": "V6_SFX08_Knochenhirsch.wav",
+      "category": "sfx",
+      "targetLufs": -18,
+      "provider": "Local deterministic assembly",
+      "selectedVariant": 1
+    },
+    {
+      "id": "SFX09",
+      "title": "Bindung reißt",
+      "source": "deterministic local V6 assembly",
+      "file": "V6_SFX09_Bindung_reisst.wav",
+      "category": "sfx",
+      "targetLufs": -18,
+      "provider": "Local deterministic assembly",
+      "selectedVariant": 1
+    },
+    {
+      "id": "SFX10",
+      "title": "Falscher Glockenschlag",
+      "source": "deterministic local V6 assembly",
+      "file": "V6_SFX10_Falscher_Glockenschlag.wav",
+      "category": "sfx",
+      "targetLufs": -18,
+      "provider": "Local deterministic assembly",
+      "selectedVariant": 1
+    }
+  ]
+}

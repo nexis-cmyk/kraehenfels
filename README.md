@@ -6,19 +6,19 @@ Das Repository enthält:
 
 - das vollständige Abenteuer mit SL-Schnellreferenz
 - eine spoilerfreie Dorfkarte, eine markierte SL-Karte und drei Detailkarten
-- Handouts und einen geführten Charakterbau
-- 20 neu erzeugte, technisch geprüfte Atmosphären, Musik-Layer und Soundeffekte
-- eine native iOS-Begleitapp ab iOS 17 mit Szenenleitstand, Nachtstand, NPCs, Pflichtspuren, Vorlesetexten, Tischnotizen und Audio-Selbsttest
+- Handouts, drei sofort spielbare Schnellstartfiguren und optionale Bögen für eigene Figuren
+- 20 technisch geprüfte Atmosphären, Musik-Layer und Soundeffekte. Zwölf problematische Cues liegen als V6-Ersatzfassungen vor
+- eine native iOS-Begleitapp ab iOS 17 mit geführtem Spielleiter-Modus, Nachtstand, NPCs, Pflichtspuren, Vorlesetexten, Würfelhelfer, Tischnotizen und Audio-Selbsttest
 - GitHub Actions für Tests, IPA-Build und AltStore-Feed
 - eine offlinefähige Web-Testversion für Leitstand und Soundboard
 
 ## iPhone-Build und AltStore
 
-Der V3.1-IPA-Build wird über macOS/GitHub Actions veröffentlicht. Release `v3.1.0` enthält die unsignierte IPA und den ausgefüllten AltStore-Feed.
+Der native Release-Kandidat ist `3.3.0-rc1`. Den IPA-Build erzeugt macOS oder GitHub Actions; die IPA bleibt unsigniert und wird erst durch AltStore mit deinem Apple-Account signiert.
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
 - [Release-Übersicht](https://github.com/nexis-cmyk/kraehenfels/releases)
-- [AltStore-Feed für v3.1.0](https://github.com/nexis-cmyk/kraehenfels/releases/download/v3.1.0/source.generated.json)
+- [AltStore-Feed für den letzten veröffentlichten Build](https://github.com/nexis-cmyk/kraehenfels/releases/latest)
 - [Dauerhafter AltStore-Feed](https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json)
 
 Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-Account signiert. Eine kurze Windows-Anleitung steht in [`altstore/README.md`](altstore/README.md).
@@ -37,17 +37,19 @@ Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-
 
 ## Lokaler Build
 
-Die native Audio-V5-Fassung wird unter Windows so erzeugt:
+Die native Fassung wird unter Windows so erzeugt:
 
 ```powershell
 python tools/build_content_v5.py
 python tools/process_audio_v5.py
-python tools/validate_audio_v5.py
+python tools/generate_audio_v6.py
+python tools/validate_audio_v6.py
 python tools/build_print_pack_v3.py
+python tools/build_archives_v3.py
 python tools/validate_project.py
 ```
 
-Danach liegen die PDFs unter `outputs/` und die Audio-Dateien unter `audio/generated/`. Der Audio-Build kopiert die Cues zugleich nach `app/Kraehenfels/Resources/Audio/`. Die Web-App bleibt absichtlich auf 3.1.0 und wird von diesen Befehlen nicht verändert. Das iOS-Projekt wird auf macOS mit XcodeGen erzeugt:
+`process_audio_v5.py` baut die acht bereits abgenommenen V5-Cues. `generate_audio_v6.py` ersetzt die zwölf markierten Problem-Cues reproduzierbar und kopiert sie in das native Bundle. Danach liegen PDFs unter `outputs/` und alle Audio-Dateien unter `audio/generated/`. Die Web-App bleibt absichtlich auf 3.1.0 und wird von diesen Befehlen nicht verändert. Das iOS-Projekt wird auf macOS mit XcodeGen erzeugt:
 
 ```bash
 brew install xcodegen
@@ -69,7 +71,7 @@ Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: kaltes Nachtblau,
 - `01_Karte_SL.pdf`: geheime Karte mit Routen, Eichenplatz und Prozessionsspur
 - `01_Karten_Detail.pdf`: Gasthaus, Kirche, Schmiede, Rathausarchiv und Alte Eiche als separate Tischkarten
 - `02_Handouts.pdf`: nur spielersichere, ausschneidbare Hinweise mit Kennung, Schnittlinie und Ausgabezeitpunkt
-- `03_Figurenbau.pdf`: ausfüllbare Reiseakte mit Porträtfeld, Passdaten, Rollenfragen, drei Begabungen, 400 Punkten und HTBAH-Schnellregeln (Spielerseite dreimal drucken)
+- `03_Figurenbau.pdf`: optionale ausfüllbare Reiseakte für eigene Figuren; für den direkten Einstieg nutzt du Clara, Otto und Jakob aus dem Spielleiter-Modus
 - `10_SL_Abenteuer.pdf`: vorlesbare Szenen, NPCs und Enden
 - `11_SL_Schnellreferenz.pdf`: Wahrheit, Pflichtspuren und Improvisationshilfe
 - `12_SL_Am_Tisch.pdf`: einseitiger Ablaufzettel mit Hinweisen, Sounds und Eskalation pro Szene
@@ -86,13 +88,14 @@ Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `h
 
 ## Audio
 
-Audio V5 umfasst acht Ortsatmosphären, ein durchgehendes Krähenfels-Motiv, einen zusätzlichen Prozessions-Layer und zehn One-Shots. Die Dateien wurden neu erzeugt, auf 48 kHz normalisiert und auf Dubletten geprüft. Der technische Prüfbericht steht in [`_DOCS/AUDIO-V5-QA.md`](_DOCS/AUDIO-V5-QA.md), Prompts und Herkunft in [`_DOCS/AUDIO-SOURCES-V5.md`](_DOCS/AUDIO-SOURCES-V5.md).
+Audio V6 umfasst acht Ortsatmosphären, ein durchgehendes Krähenfels-Motiv, einen zusätzlichen Prozessions-Layer und zehn One-Shots. Die acht im Hörtest passenden V5-Dateien bleiben unverändert. Die zwölf Ersatzdateien werden lokal aus vorhandenen Quellen und Filtern zusammengesetzt, auf 48 kHz normalisiert und auf Dubletten geprüft. Der technische Bericht steht in [`_DOCS/AUDIO-V6-QA.md`](_DOCS/AUDIO-V6-QA.md), die Zuordnung und Prompttexte in [`_DOCS/AUDIO-SOURCES-V6.md`](_DOCS/AUDIO-SOURCES-V6.md).
 
 Die App behandelt Grundmusik, Prozessionsmusik, Atmosphäre und Effekte unabhängig. Ein Szenen-Preset tauscht deshalb nur die Atmosphäre aus. M01 läuft auf Wunsch durch den ganzen Abend, die Vorlesen-Taste senkt Musik ab, und STOP beendet alle Ebenen sofort. Unter Einstellungen gibt es einen Hörtest, mit dem jeder Cue auf iPhone und Bluetooth-Box als passend oder falsch markiert werden kann.
 
 ```powershell
 python tools/process_audio_v5.py
-python tools/validate_audio_v5.py
+python tools/generate_audio_v6.py
+python tools/validate_audio_v6.py
 python tools/validate_project.py
 ```
 

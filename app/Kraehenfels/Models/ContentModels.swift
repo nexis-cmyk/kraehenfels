@@ -49,7 +49,7 @@ struct ContentManifest: Codable {
     }
 
     static let empty = ContentManifest(
-        meta: ContentMeta(title: "Krähenfels: Die letzte Kutsche", appTitle: "Krähenfels", subtitle: "SL-Begleiter", system: "How to be a Hero", setting: "Schwarzwald, November 1890", language: "de", version: "3.1.0", minimumIOS: "17.0"),
+        meta: ContentMeta(title: "Krähenfels: Die letzte Kutsche", appTitle: "Krähenfels", subtitle: "SL-Begleiter", system: "How to be a Hero", setting: "Schwarzwald, November 1890", language: "de", version: "3.3.0-rc1", minimumIOS: "17.0"),
         scenes: [], handouts: [], audioCues: []
     )
 
