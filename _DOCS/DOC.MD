@@ -29,6 +29,8 @@ Die App bleibt frei navigierbar. Sie zeigt Vorlesetext, SL-Notizen, NPC-Zuständ
 
 Der aktive Satz besteht aus 18 unterscheidbaren Dateien: sechs Atmosphären, zwei Musikflächen und zehn One-Shots. Die aktuelle Produktionsfassung steht in [`SOUND-PROMPTS-V4.md`](SOUND-PROMPTS-V4.md). `tools/import_audio_replacements.py` schreibt die normalisierten Dateien synchron nach `audio/generated/`, in das iOS-Bundle und in die Web-App. Der Audio-Selbsttest bleibt in SwiftUI und Web-Leitstand sichtbar.
 
+Die geplante native V5-Neufassung ist in [`AUDIO-V5-PLAN.md`](AUDIO-V5-PLAN.md) verbindlich zusammengeführt. Sie wird als App-Version 3.2.0 umgesetzt. Die öffentliche Web-App bleibt auf Version 3.1.0 eingefroren und nimmt nicht am V5-Build teil.
+
 ## Druckpaket
 
 `tools/build_print_pack_v3.py` ruft den V3-Generator auf. Die Handouts tragen IDs, eigene Requisitenlayouts und eine gestrichelte Außenlinie mit Ausschneidehinweis. Das Spielerpaket enthält keine H09-Ritualspoiler. Die Kartensätze sind in Spieler- und SL-Ansicht getrennt. Die textfreien GPT-Bildplatten werden erst im Build mit Titeln, Hinweis-IDs und Spoilerrahmen versehen. Gasthaus, Kirche, Schmiede, Rathausarchiv und Alte Eiche liegen zusätzlich als Detailkarten bei.
