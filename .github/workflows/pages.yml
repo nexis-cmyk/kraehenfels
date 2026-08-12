@@ -9,6 +9,7 @@ on:
       - "content/manifest.json"
       - "app/Kraehenfels/Resources/**"
       - "tools/build_web_preview.py"
+      - "altstore/source.json"
   workflow_dispatch:
 
 permissions:
@@ -28,6 +29,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Mirror IPA for reliable AltStore downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v3.3.0-rc1
+        run: |
+          set -euo pipefail
+          asset_url="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" --jq '.assets[] | select(.name == "Kraehenfels.ipa") | .url')"
+          test -n "$asset_url"
+          curl --fail --location --retry 3 --retry-delay 2 \
+            -H "Accept: application/octet-stream" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "$asset_url" -o web/Kraehenfels.ipa
+          test "$(stat -c%s web/Kraehenfels.ipa)" -gt 100000000
       - uses: actions/configure-pages@v5
         with:
           enablement: true
