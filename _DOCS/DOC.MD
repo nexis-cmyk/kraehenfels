@@ -31,7 +31,7 @@ Der Leitstand führt die kanonischen Wege aus dem Gasthaus getrennt: Kirche, Sch
 
 Der native Satz besteht aus 20 unterscheidbaren Dateien: acht Atmosphären, einem dauerhaften Musikbett, einem Prozessions-Layer und zehn One-Shots. `tools/process_audio_v5.py` baut die acht abgenommenen V5-Dateien. `tools/generate_audio_v6.py` ersetzt die zwölf markierten Problem-Cues mit reproduzierbaren lokalen Assemblies und schreibt die V6-Metadaten. `tools/validate_audio_v6.py` prüft Dauer, 48-kHz-Stereoformat, Lautheit, True Peak, Loop-Naht, Dateihashes und akustische Fingerprints. Der aktuelle Lauf meldet 20 gültige Dateien und keine Dublette. Ein separater Hörtest in der App bleibt vor dem finalen Release Pflicht.
 
-Der Player hält vier Ebenen getrennt. Ein Szenen-Preset wechselt nur die Ortsatmosphäre. M01 bleibt über Szenenwechsel hinweg aktiv, M02 kann im letzten Drittel daruntergelegt werden, und One-Shots überlappen die laufenden Flächen. Vorlesen senkt nur Musik ab. STOP beendet alles. Die genaue Fassung steht in [`AUDIO-V5-PLAN.md`](AUDIO-V5-PLAN.md), die V6-Zuordnung in [`AUDIO-SOURCES-V6.md`](AUDIO-SOURCES-V6.md) und der Prüfbericht in [`AUDIO-V6-QA.md`](AUDIO-V6-QA.md).
+Der Player hält vier Ebenen getrennt. Ein Szenen-Preset wechselt nur die Ortsatmosphäre. M01 bleibt über Szenenwechsel hinweg aktiv, M02 kann im letzten Drittel daruntergelegt werden, und One-Shots überlappen die laufenden Flächen. Beim Vorlesen öffnet sich zuerst ein bestätigter Moment: Der Cue startet, die Musik wird abgesenkt, der Text bleibt sichtbar und erst nach "Vorgelesen, weiter" geht der Leitstand zum nächsten Schritt. STOP beendet alles. Die genaue Fassung steht in [`AUDIO-V5-PLAN.md`](AUDIO-V5-PLAN.md), die V6-Zuordnung in [`AUDIO-SOURCES-V6.md`](AUDIO-SOURCES-V6.md) und der Prüfbericht in [`AUDIO-V6-QA.md`](AUDIO-V6-QA.md).
 
 ## Druckpaket
 
@@ -51,9 +51,11 @@ Geliefert werden:
 ```powershell
 python tools/build_content_v5.py
 python tools/process_audio_v5.py
-python tools/validate_audio_v5.py
+python tools/generate_audio_v6.py
+python tools/validate_audio_v6.py
 python tools/build_print_pack_v3.py
 python tools/validate_project.py
+python tools/validate_guided_flow.py
 ```
 
 `tools/validate_project.py` prüft IDs und Querverweise, die native Manifest-Synchronität, den eingefrorenen Web-Stand, Szene- und Kartenbilder, alle 20 Audio-Dateien, Dubletten im gesamten nativen Paket, Cue-Zeitpunkte, kritische Szenenzuordnungen, PDF-Lesbarkeit und die Spoilertrennung der Spielerunterlagen. Der Kartensatz umfasst MAP01 bis MAP06.
@@ -65,4 +67,5 @@ python tools/validate_project.py
 - Spielerunterlagen enthalten keine Ritualspoiler.
 - App, Web-Version und Druckpaket verwenden dieselben IDs.
 - Audio-Presets, Einzel-Cues und Stop-All bleiben getrennt bedienbar.
+- Jeder geführte Schritt zeigt ausdrücklich, ob eine Probe vorgesehen ist, und ein kritischer Misserfolg hat eine sichtbare Folge.
 - Jede finale PDF wird gerendert und auf Lesbarkeit sowie Textüberlauf geprüft.
