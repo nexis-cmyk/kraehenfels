@@ -1,6 +1,6 @@
 # Krähenfels, Abnahme 26
 
-Stand: 13. August 2026 · Arbeitsstand nach `bb2f86f`
+Stand: 13. August 2026 · Arbeitsstand nach `b9416fc`
 
 ## Ergebnis
 
@@ -25,7 +25,7 @@ Ein Vorleseschritt öffnet einen bestätigten Dialog. Mit "Sound starten und vor
 
 ## Release und Installation
 
-Der dauerhafte AltStore-Feed liegt unter [`source.json`](../altstore/source.json) und zeigt auf den GitHub-Pages-Mirror. Der Mirror antwortet mit HTTP 200; die IPA ist 158.430.077 Bytes groß und liefert Range-Anfragen. Der Feed meldet Version 3.3.0 und SHA-256 `2edba11f0b96867b1521185d69aeb3aff9496c18b64748f52b3bb455c92cde9e`. Für eine Neuinstallation in AltStore die bestehende Quelle aktualisieren oder entfernen und genau den Raw-GitHub-Link aus der README erneut hinzufügen.
+Der dauerhafte AltStore-Feed liegt unter [`source.json`](../altstore/source.json) und zeigt auf den GitHub-Pages-Mirror. Der Release-Kandidat `v3.3.0-rc2` wurde als IPA mit Version 3.3.0 und Build 3 geprüft. Die Datei ist 158.493.610 Bytes groß, SHA-256 `e4d83ebcbfe72abc2d5ee1109838edb56d5555cc1d8a468cad4a43e3fe0ceb69`, und der Mirror liefert Range-Anfragen. Für eine Neuinstallation in AltStore die bestehende Quelle aktualisieren oder entfernen und genau den Raw-GitHub-Link aus der README erneut hinzufügen.
 
 ## Offene Tischabnahme
 

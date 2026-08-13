@@ -2,7 +2,7 @@
 
 ## Aktueller Stand
 
-Krähenfels steht auf dem Arbeitsstand `bb2f86f` auf `master` und `main`. Die Story bleibt die manipulierte Kutschfahrt, das Gasthaus Zum Schwarzen Keiler, Kirche, Schmiede, Waldspur, Rathausarchiv, Alte Eiche und drei Enden. Die native App richtet sich an drei Spieler und eine neue Spielleitung.
+Krähenfels steht auf dem Arbeitsstand `b9416fc` auf `master` und `main`. Die Story bleibt die manipulierte Kutschfahrt, das Gasthaus Zum Schwarzen Keiler, Kirche, Schmiede, Waldspur, Rathausarchiv, Alte Eiche und drei Enden. Die native App richtet sich an drei Spieler und eine neue Spielleitung.
 
 ## Umgesetzte Leitstand-Funktionen
 
@@ -30,7 +30,7 @@ Alle lokalen Prüfungen bestanden. GitHub Actions baut den Swift-Code auf macOS;
 
 - AltStore-Feed: `https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json`
 - IPA-Mirror: `https://nexis-cmyk.github.io/kraehenfels/Kraehenfels.ipa`
-- Aktuelle veröffentlichte Feed-Version: `3.3.0`, SHA-256 `2edba11f0b96867b1521185d69aeb3aff9496c18b64748f52b3bb455c92cde9e`.
+- Aktuelle veröffentlichte Feed-Version: `3.3.0`, Build `3`, SHA-256 `e4d83ebcbfe72abc2d5ee1109838edb56d5555cc1d8a468cad4a43e3fe0ceb69`.
 - Nach einer neuen Release-IPA muss zuerst der Release-Workflow laufen, danach der Pages-Workflow, damit der Mirror und der Feed zusammenpassen.
 
 ## Nächster sinnvoller Schritt
