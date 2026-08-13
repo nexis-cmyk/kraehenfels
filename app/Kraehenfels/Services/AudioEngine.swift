@@ -126,6 +126,11 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
 
+    func finishReadAloud() {
+        readAloudDuck = false
+        lastEvent = "Vorlesen beendet; normale Mischung wiederhergestellt."
+    }
+
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         guard let key = players.first(where: { $0.value === player })?.key else { return }
         let cueID = cueByPlayerKey[key]?.id

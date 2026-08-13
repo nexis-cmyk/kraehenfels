@@ -243,10 +243,14 @@ struct GuidedGMView: View {
         }
         .sheet(item: $readAloudStep) { step in
             ReadAloudCueSheet(step: step, cue: step.audioCueID.flatMap(content.cue)) { mode in
-                if mode == .startAndRead {
+                if mode == .start {
                     audio.startReadAloud(cue: step.audioCueID.flatMap(content.cue))
+                } else if mode == .complete {
+                    audio.finishReadAloud()
+                    advance(step)
+                } else {
+                    audio.finishReadAloud()
                 }
-                advance(step)
             }
         }
         .sheet(isPresented: $showCombat) {
@@ -829,8 +833,9 @@ struct RollHelperView: View {
 }
 
 enum ReadAloudMode: Equatable {
-    case startAndRead
-    case markOnly
+    case start
+    case complete
+    case cancel
 }
 
 struct ReadAloudCueSheet: View {
@@ -838,6 +843,7 @@ struct ReadAloudCueSheet: View {
     let cue: AudioCue?
     let onComplete: (ReadAloudMode) -> Void
     @Environment(\.dismiss) private var dismiss
+    @State private var hasStarted = false
 
     var body: some View {
         NavigationStack {
@@ -879,10 +885,15 @@ struct ReadAloudCueSheet: View {
                     }
 
                     Button {
-                        onComplete(.startAndRead)
-                        dismiss()
+                        if hasStarted {
+                            onComplete(.complete)
+                            dismiss()
+                        } else {
+                            onComplete(.start)
+                            hasStarted = true
+                        }
                     } label: {
-                        Label("Sound starten und vorlesen", systemImage: "play.fill")
+                        Label(hasStarted ? "Vorgelesen – weiter" : "Sound starten und vorlesen", systemImage: hasStarted ? "checkmark.circle.fill" : "play.fill")
                             .font(.headline)
                             .foregroundStyle(FrostTheme.ink)
                             .frame(maxWidth: .infinity)
@@ -891,10 +902,10 @@ struct ReadAloudCueSheet: View {
                     }
 
                     Button {
-                        onComplete(.markOnly)
+                        onComplete(.complete)
                         dismiss()
                     } label: {
-                        Text("Nur als vorgelesen markieren")
+                        Text(hasStarted ? "Ohne weiteren Sound weiter" : "Nur als vorgelesen markieren")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(FrostTheme.quiet)
                             .frame(maxWidth: .infinity, minHeight: 44)
@@ -908,7 +919,10 @@ struct ReadAloudCueSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Abbrechen") { dismiss() }
+                    Button("Abbrechen") {
+                        onComplete(.cancel)
+                        dismiss()
+                    }
                 }
             }
         }
