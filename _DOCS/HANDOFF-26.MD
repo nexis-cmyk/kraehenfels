@@ -26,7 +26,7 @@ Zusätzlich wurden alle 14 PDF-Ausgaben mit Poppler gerendert und visuell geprü
 
 ## Release-Hinweis
 
-Die Änderungen benötigen vor der Nutzung in AltStore einen neuen iOS-Build. Der nächste Tag ist `v3.3.0-rc3` mit Build `4`. Nach dem Commit erst den iOS-Workflow abwarten, dann den Release-Tag erstellen; anschließend Pages-Mirror, `altstore/source.json` und SHA-256 gemeinsam verifizieren. Der bisherige RC2 bleibt bis dahin installierbar.
+Die Änderungen benötigen vor der Nutzung in AltStore einen neuen iOS-Build. `v3.3.0-rc3` mit Build `4` ist veröffentlicht. Der Pages-Workflow hatte zunächst eine veraltete 100-MB-Mindestprüfung und wurde auf eine realistische 50-MB-Sanity-Prüfung korrigiert; danach den Mirror und SHA-256 erneut verifizieren. Der bisherige RC2 bleibt als Fallback installierbar.
 
 ## Offener physischer Test
 

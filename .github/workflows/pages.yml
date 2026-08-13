@@ -44,7 +44,10 @@ jobs:
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "$asset_url" -o web/Kraehenfels.ipa
-          test "$(stat -c%s web/Kraehenfels.ipa)" -gt 100000000
+          # The native bundle is intentionally lean after removing legacy
+          # resources; validate a non-trivial IPA instead of assuming a
+          # historical 100 MB size.
+          test "$(stat -c%s web/Kraehenfels.ipa)" -gt 50000000
       - uses: actions/configure-pages@v5
         with:
           enablement: true
