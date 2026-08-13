@@ -104,6 +104,7 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         players.removeAll()
         cueByPlayerKey.removeAll()
         activeCueIDs.removeAll()
+        readAloudDuck = false
         lastEvent = "Alle Sounds gestoppt."
     }
 

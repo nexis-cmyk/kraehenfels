@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the native-only 3.2 release-candidate manifest from the canon."""
+"""Build the native 3.3 manifest from the shared canon."""
 
 from __future__ import annotations
 
@@ -91,7 +91,7 @@ SCENE_AUDIO = {
 
 def main() -> None:
     manifest = json.loads(CANON.read_text(encoding="utf-8"))
-    manifest["meta"]["version"] = "3.3.0-rc1"
+    manifest["meta"]["version"] = "3.3.0"
     manifest["audioCues"] = AUDIO_CUES
     cues = {item["id"]: item for item in AUDIO_CUES}
     for scene in manifest["scenes"]:
@@ -114,7 +114,7 @@ def main() -> None:
     for output in NATIVE_OUTPUTS:
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(payload, encoding="utf-8")
-    print("Built native 3.3.0-rc1 content. Web 3.1.0 was not changed.")
+    print("Built native 3.3.0 content. Web 3.1.0 was not changed.")
 
 
 if __name__ == "__main__":

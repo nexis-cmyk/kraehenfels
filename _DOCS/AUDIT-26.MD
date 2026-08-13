@@ -1,6 +1,6 @@
 # Krähenfels, Abnahme 26
 
-Stand: 13. August 2026 · Arbeitsstand nach `67c3d6e`
+Stand: 13. August 2026 · Nachaudit für den nächsten Release-Build
 
 ## Ergebnis
 
@@ -13,6 +13,8 @@ Die geplante Überarbeitung des geführten Spielleiter-Modus ist umgesetzt. Der 
 - `python tools/validate_guided_flow.py`: bestanden, 41 geführte Schritte, 8 Szenen, 7 Ziele.
 - `python -m compileall -q tools`: bestanden.
 - `git diff --check`: bestanden.
+- PDF-Renderprüfung mit Poppler: alle 14 PDF-Ausgaben gerendert; Karten, Handouts, SL-Unterlagen und Einladung ohne abgeschnittene Inhalte. Die Startseite trägt jetzt die öffentliche App-Version `3.3.0` statt der veralteten internen RC-Zeile.
+- Native Ressourcen-Audit: 21 Audio-Dateien (20 Manifest-Cues plus Selbsttest) und 20 Art-Dateien (8 Szenen plus 12 Karten); veraltete V3/V5- und Graphic-Novel-Dateien sind nicht mehr Teil des iOS-Bundles.
 - GitHub/macOS: Der native Build läuft auf dem Runner; ein zwischenzeitlicher SwiftUI-Fehler in `audioPlanPanel` wurde gefunden und korrigiert. Die CI meldet Compilerfehler nun als Annotation statt nur als Exit 65.
 
 ## Spielmechanik
@@ -23,10 +25,12 @@ Die finale Gefahrenszene zählt jetzt echte Würfe. Zwei Erfolge lösen die Erfo
 
 Ein Vorleseschritt öffnet einen bestätigten Dialog. Mit "Sound starten und vorlesen" beginnt der passende Cue und die Musik wird abgesenkt. Der Vorlesetext bleibt sichtbar, bis "Vorgelesen, weiter" gedrückt wird. Abbrechen oder Weitergehen stellt die normale Mischung wieder her. Der Szenen-Soundplan nennt je Cue Startmoment, Stopmoment und Spielleiteranweisung.
 
+Der globale STOP setzt zusätzlich die Vorlese-Absenkung zurück. Auch das Wischen zum Schließen des Vorlese-Dialogs stellt die normale Mischung wieder her.
+
 ## Release und Installation
 
 Der dauerhafte AltStore-Feed liegt unter [`source.json`](../altstore/source.json) und zeigt auf den GitHub-Pages-Mirror. Der Release-Kandidat `v3.3.0-rc2` wurde als IPA mit Version 3.3.0 und Build 3 geprüft. Die Datei ist 158.493.610 Bytes groß, SHA-256 `e4d83ebcbfe72abc2d5ee1109838edb56d5555cc1d8a468cad4a43e3fe0ceb69`, und der Mirror liefert Range-Anfragen. Für eine Neuinstallation in AltStore die bestehende Quelle aktualisieren oder entfernen und genau den Raw-GitHub-Link aus der README erneut hinzufügen.
 
 ## Offene Tischabnahme
 
-Die verbleibende Abnahme ist bewusst physisch: jeden Cue einmal über iPhone und Box hören, die Druck-PDFs ausschneiden und die 8 Szenen mit drei Spielern durchspielen. Diese Punkte brauchen echte Geräte und ersetzen keine weitere Codeänderung.
+Die verbleibende Abnahme ist bewusst physisch: jeden Cue einmal über iPhone und Box hören, die Druck-PDFs ausschneiden und die 8 Szenen mit drei Spielern durchspielen. Diese Punkte brauchen echte Geräte und ersetzen keine weitere Codeänderung. Der statische und native Bundle-Audit ist abgeschlossen.

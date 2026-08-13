@@ -31,7 +31,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: de.kraehenfels.spielleitung
         MARKETING_VERSION: "3.3.0"
-        CURRENT_PROJECT_VERSION: "3"
+        CURRENT_PROJECT_VERSION: "4"
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Krähenfels
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities

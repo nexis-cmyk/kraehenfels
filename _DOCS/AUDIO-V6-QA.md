@@ -1,6 +1,6 @@
 # Audio V6: technischer Prüfbericht
 
-Stand: 12. August 2026. Paket: `3.3.0-rc1`.
+Stand: 12. August 2026. Paket: `3.3.0`.
 
 | Cue | Dauer | LUFS | Peak | Seam | Ergebnis |
 | --- | ---: | ---: | ---: | ---: | --- |
@@ -31,4 +31,4 @@ Keine exakten oder fast identischen Dateien erkannt.
 
 ## Noch offen vor dem finalen Release
 
-Die technische Prüfung ersetzt keinen Hörtest. In `3.3.0-rc1` wird jeder Cue über die vorgesehene Bluetooth-Box und zusätzlich über den iPhone-Lautsprecher als passend oder falsch markiert.
+Die technische Prüfung ersetzt keinen Hörtest. In `3.3.0` wird jeder Cue über die vorgesehene Bluetooth-Box und zusätzlich über den iPhone-Lautsprecher als passend oder falsch markiert.

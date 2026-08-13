@@ -875,6 +875,14 @@ struct ReadAloudCueSheet: View {
     let onComplete: (ReadAloudMode) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var hasStarted = false
+    @State private var didClose = false
+
+    private func close(mode: ReadAloudMode) {
+        guard !didClose else { return }
+        didClose = true
+        onComplete(mode)
+        dismiss()
+    }
 
     var body: some View {
         NavigationStack {
@@ -917,8 +925,7 @@ struct ReadAloudCueSheet: View {
 
                     Button {
                         if hasStarted {
-                            onComplete(.complete)
-                            dismiss()
+                            close(mode: .complete)
                         } else {
                             onComplete(.start)
                             hasStarted = true
@@ -933,8 +940,7 @@ struct ReadAloudCueSheet: View {
                     }
 
                     Button {
-                        onComplete(.complete)
-                        dismiss()
+                        close(mode: .complete)
                     } label: {
                         Text(hasStarted ? "Ohne weiteren Sound weiter" : "Nur als vorgelesen markieren")
                             .font(.subheadline.weight(.semibold))
@@ -951,9 +957,15 @@ struct ReadAloudCueSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Abbrechen") {
-                        onComplete(.cancel)
-                        dismiss()
+                        close(mode: .cancel)
                     }
+                }
+            }
+            .onDisappear {
+                // Covers swipe-to-dismiss and the interactive back gesture.
+                if !didClose {
+                    didClose = true
+                    onComplete(.cancel)
                 }
             }
         }

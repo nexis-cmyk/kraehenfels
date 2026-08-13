@@ -58,7 +58,7 @@ python tools/validate_project.py
 python tools/validate_guided_flow.py
 ```
 
-`tools/validate_project.py` prüft IDs und Querverweise, die native Manifest-Synchronität, den eingefrorenen Web-Stand, Szene- und Kartenbilder, alle 20 Audio-Dateien, Dubletten im gesamten nativen Paket, Cue-Zeitpunkte, kritische Szenenzuordnungen, PDF-Lesbarkeit und die Spoilertrennung der Spielerunterlagen. Der Kartensatz umfasst MAP01 bis MAP06.
+`tools/validate_project.py` prüft IDs und Querverweise, die native Manifest-Synchronität, den eingefrorenen Web-Stand, Szene- und Kartenbilder, exakt die 21 erwarteten nativen Audio-Dateien (20 Cues plus Selbsttest), unreferenzierte Audio-/Art-Dateien, Dubletten im gesamten nativen Paket, Cue-Zeitpunkte, kritische Szenenzuordnungen, PDF-Lesbarkeit und die Spoilertrennung der Spielerunterlagen. Der Kartensatz umfasst MAP01 bis MAP06.
 
 ## Qualitätsregeln
 
@@ -69,3 +69,4 @@ python tools/validate_guided_flow.py
 - Audio-Presets, Einzel-Cues und Stop-All bleiben getrennt bedienbar.
 - Jeder geführte Schritt zeigt ausdrücklich, ob eine Probe vorgesehen ist, und ein kritischer Misserfolg hat eine sichtbare Folge.
 - Jede finale PDF wird gerendert und auf Lesbarkeit sowie Textüberlauf geprüft.
+- Der Vorlese-Dialog hat eine explizite Bestätigung; STOP und interaktives Schließen lösen die Musik-Absenkung zuverlässig auf.

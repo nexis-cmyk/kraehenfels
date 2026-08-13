@@ -116,7 +116,7 @@ def build_start(path: Path, data: dict) -> None:
     paragraph(c, "Ein detektivischer Folk-Horror für drei Reisende und eine Spielleitung. Schwarzwald, November 1890. Eure Kutsche hat die Straße verlassen. Das Dorf wartet bereits.", 18 * mm, 22 * mm, width - 36 * mm, 55 * mm, text_style("start", 12, 16, FROST))
     c.setFillColor(QUIET)
     c.setFont("Helvetica", 8)
-    c.drawString(18 * mm, 12 * mm, "How to be a Hero · W100 · Version 3.3.0-rc1")
+    c.drawString(18 * mm, 12 * mm, "How to be a Hero · W100 · Version 3.3.0")
     c.showPage()
     page_title(c, "Spielstart", "Für die Spielleitung · 20 Minuten Vorbereitung")
     y = height - 55 * mm

@@ -45,7 +45,7 @@ def main() -> None:
     if map_ids != {"MAP01", "MAP02", "MAP03", "MAP04", "MAP05", "MAP06"}: fail("V3 map set is incomplete")
     if phase_ids != {"P01", "P02", "P03", "P04", "P05"}: fail("V3 phase set is incomplete")
     if len(manifest.get("endings", [])) != 3: fail("V3 must expose exactly three endings")
-    if manifest["meta"].get("version") != "3.3.0-rc1": fail("Native manifest must be the 3.3.0 release candidate")
+    if manifest["meta"].get("version") != "3.3.0": fail("Native manifest must be the 3.3.0 content release")
 
     for scene in scenes:
         missing = set(scene["handoutIds"]) - handout_ids
@@ -87,6 +87,10 @@ def main() -> None:
 
     generated = ROOT / "audio" / "generated"
     bundled = ROOT / "app" / "Kraehenfels" / "Resources" / "Audio"
+    expected_audio_files = {cue["file"] for cue in cues} | {"V5_TEST_Audio.wav"}
+    unexpected_audio_files = {path.name for path in bundled.iterdir() if path.is_file()} - expected_audio_files
+    if unexpected_audio_files:
+        fail(f"Native audio bundle contains unreferenced files: {sorted(unexpected_audio_files)}")
     for cue in cues:
         if not (generated / cue["file"]).exists(): fail(f"Missing generated audio: {cue['file']}")
         if not (bundled / cue["file"]).exists(): fail(f"Missing app audio: {cue['file']}")
@@ -137,6 +141,16 @@ def main() -> None:
         path.read_text(encoding="utf-8")
     art_dir = ROOT / "app" / "Kraehenfels" / "Resources" / "Art"
     web_art_dir = ROOT / "web" / "assets" / "art"
+    expected_art_files = {scene.get("art") for scene in scenes if scene.get("art")}
+    expected_art_files |= {
+        asset
+        for entry in manifest.get("maps", [])
+        for asset in (entry.get("playerAsset"), entry.get("gmAsset"))
+        if asset
+    }
+    unexpected_art_files = {path.name for path in art_dir.iterdir() if path.is_file()} - expected_art_files
+    if unexpected_art_files:
+        fail(f"Native art bundle contains unreferenced files: {sorted(unexpected_art_files)}")
     for scene in scenes:
         art = scene.get("art")
         if art and not (art_dir / art).exists(): fail(f"Missing scene art: {art}")

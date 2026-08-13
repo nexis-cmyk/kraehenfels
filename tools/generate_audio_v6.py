@@ -35,6 +35,21 @@ REPLACEMENTS = {
     "SFX10": "V6_SFX10_Falscher_Glockenschlag.wav",
 }
 
+# These reviewed V5 cues remain the canonical files for the eight cues that
+# did not need a V6 replacement. They are mirrored explicitly so a clean
+# native bundle cannot accidentally depend on legacy files left in the
+# resource directory.
+BASELINE_FILES = (
+    "V5_A03_Dorf_am_Morgen.m4a",
+    "V5_A04_Kirche_ohne_Glocke.m4a",
+    "V5_A06_Waldspur.m4a",
+    "V5_A07_Rathausarchiv.m4a",
+    "V5_M01_Kraehenfels_Motiv.m4a",
+    "V5_M02_Prozession.m4a",
+    "V5_SFX03_Riegel_von_aussen.wav",
+    "V5_SFX07_Prozessionsschritte.wav",
+)
+
 
 def run_ffmpeg(*args: str) -> None:
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *args], check=True)
@@ -46,6 +61,14 @@ def copy_asset(source: str, target: str) -> None:
     target_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source_path, target_path)
     shutil.copy2(target_path, BUNDLED / target)
+
+
+def mirror_baseline_assets() -> None:
+    for filename in BASELINE_FILES:
+        source = GENERATED / filename
+        if not source.exists():
+            raise FileNotFoundError(f"Missing reviewed baseline audio: {source}")
+        shutil.copy2(source, BUNDLED / filename)
 
 
 def normalize_asset(source: str, target: str, target_lufs: float, duration: float | None = None, audio_filter: str | None = None) -> None:
@@ -94,7 +117,7 @@ def bone_deer() -> None:
 
 def write_metadata() -> None:
     metadata = json.loads(V5_METADATA.read_text(encoding="utf-8"))
-    metadata["version"] = "3.3.0-rc1"
+    metadata["version"] = "3.3.0"
     metadata["generatedAt"] = "2026-08-12"
     for asset in metadata["assets"]:
         replacement = REPLACEMENTS.get(asset["id"])
@@ -108,6 +131,7 @@ def write_metadata() -> None:
 
 
 def main() -> None:
+    mirror_baseline_assets()
     normalize_asset(str(GENERATED / "A01_Postkutsche_im_Schneesturm.m4a"), "V6_A01_Kutschenstrasse.m4a", -25)
     normalize_asset(str(GENERATED / "A04_Wirtsstube_am_Abend.m4a"), "V6_A02_Gasthaus.m4a", -25, duration=30)
     forge_atmosphere()

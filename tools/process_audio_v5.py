@@ -27,6 +27,11 @@ LOCAL_FFMPEG = (
     / "ffmpeg-win-x86_64-v7.1.exe"
 )
 
+# V6 replaces these twelve native files. V5 still processes them for the
+# reviewed archive and similarity metadata, but must not copy them into the
+# iOS resource bundle where they would be dead, ambiguous alternatives.
+NATIVE_BASELINE_IDS = {"A03", "A04", "A06", "A07", "M01", "M02", "SFX03", "SFX07"}
+
 
 @dataclass(frozen=True)
 class Asset:
@@ -177,7 +182,8 @@ def process(asset: Asset) -> dict[str, object]:
     run(command)
 
     APP_AUDIO.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(target, APP_AUDIO / target.name)
+    if asset.cue_id in NATIVE_BASELINE_IDS:
+        shutil.copy2(target, APP_AUDIO / target.name)
     return {
         "id": asset.cue_id,
         "title": asset.title,
@@ -216,7 +222,7 @@ def main() -> None:
     METADATA_PATH.write_text(
         json.dumps(
             {
-                "version": "3.2.0-rc1",
+                "version": "3.3.0",
                 "scope": "native-ios-only",
                 "generatedAt": "2026-08-12",
                 "assets": records,
