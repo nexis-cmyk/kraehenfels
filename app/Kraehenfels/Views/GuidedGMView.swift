@@ -379,6 +379,8 @@ struct GuidedGMView: View {
                 .fixedSize(horizontal: false, vertical: true)
             if let roll = step.roll {
                 rollSummary(roll)
+            } else {
+                noRollSummary(step)
             }
             if step.id == "S07_GM" {
                 finaleModePicker
@@ -449,6 +451,35 @@ struct GuidedGMView: View {
         .fixedSize(horizontal: false, vertical: true)
         .padding(12)
         .background(FrostTheme.ink.opacity(0.42), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func noRollSummary(_ step: GuideStep) -> some View {
+        let message: String
+        switch step.kind {
+        case .readAloud:
+            message = "Keine Probe. Sound bestätigen, Text vorlesen und erst danach weitergehen."
+        case .gmInfo:
+            message = "Keine Probe. Nur für dich lesen und nicht an die Spieler weitergeben."
+        case .playerAction:
+            message = "Keine Pflichtprobe. Würfle nur, wenn eine riskante Handlung wirklich etwas verändern kann."
+        case .trigger:
+            message = "Keine Probe. Warte auf den beschriebenen Auslöser und spiele dann den Schritt aus."
+        case .clue:
+            message = "Keine Probe. Den Hinweis zeigen oder den angegebenen Fallback vorlesen."
+        case .choice, .next:
+            message = "Keine Probe. Die Gruppe entscheidet. Wähle danach den passenden nächsten Schritt."
+        case .roll:
+            message = "Würfelprobe ist im Schritt angegeben."
+        }
+        return FrostCard {
+            Label("WÜRFELSTATUS", systemImage: "dice")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(FrostTheme.quiet)
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.82))
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     @ViewBuilder
@@ -813,7 +844,7 @@ struct RollHelperView: View {
             Text("\(result.roll) gegen \(result.target)")
                 .font(.subheadline)
                 .foregroundStyle(.white)
-            Text(result.isCriticalSuccess ? spec.critical : (result.isSuccess ? spec.success : spec.failure))
+            Text(result.isCriticalFailure ? spec.criticalFailure : (result.isCriticalSuccess ? spec.critical : (result.isSuccess ? spec.success : spec.failure)))
                 .font(.subheadline)
                 .foregroundStyle(FrostTheme.quiet)
                 .fixedSize(horizontal: false, vertical: true)

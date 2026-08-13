@@ -46,6 +46,7 @@ struct RollSpec: Hashable {
     let success: String
     let failure: String
     let critical: String
+    let criticalFailure: String
     let reroll: String
     let guaranteedClue: Bool
     let begabung: Bool
@@ -59,6 +60,7 @@ struct RollSpec: Hashable {
         success: String,
         failure: String,
         critical: String = "Besonders schnell und ohne Zusatzkosten.",
+        criticalFailure: String = "Der Misserfolg tritt mit einer zusätzlichen Komplikation ein.",
         reroll: String = "Ein Geistesblitz darf eine nicht kritisch misslungene Probe wiederholen.",
         guaranteedClue: Bool = false,
         begabung: Bool = false,
@@ -72,6 +74,7 @@ struct RollSpec: Hashable {
         self.success = success
         self.failure = failure
         self.critical = critical
+        self.criticalFailure = criticalFailure
         self.reroll = reroll
         self.guaranteedClue = guaranteedClue
         self.begabung = begabung
@@ -279,7 +282,7 @@ enum GuidedFlowCatalog {
             GuideOption(id: "renew", title: "Gastrecht erneuern", detail: "Eine Figur übernimmt den alten Eid.", endingID: "E02"),
             GuideOption(id: "break", title: "Bindung zerstören", detail: "Eisen und Feuer brechen die Reliquie.", endingID: "E03")
         ]),
-        GuideStep(id: "S07_DANGER", sceneID: "S07", kind: .roll, title: "Geführte Gefahrenszene", body: "Im geführten Modus würfelt die Gruppe die passende Fertigkeit des gewählten Endes. Zwei Erfolge vor zwei Fehlschlägen reichen. Bei E01 passt Soziales, bei E02 Wissen oder Soziales, bei E03 Handeln mit dem Eisen.", actionLabel: "Probe auswerten", roll: RollSpec(actor: "Die Figur mit dem stärksten persönlichen Bezug", ability: "Passende Fähigkeit des gewählten Endes", target: "Der Wert der gewählten Fertigkeit", modifier: "Ein zuvor passender Hinweis gibt +10; ein kritischer Misserfolg zählt als zwei Fehlschläge.", success: "Die Szene kippt zugunsten der Gruppe.", failure: "Zeit, Wärme oder Vertrauen gehen verloren; der nächste Versuch bleibt möglich.", critical: "Ein NPC schließt sich sichtbar an.", guaranteedClue: true, required: true)),
+        GuideStep(id: "S07_DANGER", sceneID: "S07", kind: .roll, title: "Geführte Gefahrenszene", body: "Im geführten Modus würfelt die Gruppe die passende Fertigkeit des gewählten Endes. Zwei Erfolge vor zwei Fehlschlägen reichen. Bei E01 passt Soziales, bei E02 Wissen oder Soziales, bei E03 Handeln mit dem Eisen.", actionLabel: "Probe auswerten", roll: RollSpec(actor: "Die Figur mit dem stärksten persönlichen Bezug", ability: "Passende Fähigkeit des gewählten Endes", target: "Der Wert der gewählten Fertigkeit", modifier: "Ein zuvor passender Hinweis gibt +10; ein kritischer Misserfolg zählt als zwei Fehlschläge.", success: "Die Szene kippt zugunsten der Gruppe.", failure: "Zeit, Wärme oder Vertrauen gehen verloren; der nächste Versuch bleibt möglich.", critical: "Ein NPC schließt sich sichtbar an.", criticalFailure: "Zwei Fehlschläge sind erreicht. Die Gefahrenszene ist zugunsten des Waldes entschieden.", guaranteedClue: true, required: true)),
         GuideStep(id: "S07_COMBAT", sceneID: "S07", kind: .gmInfo, title: "Optional: Kampf am Tisch", body: "Wenn du Kampfmodus wählst, öffne die Kampf-Kurzreferenz. Sie führt durch Initiative, Angriff, Parade, Schaden und LP-Zustände. Für den Knochenhirsch sind im Kanon keine festen Werte vorgegeben; passe sie an die Gruppe an oder nutze den geführten Modus.", actionLabel: "Kampfmodus verstanden"),
         GuideStep(id: "S07_NEXT", sceneID: "S07", kind: .next, title: "Nachhall", body: "Spiele SFX09 ausschließlich bei E03. Markiere das gewählte Ende und öffne den Epilog.", actionLabel: "Zum Epilog", audioCueID: "SFX09", options: [GuideOption(id: "epilogue", title: "Tauwetter", detail: "Die Folgen werden sichtbar.", destinationSceneID: "S08")])
     ]
