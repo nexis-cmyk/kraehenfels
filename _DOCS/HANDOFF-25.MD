@@ -2,7 +2,7 @@
 
 ## Aktueller Stand
 
-Krähenfels steht auf dem Arbeitsstand `b9416fc` auf `master` und `main`. Die Story bleibt die manipulierte Kutschfahrt, das Gasthaus Zum Schwarzen Keiler, Kirche, Schmiede, Waldspur, Rathausarchiv, Alte Eiche und drei Enden. Die native App richtet sich an drei Spieler und eine neue Spielleitung.
+Krähenfels steht auf dem Arbeitsstand `67c3d6e` auf `master` und `main`. Die Story bleibt die manipulierte Kutschfahrt, das Gasthaus Zum Schwarzen Keiler, Kirche, Schmiede, Waldspur, Rathausarchiv, Alte Eiche und drei Enden. Die native App richtet sich an drei Spieler und eine neue Spielleitung.
 
 ## Umgesetzte Leitstand-Funktionen
 

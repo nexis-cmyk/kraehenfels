@@ -1,6 +1,6 @@
 # Krähenfels, Abnahme 26
 
-Stand: 13. August 2026 · Arbeitsstand nach `b9416fc`
+Stand: 13. August 2026 · Arbeitsstand nach `67c3d6e`
 
 ## Ergebnis
 
