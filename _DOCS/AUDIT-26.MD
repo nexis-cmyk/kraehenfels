@@ -1,6 +1,6 @@
 # Krähenfels, Abnahme 26
 
-Stand: 13. August 2026 · Nachaudit für den nächsten Release-Build
+Stand: 13. August 2026 · Nachaudit für Release Candidate 3.3.0
 
 ## Ergebnis
 
@@ -15,7 +15,7 @@ Die geplante Überarbeitung des geführten Spielleiter-Modus ist umgesetzt. Der 
 - `git diff --check`: bestanden.
 - PDF-Renderprüfung mit Poppler: alle 14 PDF-Ausgaben gerendert; Karten, Handouts, SL-Unterlagen und Einladung ohne abgeschnittene Inhalte. Die Startseite trägt jetzt die öffentliche App-Version `3.3.0` statt der veralteten internen RC-Zeile.
 - Native Ressourcen-Audit: 21 Audio-Dateien (20 Manifest-Cues plus Selbsttest) und 20 Art-Dateien (8 Szenen plus 12 Karten); veraltete V3/V5- und Graphic-Novel-Dateien sind nicht mehr Teil des iOS-Bundles.
-- GitHub/macOS: Der native Build läuft auf dem Runner; ein zwischenzeitlicher SwiftUI-Fehler in `audioPlanPanel` wurde gefunden und korrigiert. Die CI meldet Compilerfehler nun als Annotation statt nur als Exit 65.
+- GitHub/macOS: Der native Build läuft auf dem Runner; ein zwischenzeitlicher SwiftUI-Fehler in `audioPlanPanel` wurde gefunden und korrigiert. Die CI meldet Compilerfehler nun als Annotation statt nur als Exit 65. RC3 wurde als `v3.3.0-rc3` mit Build `4` veröffentlicht.
 
 ## Spielmechanik
 
@@ -29,7 +29,7 @@ Der globale STOP setzt zusätzlich die Vorlese-Absenkung zurück. Auch das Wisch
 
 ## Release und Installation
 
-Der dauerhafte AltStore-Feed liegt unter [`source.json`](../altstore/source.json) und zeigt auf den GitHub-Pages-Mirror. Der nächste Release-Kandidat ist `v3.3.0-rc3` mit App-Version 3.3.0 und Build 4; nach Veröffentlichung werden IPA-Größe, SHA-256 und Pages-Range-Antwort hier nachgetragen. Für eine Neuinstallation in AltStore die bestehende Quelle aktualisieren oder entfernen und genau den Raw-GitHub-Link aus der README erneut hinzufügen.
+Der dauerhafte AltStore-Feed liegt unter [`source.json`](../altstore/source.json) und zeigt auf den GitHub-Pages-Mirror. `v3.3.0-rc3` mit App-Version `3.3.0` und Build `4` ist veröffentlicht. Die IPA ist `82.703.807` Bytes groß und hat den SHA-256-Hash `a6cb0ed6537c33ad64f06cffb684938ec04ec7e2258fb93819491052f6031586`. Der Pages-Mirror antwortet mit HTTP 200 und liefert dieselbe Größe und denselben Hash wie das GitHub-Release. Für eine Neuinstallation in AltStore die bestehende Quelle aktualisieren oder entfernen und genau den Raw-GitHub-Link aus der README erneut hinzufügen.
 
 ## Offene Tischabnahme
 

@@ -26,7 +26,7 @@ Zusätzlich wurden alle 14 PDF-Ausgaben mit Poppler gerendert und visuell geprü
 
 ## Release-Hinweis
 
-Die Änderungen benötigen vor der Nutzung in AltStore einen neuen iOS-Build. `v3.3.0-rc3` mit Build `4` ist veröffentlicht. Der Pages-Workflow hatte zunächst eine veraltete 100-MB-Mindestprüfung und wurde auf eine realistische 50-MB-Sanity-Prüfung korrigiert; danach den Mirror und SHA-256 erneut verifizieren. Der bisherige RC2 bleibt als Fallback installierbar.
+Die Änderungen benötigen vor der Nutzung in AltStore einen neuen iOS-Build. `v3.3.0-rc3` mit Build `4` ist veröffentlicht. Der Pages-Workflow hatte zunächst eine veraltete 100-MB-Mindestprüfung und wurde auf eine realistische 50-MB-Sanity-Prüfung korrigiert. Der Mirror liefert nun dieselbe 82.703.807-Byte-IPA mit SHA-256 `a6cb0ed6537c33ad64f06cffb684938ec04ec7e2258fb93819491052f6031586` wie das GitHub-Release. Der bisherige RC2 bleibt als Fallback installierbar.
 
 ## Offener physischer Test
 
