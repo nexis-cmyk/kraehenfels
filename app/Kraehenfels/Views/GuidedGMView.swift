@@ -293,7 +293,7 @@ struct GuidedGMView: View {
 
     private func audioPlanPanel(_ scene: SceneEntry) -> some View {
         let plans = content.plannedCues(for: scene)
-        FrostCard {
+        return FrostCard {
             DisclosureGroup(isExpanded: $showAudioPlan) {
                 VStack(alignment: .leading, spacing: 10) {
                     ForEach(Array(plans.enumerated()), id: \.offset) { index, entry in
