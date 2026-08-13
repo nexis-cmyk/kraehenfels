@@ -189,9 +189,9 @@ struct RootView: View {
                             Text(scene.title == "Das schwarze Keiler" ? "Der Schwarze Keiler" : scene.title)
                                 .font(.body.weight(.medium))
                                 .foregroundStyle(.white)
-                            Text(scene.duration)
+                            Text("\(scene.duration) · \(session.isRecommendedScene(scene.id) ? "empfohlen" : "GM-Sprung")")
                                 .font(.caption)
-                                .foregroundStyle(FrostTheme.quiet)
+                                .foregroundStyle(session.isRecommendedScene(scene.id) ? FrostTheme.quiet : FrostTheme.warning)
                         }
                         Spacer()
                         Image(systemName: session.completedSceneIDs.contains(scene.id) ? "checkmark.circle.fill" : "chevron.right")

@@ -11,6 +11,8 @@ on:
       - "tools/build_web_preview.py"
       - "altstore/source.json"
   workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
   contents: read
@@ -32,9 +34,9 @@ jobs:
       - name: Mirror IPA for reliable AltStore downloads
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: v3.3.0-rc1
         run: |
           set -euo pipefail
+          RELEASE_TAG="$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq '.tag_name')"
           asset_url="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" --jq '.assets[] | select(.name == "Kraehenfels.ipa") | .url')"
           test -n "$asset_url"
           curl --fail --location --retry 3 --retry-delay 2 \

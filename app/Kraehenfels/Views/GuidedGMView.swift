@@ -161,8 +161,11 @@ struct GuidedGMView: View {
     @EnvironmentObject private var audio: AudioEngine
     @EnvironmentObject private var session: SessionStore
     @State private var rollStep: GuideStep?
+    @State private var readAloudStep: GuideStep?
     @State private var showMaterials = false
     @State private var showRules = false
+    @State private var showCombat = false
+    @State private var showAudioPlan = false
 
     private var steps: [GuideStep] {
         let base = GuidedFlowCatalog.steps(for: session.currentSceneID)
@@ -185,6 +188,7 @@ struct GuidedGMView: View {
                 if let scene = content.scene(for: session.currentSceneID) {
                     SceneArtView(resourceName: scene.art, height: 168)
                     sceneContext(scene)
+                    audioPlanPanel(scene)
                 }
                 if let step = currentStep {
                     stepCard(step)
@@ -220,6 +224,13 @@ struct GuidedGMView: View {
         }
         .sheet(item: $rollStep) { step in
             RollHelperView(step: step) { result in
+                if step.id == "S07_DANGER" {
+                    let state = session.recordFinaleRoll(result)
+                    if state.isResolved {
+                        advance(step)
+                    }
+                    return
+                }
                 session.recordRoll(stepID: step.id, result: result)
                 if step.id == "S02_ROLL", !result.isSuccess {
                     session.setThreatLevel(session.threatLevel + 1)
@@ -229,6 +240,17 @@ struct GuidedGMView: View {
                 }
                 advance(step)
             }
+        }
+        .sheet(item: $readAloudStep) { step in
+            ReadAloudCueSheet(step: step, cue: step.audioCueID.flatMap(content.cue)) { mode in
+                if mode == .startAndRead {
+                    audio.startReadAloud(cue: step.audioCueID.flatMap(content.cue))
+                }
+                advance(step)
+            }
+        }
+        .sheet(isPresented: $showCombat) {
+            CombatReferenceView()
         }
         .navigationDestination(isPresented: $showMaterials) { MaterialsView() }
         .navigationDestination(isPresented: $showRules) { RulesView() }
@@ -269,6 +291,69 @@ struct GuidedGMView: View {
         }
     }
 
+    private func audioPlanPanel(_ scene: SceneEntry) -> some View {
+        let plans = content.plannedCues(for: scene)
+        FrostCard {
+            DisclosureGroup(isExpanded: $showAudioPlan) {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(Array(plans.enumerated()), id: \.offset) { index, entry in
+                        let plan = entry.0
+                        let cue = entry.1
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: cue.iconName)
+                                .foregroundStyle(cue.layer == "sfx" ? FrostTheme.warning : FrostTheme.cobalt)
+                                .frame(width: 20)
+                            VStack(alignment: .leading, spacing: 3) {
+                                HStack(spacing: 6) {
+                                    Text(cue.title)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.white)
+                                    Text(cue.mode == "loop" ? "LOOP" : "EINMAL")
+                                        .font(.caption2.monospaced().weight(.bold))
+                                        .foregroundStyle(FrostTheme.quiet)
+                                }
+                                Text("Jetzt: \(plan.playWhen)")
+                                    .font(.caption)
+                                    .foregroundStyle(FrostTheme.cobalt)
+                                Text("Stop: \(plan.stopWhen)")
+                                    .font(.caption)
+                                    .foregroundStyle(FrostTheme.quiet)
+                                Text(plan.gmInstruction)
+                                    .font(.caption)
+                                    .foregroundStyle(.white.opacity(0.8))
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            Spacer(minLength: 4)
+                            Button {
+                                audio.toggle(cue)
+                            } label: {
+                                Image(systemName: audio.isPlaying(cue) && cue.mode == "loop" ? "pause.fill" : "play.fill")
+                                    .frame(width: 34, height: 34)
+                            }
+                            .buttonStyle(.bordered)
+                            .accessibilityLabel("\(cue.title) abspielen")
+                        }
+                        if index < plans.count - 1 {
+                            Divider().overlay(FrostTheme.quiet.opacity(0.25))
+                        }
+                    }
+                }
+                .padding(.top, 10)
+            } label: {
+                HStack {
+                    Label("Soundplan für diesen Abschnitt", systemImage: "waveform")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(FrostTheme.frost)
+                    Spacer()
+                    Text("\(scene.audioCueIds.count) Cues")
+                        .font(.caption.monospaced().weight(.bold))
+                        .foregroundStyle(FrostTheme.cobalt)
+                }
+            }
+            .tint(FrostTheme.frost)
+        }
+    }
+
     private func stepCard(_ step: GuideStep) -> some View {
         VStack(alignment: .leading, spacing: 11) {
             HStack(alignment: .firstTextBaseline) {
@@ -294,6 +379,18 @@ struct GuidedGMView: View {
             if step.id == "S07_GM" {
                 finaleModePicker
             }
+            if step.id == "S07_DANGER" {
+                finaleProgressCard
+            }
+            if step.id == "S07_COMBAT" {
+                Button {
+                    showCombat = true
+                } label: {
+                    Label("Kampf-Kurzreferenz öffnen", systemImage: "shield.lefthalf.filled")
+                }
+                .buttonStyle(.bordered)
+                .tint(FrostTheme.warning)
+            }
             if ["S02_GM", "S02_CLUE", "S02_ROLL"].contains(step.id) {
                 doorStateControl
             }
@@ -302,6 +399,32 @@ struct GuidedGMView: View {
         .padding(17)
         .background(stepBackground(step.kind), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(stepColor(step.kind).opacity(0.36), lineWidth: 1))
+    }
+
+    private var finaleProgressCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Label("Zwei Erfolge vor zwei Fehlschlägen", systemImage: "chart.bar.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(FrostTheme.frost)
+                Spacer()
+                Text("\(session.finaleSuccesses) : \(session.finaleFailures)")
+                    .font(.headline.monospaced().weight(.bold))
+                    .foregroundStyle(session.finaleOutcome == "failure" ? FrostTheme.warning : FrostTheme.cobalt)
+            }
+            ProgressView(value: Double(session.finaleSuccesses), total: 2)
+                .tint(.green)
+            Text(session.finaleOutcome == "success"
+                 ? "Die Gefahrenszene ist zugunsten der Gruppe entschieden."
+                 : session.finaleOutcome == "failure"
+                    ? "Zwei Fehlschläge: Die Szene kostet Wärme und Vertrauen, danach geht es trotzdem weiter."
+                    : "Ein kritischer Misserfolg zählt als zwei Fehlschläge. Bei einem Zwischenstand bleibt derselbe Schritt geöffnet.")
+                .font(.caption)
+                .foregroundStyle(FrostTheme.quiet)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .background(FrostTheme.ink.opacity(0.42), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private func rollSummary(_ roll: RollSpec) -> some View {
@@ -326,39 +449,41 @@ struct GuidedGMView: View {
 
     @ViewBuilder
     private func materialLinks(for step: GuideStep) -> some View {
-        HStack(spacing: 8) {
-            ForEach(([step.handoutID].compactMap { $0 } + step.handoutIDs), id: \.self) { handoutID in
-                NavigationLink(destination: HandoutPreviewView(handoutID: handoutID)) {
-                    Label(handoutID, systemImage: "doc.text")
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(([step.handoutID].compactMap { $0 } + step.handoutIDs), id: \.self) { handoutID in
+                    NavigationLink(destination: HandoutPreviewView(handoutID: handoutID)) {
+                        Label(handoutID, systemImage: "doc.text")
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
-            }
-            if let scene = content.scene(for: step.sceneID) {
-                ForEach(content.maps(for: scene)) { map in
-                    NavigationLink(destination: MapDetailView(map: map, showSpoilers: true)) {
-                        Label("Karte", systemImage: "map")
+                if let scene = content.scene(for: step.sceneID) {
+                    ForEach(content.maps(for: scene)) { map in
+                        NavigationLink(destination: MapDetailView(map: map, showSpoilers: true)) {
+                            Label("Karte", systemImage: "map")
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
+                ForEach(([step.npcID].compactMap { $0 } + step.npcIDs), id: \.self) { npcID in
+                    NavigationLink(destination: NPCDossierView(npcID: npcID)) {
+                        Label(content.manifest.npcs.first(where: { $0.id == npcID })?.name ?? "NPC", systemImage: "person.crop.circle")
+                    }
+                    .buttonStyle(.bordered)
+                }
+                if let cueID = step.audioCueID,
+                   !(cueID == "SFX09" && session.selectedEndingID != "E03"),
+                   let cue = content.cue(for: cueID) {
+                    Button {
+                        audio.play(cue)
+                    } label: {
+                        Label("Sound", systemImage: "speaker.wave.2")
                     }
                     .buttonStyle(.bordered)
                 }
             }
-            ForEach(([step.npcID].compactMap { $0 } + step.npcIDs), id: \.self) { npcID in
-                NavigationLink(destination: NPCDossierView(npcID: npcID)) {
-                    Label(content.manifest.npcs.first(where: { $0.id == npcID })?.name ?? "NPC", systemImage: "person.crop.circle")
-                }
-                .buttonStyle(.bordered)
-            }
-            if let cueID = step.audioCueID,
-               !(cueID == "SFX09" && session.selectedEndingID != "E03"),
-               let cue = content.cue(for: cueID) {
-                Button {
-                    audio.play(cue)
-                } label: {
-                    Label("Sound", systemImage: "speaker.wave.2")
-                }
-                .buttonStyle(.bordered)
-            }
+            .tint(FrostTheme.cobalt)
         }
-        .tint(FrostTheme.cobalt)
     }
 
     private var finaleModePicker: some View {
@@ -440,13 +565,21 @@ struct GuidedGMView: View {
     private func actionButton(_ step: GuideStep) -> some View {
         VStack(spacing: 8) {
             Button {
-                if step.kind == .roll, step.roll != nil {
+                if step.kind == .readAloud {
+                    readAloudStep = step
+                } else if step.kind == .roll, step.roll != nil {
                     rollStep = step
                 } else {
                     advance(step)
                 }
             } label: {
-                Label(step.kind == .roll ? "Würfelhelfer öffnen" : step.actionLabel, systemImage: step.kind == .roll ? "dice.fill" : "arrow.right")
+                let title = step.kind == .readAloud
+                    ? "Sound vorbereiten und vorlesen"
+                    : step.kind == .roll ? "Würfelhelfer öffnen" : step.actionLabel
+                let icon = step.kind == .readAloud
+                    ? "quote.bubble.fill"
+                    : step.kind == .roll ? "dice.fill" : "arrow.right"
+                Label(title, systemImage: icon)
                     .font(.headline)
                     .foregroundStyle(FrostTheme.ink)
                     .frame(maxWidth: .infinity)
@@ -523,6 +656,12 @@ struct GuidedGMView: View {
             session.setSelectedEnding(endingID)
             advance(step)
         } else if let destination = option.destinationSceneID {
+            audio.stopLayer("ambient", fadeMilliseconds: 600)
+            if let cueID = step.audioCueID,
+               let cue = content.cue(for: cueID),
+               cue.mode == "loop" {
+                audio.play(cue)
+            }
             session.advanceToScene(destination, from: session.currentSceneID)
         }
     }
@@ -580,6 +719,7 @@ struct RollHelperView: View {
     @State private var targetText = "50"
     @State private var rollText = ""
     @State private var result: RollEvaluator.Result?
+    @State private var validationMessage: String?
 
     private var roll: RollSpec? { step.roll }
 
@@ -590,13 +730,14 @@ struct RollHelperView: View {
                     if let roll {
                         FrostCard {
                             VStack(alignment: .leading, spacing: 8) {
-                                SectionLabel(title: "Physische Probe")
+                                SectionLabel(title: "W100-PROBE")
                                 Text(roll.ability)
                                     .font(.title2.weight(.bold))
                                     .foregroundStyle(FrostTheme.frost)
                                 Text("\(roll.actor) würfelt \(roll.die). \(roll.target)")
                                     .font(.subheadline)
                                     .foregroundStyle(FrostTheme.quiet)
+                                    .fixedSize(horizontal: false, vertical: true)
                                 Text(roll.modifier)
                                     .font(.caption)
                                     .foregroundStyle(FrostTheme.warning)
@@ -604,6 +745,16 @@ struct RollHelperView: View {
                         }
                         input("Zielwert", text: $targetText, prompt: "z. B. 60")
                         input("Gewürfeltes Ergebnis", text: $rollText, prompt: "1 bis 100")
+                        Text("Trage den Wert bereits inklusive eines passenden Modifikators ein. Die App würfelt nicht selbst.")
+                            .font(.caption)
+                            .foregroundStyle(FrostTheme.quiet)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if let validationMessage {
+                            Label(validationMessage, systemImage: "exclamationmark.triangle.fill")
+                                .font(.caption)
+                                .foregroundStyle(FrostTheme.warning)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                         Button("Ergebnis auswerten") { evaluate(roll) }
                             .buttonStyle(.borderedProminent)
                             .tint(FrostTheme.cobalt)
@@ -636,7 +787,17 @@ struct RollHelperView: View {
     }
 
     private func evaluate(_ spec: RollSpec) {
-        guard let target = Int(targetText), let rolled = Int(rollText) else { return }
+        guard let target = Int(targetText), let rolled = Int(rollText) else {
+            validationMessage = "Bitte Zielwert und Würfelergebnis als ganze Zahlen eintragen."
+            result = nil
+            return
+        }
+        guard (1...100).contains(target), (1...100).contains(rolled) else {
+            validationMessage = "Beide Werte müssen zwischen 1 und 100 liegen."
+            result = nil
+            return
+        }
+        validationMessage = nil
         result = RollEvaluator.evaluate(roll: rolled, target: target, begabung: spec.begabung)
     }
 
@@ -664,5 +825,156 @@ struct RollHelperView: View {
         }
         .padding(15)
         .background(FrostTheme.panel, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+enum ReadAloudMode: Equatable {
+    case startAndRead
+    case markOnly
+}
+
+struct ReadAloudCueSheet: View {
+    let step: GuideStep
+    let cue: AudioCue?
+    let onComplete: (ReadAloudMode) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    FrostCard {
+                        VStack(alignment: .leading, spacing: 9) {
+                            SectionLabel(title: "JETZT VORLESEN")
+                            Text(step.title)
+                                .font(.title2.weight(.bold))
+                                .foregroundStyle(FrostTheme.frost)
+                            Text("Lies den Text erst vor, wenn die Gruppe aufmerksam ist. Der Leitstand senkt die Musik ab und startet den bestätigten Cue.")
+                                .font(.subheadline)
+                                .foregroundStyle(FrostTheme.quiet)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+
+                    FrostCard {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(step.body)
+                                .font(.body.italic())
+                                .foregroundStyle(.white.opacity(0.94))
+                                .fixedSize(horizontal: false, vertical: true)
+                            if let cue {
+                                Divider().overlay(FrostTheme.quiet.opacity(0.25))
+                                Label("Sound: \(cue.title)", systemImage: cue.iconName)
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(FrostTheme.cobalt)
+                                Text(cue.playWhen)
+                                    .font(.caption)
+                                    .foregroundStyle(FrostTheme.quiet)
+                            } else {
+                                Label("Kein eigener Cue – nur die Grundmusik weiterlaufen lassen.", systemImage: "music.note")
+                                    .font(.caption)
+                                    .foregroundStyle(FrostTheme.quiet)
+                            }
+                        }
+                    }
+
+                    Button {
+                        onComplete(.startAndRead)
+                        dismiss()
+                    } label: {
+                        Label("Sound starten und vorlesen", systemImage: "play.fill")
+                            .font(.headline)
+                            .foregroundStyle(FrostTheme.ink)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(FrostTheme.frost, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+
+                    Button {
+                        onComplete(.markOnly)
+                        dismiss()
+                    } label: {
+                        Text("Nur als vorgelesen markieren")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(FrostTheme.quiet)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                }
+                .padding(20)
+                .safeAreaPadding(.bottom, 24)
+            }
+            .background(FrostTheme.ink.ignoresSafeArea())
+            .navigationTitle("Vorlese-Moment")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Abbrechen") { dismiss() }
+                }
+            }
+        }
+        .preferredColorScheme(.dark)
+    }
+}
+
+struct CombatReferenceView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    FrostCard {
+                        VStack(alignment: .leading, spacing: 8) {
+                            SectionLabel(title: "OPTIONALER KAMPF")
+                            Text("Kampf am Tisch")
+                                .font(.title2.weight(.bold))
+                                .foregroundStyle(FrostTheme.frost)
+                            Text("Nutze diese Kurzreferenz nur, wenn die Gruppe den finalen Konflikt wirklich ausspielen möchte. Für ein schnelleres Finale wechselst du zurück in die geführte Gefahrenszene.")
+                                .font(.subheadline)
+                                .foregroundStyle(FrostTheme.quiet)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    combatRule("1 · Reihenfolge", "Alle würfeln W10 + Handeln. Die höchste Zahl handelt zuerst. Bei Überraschung setzt die betroffene Figur die erste Runde aus.")
+                    combatRule("2 · Angriff", "Angreifer würfelt eine passende Fertigkeitsprobe mit W100. Bei Erfolg trifft der Angriff; bei Misserfolg entsteht kein Schaden.")
+                    combatRule("3 · Parade", "Eine Figur darf einmal pro Runde mit Handeln parieren. Kritische Angriffe und Schusswaffen sind nicht parierbar.")
+                    combatRule("4 · Schaden", "Würfle die zur Waffe passende Anzahl W10. Kritische Angriffe verdoppeln den Schaden. Ziehe die Summe von den LP ab.")
+                    combatRule("5 · LP-Zustände", "Unter 10 LP ist eine Figur bewusstlos, bei 0 LP tot. Mehr als 60 Schaden in einem einzelnen Treffer macht ebenfalls bewusstlos.")
+                    combatRule("6 · Ende", "Der Knochenhirsch flieht, sobald die Bindung bricht. Spiele SFX09 nur bei E03 und öffne danach den Epilog.")
+                    FrostCard {
+                        Label("Keine Gegnerwerte im Kanon", systemImage: "info.circle")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(FrostTheme.warning)
+                        Text("Für dieses Abenteuer sind keine festen Knochenhirsch-Werte definiert. Entscheide Trefferpunkte und Fertigkeitswerte passend zur Gruppe oder nutze den geführten Modus.")
+                            .font(.caption)
+                            .foregroundStyle(FrostTheme.quiet)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(20)
+                .safeAreaPadding(.bottom, 24)
+            }
+            .background(FrostTheme.ink.ignoresSafeArea())
+            .navigationTitle("Kampf-Kurzreferenz")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Fertig") { dismiss() }
+                }
+            }
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    private func combatRule(_ title: String, _ body: String) -> some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: 6) {
+                SectionLabel(title: title)
+                Text(body)
+                    .font(.body)
+                    .foregroundStyle(.white.opacity(0.9))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 }

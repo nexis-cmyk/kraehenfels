@@ -23,7 +23,6 @@ struct AudioCheckView: View {
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle("Audio-Check")
         .navigationBarTitleDisplayMode(.inline)
-        .onDisappear { audio.stopAll() }
     }
 
     private var intro: some View {

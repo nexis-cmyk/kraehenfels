@@ -47,6 +47,7 @@ python tools/validate_audio_v6.py
 python tools/build_print_pack_v3.py
 python tools/build_archives_v3.py
 python tools/validate_project.py
+python tools/validate_guided_flow.py
 ```
 
 `process_audio_v5.py` baut die acht bereits abgenommenen V5-Cues. `generate_audio_v6.py` ersetzt die zwölf markierten Problem-Cues reproduzierbar und kopiert sie in das native Bundle. Danach liegen PDFs unter `outputs/` und alle Audio-Dateien unter `audio/generated/`. Die Web-App bleibt absichtlich auf 3.1.0 und wird von diesen Befehlen nicht verändert. Das iOS-Projekt wird auf macOS mit XcodeGen erzeugt:

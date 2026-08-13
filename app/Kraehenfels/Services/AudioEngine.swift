@@ -116,6 +116,16 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         lastEvent = readAloudDuck ? "Musik zum Vorlesen abgesenkt." : "Normale Mischung wiederhergestellt."
     }
 
+    func startReadAloud(cue: AudioCue?) {
+        readAloudDuck = true
+        if let cue {
+            play(cue)
+            lastEvent = "Vorlese-Cue bereit: \(cue.title)"
+        } else {
+            lastEvent = "Vorlesen bereit; kein eigener Cue für diesen Schritt."
+        }
+    }
+
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         guard let key = players.first(where: { $0.value === player })?.key else { return }
         let cueID = cueByPlayerKey[key]?.id

@@ -19,6 +19,10 @@ def main() -> None:
     parser.add_argument("--ipa", type=Path, required=True)
     parser.add_argument("--template", type=Path, default=Path("altstore/source.json"))
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--download-url",
+        help="Stable IPA URL. Defaults to the repository's GitHub Pages mirror.",
+    )
     args = parser.parse_args()
 
     data = json.loads(args.template.read_text(encoding="utf-8"))
@@ -33,9 +37,9 @@ def main() -> None:
         raise ValueError(
             f"IPA version {version} does not match release tag {release_version}."
         )
-    release_url = (
-        f"https://github.com/{args.repo}/releases/download/"
-        f"v{release_version}/Kraehenfels.ipa"
+    owner, repository = args.repo.split("/", 1)
+    release_url = args.download_url or (
+        f"https://{owner}.github.io/{repository}/Kraehenfels.ipa"
     )
     raw_root = f"https://raw.githubusercontent.com/{args.repo}/main"
     app = data["apps"][0]

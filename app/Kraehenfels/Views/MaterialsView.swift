@@ -112,9 +112,18 @@ struct HandoutPreviewView: View {
                     }
                     if let asset = handout.asset {
                         FrostCard {
-                            Label("Druckdatei: \(asset)", systemImage: "printer")
-                                .font(.caption)
-                                .foregroundStyle(FrostTheme.quiet)
+                            VStack(alignment: .leading, spacing: 6) {
+                                Label("Druckstück im Paket", systemImage: "printer")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(FrostTheme.cobalt)
+                                Text(asset)
+                                    .font(.caption.monospaced())
+                                    .foregroundStyle(FrostTheme.quiet)
+                                Text("Wenn du das Papierstück gerade nicht zur Hand hast, nutze den darunterstehenden Fallback. Die App behauptet nicht, eine fehlende PDF-Datei öffnen zu können.")
+                                    .font(.caption)
+                                    .foregroundStyle(FrostTheme.quiet)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
                         }
                     }
                     if let clue = content.manifest.clues.first(where: { $0.handoutId == handout.id }) {

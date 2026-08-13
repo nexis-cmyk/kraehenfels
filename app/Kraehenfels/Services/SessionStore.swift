@@ -2,6 +2,16 @@ import SwiftUI
 
 @MainActor
 final class SessionStore: ObservableObject {
+    enum FinaleRollState: Equatable {
+        case ongoing(successes: Int, failures: Int)
+        case resolved(success: Bool)
+
+        var isResolved: Bool {
+            if case .resolved = self { return true }
+            return false
+        }
+    }
+
     struct NightPhase: Identifiable, Equatable {
         let id: Int
         let title: String
@@ -37,6 +47,9 @@ final class SessionStore: ObservableObject {
         var rollHistory: [String: String]?
         var selectedEndingID: String?
         var finaleMode: String?
+        var finaleSuccesses: Int?
+        var finaleFailures: Int?
+        var finaleOutcome: String?
     }
 
     private let storageKey = "kraehenfels.sessionJournal.v3"
@@ -118,6 +131,18 @@ final class SessionStore: ObservableObject {
         didSet { persist() }
     }
 
+    @Published private(set) var finaleSuccesses: Int {
+        didSet { persist() }
+    }
+
+    @Published private(set) var finaleFailures: Int {
+        didSet { persist() }
+    }
+
+    @Published private(set) var finaleOutcome: String? {
+        didSet { persist() }
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         if let data = defaults.data(forKey: storageKey),
@@ -141,6 +166,9 @@ final class SessionStore: ObservableObject {
             rollHistory = snapshot.rollHistory ?? [:]
             selectedEndingID = snapshot.selectedEndingID
             finaleMode = snapshot.finaleMode ?? "guided"
+            finaleSuccesses = min(max(snapshot.finaleSuccesses ?? 0, 0), 2)
+            finaleFailures = min(max(snapshot.finaleFailures ?? 0, 0), 2)
+            finaleOutcome = snapshot.finaleOutcome
         } else {
             playerNames = ["", "", ""]
             sessionNote = ""
@@ -161,6 +189,9 @@ final class SessionStore: ObservableObject {
             rollHistory = [:]
             selectedEndingID = nil
             finaleMode = "guided"
+            finaleSuccesses = 0
+            finaleFailures = 0
+            finaleOutcome = nil
         }
     }
 
@@ -213,6 +244,9 @@ final class SessionStore: ObservableObject {
         rollHistory = [:]
         selectedEndingID = nil
         finaleMode = "guided"
+        finaleSuccesses = 0
+        finaleFailures = 0
+        finaleOutcome = nil
     }
 
     func beginGuidedSession() {
@@ -228,6 +262,9 @@ final class SessionStore: ObservableObject {
         selectedEndingID = nil
         finaleMode = "guided"
         rollHistory = [:]
+        finaleSuccesses = 0
+        finaleFailures = 0
+        finaleOutcome = nil
         doorStates = ["inn.guestroom": true]
         completedGuideStepIDs = []
         nightPhaseIndex = 0
@@ -258,6 +295,20 @@ final class SessionStore: ObservableObject {
         }
     }
 
+    func isRecommendedScene(_ sceneID: String) -> Bool {
+        if sceneID == currentSceneID { return true }
+        switch sceneID {
+        case "S01": return true
+        case "S02": return completedSceneIDs.contains("S01")
+        case "S03", "S04", "S05": return completedSceneIDs.contains("S02")
+        case "S06":
+            return Set(["S03", "S04", "S05"]).intersection(completedSceneIDs).count >= 2
+        case "S07": return completedSceneIDs.contains("S06")
+        case "S08": return completedSceneIDs.contains("S07")
+        default: return false
+        }
+    }
+
     func toggleSetup(_ id: String) {
         if setupChecks.contains(id) {
             setupChecks.remove(id)
@@ -274,13 +325,44 @@ final class SessionStore: ObservableObject {
         rollHistory[stepID] = String(result.roll) + " / " + String(result.target) + " · " + result.label
     }
 
+    @discardableResult
+    func recordFinaleRoll(_ result: RollEvaluator.Result) -> FinaleRollState {
+        recordRoll(stepID: "S07_DANGER", result: result)
+        if result.isCriticalFailure {
+            finaleFailures = min(2, finaleFailures + 2)
+        } else if result.isSuccess {
+            finaleSuccesses = min(2, finaleSuccesses + 1)
+        } else {
+            finaleFailures = min(2, finaleFailures + 1)
+        }
+
+        if finaleSuccesses >= 2 {
+            finaleOutcome = "success"
+            return .resolved(success: true)
+        }
+        if finaleFailures >= 2 {
+            finaleOutcome = "failure"
+            threatLevel = min(5, threatLevel + 1)
+            return .resolved(success: false)
+        }
+        return .ongoing(successes: finaleSuccesses, failures: finaleFailures)
+    }
+
+    func resetFinaleProgress() {
+        finaleSuccesses = 0
+        finaleFailures = 0
+        finaleOutcome = nil
+    }
+
     func setSelectedEnding(_ endingID: String) {
         selectedEndingID = endingID
+        resetFinaleProgress()
         finaleMode = "guided"
     }
 
     func setFinaleMode(_ mode: String) {
         finaleMode = mode == "combat" ? "combat" : "guided"
+        resetFinaleProgress()
     }
 
     func setThreatLevel(_ level: Int) {
@@ -335,7 +417,10 @@ final class SessionStore: ObservableObject {
             doorStates: doorStates,
             rollHistory: rollHistory,
             selectedEndingID: selectedEndingID,
-            finaleMode: finaleMode
+            finaleMode: finaleMode,
+            finaleSuccesses: finaleSuccesses,
+            finaleFailures: finaleFailures,
+            finaleOutcome: finaleOutcome
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: storageKey)

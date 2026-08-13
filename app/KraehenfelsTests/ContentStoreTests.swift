@@ -73,4 +73,28 @@ final class ContentStoreTests: XCTestCase {
         let fact = FactEntry(id: "F04", title: "", details: "", clueIds: ["C06", "C07", "C08"], fallback: "")
         XCTAssertEqual(fact.clueIds.count, 3)
     }
+
+    @MainActor
+    func testFinaleCountsTwoSuccessesBeforeAdvancing() {
+        let defaults = UserDefaults(suiteName: "kraehenfels.tests.finale")!
+        defaults.removePersistentDomain(forName: "kraehenfels.tests.finale")
+        let session = SessionStore(defaults: defaults)
+        let success = RollEvaluator.evaluate(roll: 50, target: 60)
+
+        XCTAssertEqual(session.recordFinaleRoll(success), .ongoing(successes: 1, failures: 0))
+        XCTAssertEqual(session.recordFinaleRoll(success), .resolved(success: true))
+        XCTAssertEqual(session.finaleSuccesses, 2)
+        XCTAssertEqual(session.finaleFailures, 0)
+    }
+
+    @MainActor
+    func testFinaleCriticalFailureCountsAsTwoFailures() {
+        let defaults = UserDefaults(suiteName: "kraehenfels.tests.finale-fumble")!
+        defaults.removePersistentDomain(forName: "kraehenfels.tests.finale-fumble")
+        let session = SessionStore(defaults: defaults)
+        let fumble = RollEvaluator.evaluate(roll: 100, target: 60)
+
+        XCTAssertEqual(session.recordFinaleRoll(fumble), .resolved(success: false))
+        XCTAssertEqual(session.finaleFailures, 2)
+    }
 }

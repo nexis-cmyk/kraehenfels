@@ -11,6 +11,10 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - name: Validate content and guided flow
+        run: |
+          python3 tools/validate_project.py
+          python3 tools/validate_guided_flow.py
       - name: Install XcodeGen
         run: HOMEBREW_NO_REQUIRE_TAP_TRUST=1 brew install xcodegen
       - name: Generate project

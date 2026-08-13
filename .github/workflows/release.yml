@@ -60,6 +60,7 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --tag "${{ steps.release.outputs.tag }}" \
             --ipa Kraehenfels.ipa \
+            --download-url "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/Kraehenfels.ipa" \
             --output altstore/source.generated.json
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
