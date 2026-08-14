@@ -1,6 +1,6 @@
 # Krähenfels Web-Test
 
-Die Web-Testversion ist eine offlinefähige Vorschau des aktuellen Spielleiter-Leitstands für `Krähenfels: Die letzte Kutsche`. Sie wird aus dem Inhaltsmanifest und den nativen Ressourcen synchronisiert und nutzt dieselben Szenen, Handouts, NPCs, Karten und Audio-Dateien wie die iPhone-App.
+Die Web-Testversion ist eine offlinefähige Vorschau des aktuellen Spielleiter-Leitstands für `Krähenfels: Die letzte Kutsche`. Sie startet mit derselben Leitstand-Übersicht wie die native iPhone-App und führt von dort in die Szenen. Sie wird aus dem Inhaltsmanifest und den nativen Ressourcen synchronisiert und nutzt dieselben Szenen, Handouts, NPCs, Karten und Audio-Dateien wie die iPhone-App.
 
 Die veröffentlichte Testversion liegt nach dem GitHub-Pages-Workflow unter `https://nexis-cmyk.github.io/kraehenfels/`. Falls GitHub Pages im Repository noch nicht aktiv ist, einmal **Settings → Pages → Build and deployment → Source: GitHub Actions → Save** wählen. Beim ersten Öffnen braucht die Seite Internet, danach stehen die bereits geladenen Inhalte offline zur Verfügung.
 

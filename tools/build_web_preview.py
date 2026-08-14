@@ -54,7 +54,9 @@ def main() -> None:
     sync_file(ROOT / "altstore" / "icon.png", WEB / "assets" / "icon.png")
     service_worker = WEB / "service-worker.js"
     service_worker_source = service_worker.read_text(encoding="utf-8")
-    cache_name = f"kraehenfels-web-v{version}"
+    # Bump the shell suffix when the web layout changes so an installed service
+    # worker cannot keep serving a previous HTML/CSS/JS shell.
+    cache_name = f"kraehenfels-web-v{version}-shell2"
     service_worker_source, replacements = re.subn(
         r'const CACHE = "[^"]+";',
         f'const CACHE = "{cache_name}";',

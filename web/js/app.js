@@ -5,6 +5,10 @@ const sceneNav = document.querySelector("#scene-nav");
 const progressCount = document.querySelector("#progress-count");
 const progressFill = document.querySelector("#progress-fill");
 const audioStatus = document.querySelector("#audio-status");
+const topbarBack = document.querySelector("#topbar-back");
+const screenTitle = document.querySelector("#screen-title");
+const topbarMenu = document.querySelector("#topbar-menu");
+const topbarMenuPanel = document.querySelector("#topbar-menu-panel");
 const nightPhases = [
   { title: "Der Bruch", detail: "Manipulierte Kutsche, Schnee und der erste falsche Schutz.", symbol: "✦" },
   { title: "Das Dorf", detail: "Gasthaus, Kirche und Schmiede öffnen ihre Widersprüche.", symbol: "⌂" },
@@ -29,6 +33,7 @@ const stored = (key, fallback) => {
 
 const state = {
   manifest: null,
+  view: "home",
   currentSceneId: localStorage.getItem("kraehenfels.currentScene") || "S01",
   completed: new Set(stored("kraehenfels.completed", [])),
   clues: new Set(stored("kraehenfels.clues", [])),
@@ -151,6 +156,75 @@ function renderNPC(npc) {
   </article>`;
 }
 
+function renderFrame(view, scene) {
+  const isHome = view === "home";
+  topbarBack.hidden = isHome;
+  screenTitle.textContent = isHome ? "Krähenfels" : scene.shortTitle;
+  document.body.dataset.view = view;
+  topbarMenuPanel.hidden = true;
+  topbarMenu.setAttribute("aria-expanded", "false");
+}
+
+function renderHome(scene) {
+  const scenes = state.manifest.scenes;
+  const totalSteps = scene.id === "S01" ? 5 : Math.max(1, scene.checklist.length);
+  const doneSteps = scene.checklist.filter((_, index) => state.checklist.has(`${scene.id}-${index}`)).length;
+  const currentStep = Math.min(doneSteps + 1, totalSteps);
+  const assignedPlayers = state.playerNames.filter((name) => name.trim()).length;
+  const sceneProgress = Math.round((state.completed.size / Math.max(1, scenes.length)) * 100);
+  const nightSegments = Array.from({ length: nightPhases.length + 1 }, (_, index) => `<i class="night-segment ${index <= state.nightPhase ? "is-active" : ""}"></i>`).join("");
+  const stageLabel = state.completed.size ? `${state.completed.size}/${scenes.length}` : `0/${scenes.length}`;
+  const unassigned = 3 - assignedPlayers;
+  const tableLabel = assignedPlayers === 3 ? "Alle drei Reisenden sind zugewiesen" : unassigned === 3 ? "Drei Reisende sind noch nicht zugewiesen" : unassigned === 2 ? "Zwei Reisende sind noch nicht zugewiesen" : "Ein Reisender ist noch nicht zugewiesen";
+  return `<div class="home-view">
+    <section class="home-intro" aria-labelledby="home-title">
+      <p class="home-kicker">Krähenfels · Die letzte Kutsche</p>
+      <h1 id="home-title"><span>Dein Leitstand für</span><span>die Nacht.</span></h1>
+      <p class="home-subtitle">Drei Reisende · Schwarzwald · November 1890</p>
+    </section>
+
+    <button class="home-start-card" data-action="start" type="button">
+      <span class="home-icon home-icon-play" aria-hidden="true">▶</span>
+      <span class="home-card-copy"><strong>Spielleiter-Modus starten</strong><small>Vorbereitung, fertige Figuren und Schritt-für-Schritt-Führung</small></span>
+      <span class="home-chevron" aria-hidden="true">›</span>
+    </button>
+
+    <button class="home-card continue-card" data-action="continue" type="button">
+      <span class="home-icon home-icon-route" aria-hidden="true">⌁</span>
+      <span class="home-card-copy"><span class="home-card-label">Jetzt weiterspielen <b>${stageLabel}</b></span><strong>${escapeHtml(scene.shortTitle)}</strong><small>Schritt ${currentStep} von ${totalSteps}</small><span class="home-progress"><i style="width:${sceneProgress}%"></i></span></span>
+      <span class="home-chevron" aria-hidden="true">↗</span>
+    </button>
+
+    <section class="home-card table-summary" aria-labelledby="table-summary-title">
+      <div class="home-card-copy"><span class="home-card-label" id="table-summary-title">Am Tisch</span><strong>${escapeHtml(tableLabel)}</strong></div>
+      <button class="icon-button" data-action="table" type="button" aria-label="Tischdaten bearbeiten">⌕</button>
+    </section>
+
+    <section class="home-card night-summary" aria-labelledby="night-summary-title">
+      <div class="night-summary-heading"><span class="home-card-label" id="night-summary-title">Nachtstand</span><b>Stufe ${state.nightPhase}/5</b></div>
+      <div class="night-segments" aria-hidden="true">${nightSegments}</div>
+      <p>${escapeHtml(nightPhases[state.nightPhase].detail)}</p>
+      <label class="night-range"><span>Dorfspannung manuell setzen</span><input data-threat type="range" min="0" max="5" step="1" value="${state.threatLevel}" aria-label="Dorfspannung"></label>
+    </section>
+
+    <section class="home-scenes" aria-labelledby="home-scenes-title">
+      <div class="home-section-heading"><h2 id="home-scenes-title">Szenen</h2><span>${scenes.length} Abschnitte</span></div>
+      <div class="home-scene-list">${scenes.map((item) => {
+        const complete = state.completed.has(item.id);
+        const gmJump = item.id !== "S01" && !complete;
+        return `<button class="home-scene-row ${item.id === scene.id ? "is-current" : ""}" data-scene="${item.id}" type="button"><span class="home-scene-id">${item.id}</span><span class="home-scene-copy"><strong>${escapeHtml(item.title)}</strong><small class="${gmJump ? "is-warning" : ""}">${escapeHtml(item.duration)} · ${complete ? "abgeschlossen" : gmJump ? "GM-Sprung" : "empfohlen"}</small></span><span class="home-chevron" aria-hidden="true">›</span></button>`;
+      }).join("")}</div>
+    </section>
+
+    <section class="home-quick-grid" aria-label="Spielleiter-Materialien">
+      <button class="quick-action" data-action="materials" type="button"><span aria-hidden="true">▱</span>Materialien</button>
+      <button class="quick-action" data-action="rules" type="button"><span aria-hidden="true">▧</span>Regeln</button>
+      <button class="quick-action" data-action="audio-check" type="button"><span aria-hidden="true">≋</span>Audio-Check</button>
+      <button class="quick-action" data-action="dossier" type="button"><span aria-hidden="true">⌕</span>Akte</button>
+    </section>
+  </div>`;
+}
+
 function render() {
   if (!state.manifest) return;
   const scene = sceneById(state.currentSceneId) || state.manifest.scenes[0];
@@ -161,6 +235,12 @@ function render() {
   const checklistCount = scene.checklist.filter((_, index) => state.checklist.has(`${scene.id}-${index}`)).length;
   const nextScene = scene.nextSceneIds[0] ? sceneById(scene.nextSceneIds[0]) : null;
   const nightPhase = nightPhases[state.nightPhase];
+  renderNavigation();
+  if (state.view === "home") {
+    renderFrame("home", scene);
+    app.innerHTML = renderHome(scene);
+    return;
+  }
   const soundboard = cues.length ? `
     <section class="soundboard" aria-labelledby="soundboard-title">
       <div class="section-heading soundboard-heading"><div><h2 id="soundboard-title">Soundboard</h2><p>Preset für die Stimmung. Effekte bleiben bewusst einzeln.</p></div><button class="button button-primary" data-action="preset" type="button">Szene starten</button></div>
@@ -174,7 +254,7 @@ function render() {
       <p class="quiet-copy">Für den Epilog keine neue Tonspur starten. Lass nach der Entscheidung einen Moment Raum, bevor ihr erzählt, was von Krähenfels bleibt.</p>
     </section>`;
 
-  renderNavigation();
+  renderFrame("scene", scene);
   app.innerHTML = `
     <section class="scene-hero" style="--scene-art: url('./assets/art/${encodeURIComponent(scene.art)}')">
       <div class="scene-hero-content">
@@ -262,6 +342,7 @@ document.addEventListener("click", async (event) => {
   const sceneButton = event.target.closest("[data-scene]");
   if (sceneButton) {
     state.currentSceneId = sceneButton.dataset.scene;
+    state.view = "scene";
     persist();
     render();
     document.querySelector("#scene-content").focus();
@@ -287,6 +368,48 @@ document.addEventListener("click", async (event) => {
     return;
   }
   const action = event.target.closest("[data-action]")?.dataset.action;
+  if (action === "home") {
+    state.view = "home";
+    render();
+    document.querySelector("#scene-content").focus();
+    return;
+  }
+  if (action === "menu") {
+    const isOpen = topbarMenu.getAttribute("aria-expanded") === "true";
+    topbarMenu.setAttribute("aria-expanded", String(!isOpen));
+    topbarMenuPanel.hidden = isOpen;
+    return;
+  }
+  if (action === "start" || action === "continue") {
+    state.view = "scene";
+    render();
+    document.querySelector("#scene-content").focus();
+    return;
+  }
+  if (action === "table") {
+    state.view = "scene";
+    render();
+    requestAnimationFrame(() => document.querySelector(".table-section")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    return;
+  }
+  if (action === "materials" || action === "rules" || action === "audio-check" || action === "dossier") {
+    state.view = "scene";
+    render();
+    const target = { materials: ".handout-section", rules: ".dossier-section", "audio-check": ".soundboard", dossier: ".dossier-section" }[action];
+    requestAnimationFrame(() => document.querySelector(target)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    return;
+  }
+  if (action === "motif") {
+    const cue = sceneById(state.currentSceneId).audioCueIds.map(cueById).find((item) => item?.category === "music");
+    if (cue) await audio.play(cue);
+    return;
+  }
+  if (action === "read-aloud") {
+    state.view = "scene";
+    render();
+    requestAnimationFrame(() => document.querySelector(".reading-block")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    return;
+  }
   if (action === "spoilers") {
     state.spoilersOpen = !state.spoilersOpen;
     render();
@@ -351,6 +474,7 @@ document.addEventListener("input", (event) => {
 });
 
 document.querySelector("#stop-all").addEventListener("click", () => audio.stopAll());
+document.querySelector("#transport-stop").addEventListener("click", () => audio.stopAll());
 document.querySelector("#audio-test").addEventListener("click", () => audio.testTone());
 document.querySelector("#reset-progress").addEventListener("click", () => {
   state.completed.clear(); state.clues.clear(); state.checklist.clear(); state.currentSceneId = "S01"; persist(); render();

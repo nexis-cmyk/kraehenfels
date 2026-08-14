@@ -34,24 +34,37 @@
 
         <nav id="scene-nav" class="scene-nav" aria-label="Szenen"></nav>
 
-        <div class="sidebar-actions">
-          <button id="audio-test" class="button button-quiet" type="button">Audio testen</button>
-          <button id="reset-progress" class="text-button" type="button">Fortschritt zurücksetzen</button>
-        </div>
+        <div class="sidebar-actions" aria-hidden="true"></div>
       </aside>
 
       <main id="scene-content" class="main-content" tabindex="-1">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">Offline-Testversion</p>
-            <p id="audio-status" class="audio-status" role="status">Audio bereit. Starte den Test vor der Runde.</p>
+        <header class="topbar" aria-label="Krähenfels-Navigation">
+          <button id="topbar-back" class="topbar-back" data-action="home" type="button" hidden aria-label="Zur Startseite">
+            <span aria-hidden="true">‹</span><span>Krähenfels</span>
+          </button>
+          <div class="topbar-title">
+            <p id="screen-title">Krähenfels</p>
+            <p id="audio-status" class="audio-status" role="status">Audio bereit.</p>
           </div>
-          <button id="stop-all" class="button button-stop" type="button">Alle Sounds stoppen</button>
+          <div class="topbar-actions">
+            <button id="topbar-menu" class="topbar-menu" data-action="menu" type="button" aria-label="Mehr Optionen" aria-expanded="false">•••</button>
+            <div id="topbar-menu-panel" class="topbar-menu-panel" hidden>
+              <button id="audio-test" class="menu-action" type="button">Audio testen</button>
+              <button id="reset-progress" class="menu-action menu-action-danger" type="button">Fortschritt zurücksetzen</button>
+            </div>
+            <button id="stop-all" class="button button-stop topbar-stop" type="button">Alle Sounds stoppen</button>
+          </div>
         </header>
 
         <div id="app" aria-live="polite"></div>
       </main>
     </div>
+
+    <nav class="transport-bar" aria-label="Schnellsteuerung">
+      <button class="transport-button" data-action="motif" type="button"><span aria-hidden="true">▶</span><span>Motiv</span></button>
+      <button class="transport-button" data-action="read-aloud" type="button"><span aria-hidden="true">❝</span><span>Vorlesen</span></button>
+      <button id="transport-stop" class="transport-stop" type="button"><span aria-hidden="true">■</span><span>STOP</span></button>
+    </nav>
 
     <template id="loading-template">
       <section class="loading-state" aria-busy="true">
