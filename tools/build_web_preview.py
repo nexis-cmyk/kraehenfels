@@ -47,6 +47,25 @@ def main() -> None:
     manifest = json.loads((ROOT / "content" / "manifest.json").read_text(encoding="utf-8"))
     version = manifest.get("meta", {}).get("version", "dev")
     sync_file(ROOT / "content" / "manifest.json", WEB / "data" / "manifest.json")
+    index = WEB / "index.html"
+    index_source = index.read_text(encoding="utf-8")
+    index_source, index_replacements = re.subn(
+        r'\./js/app\.js(?:\?v=[^"\']+)?',
+        f'./js/app.js?v={version}-r3',
+        index_source,
+        count=1,
+    )
+    if index_replacements != 1:
+        raise RuntimeError(f"Could not update app shell version in {index}")
+    index_source, css_replacements = re.subn(
+        r'\./styles\.css(?:\?v=[^"\']+)?',
+        f'./styles.css?v={version}-r3',
+        index_source,
+        count=1,
+    )
+    if css_replacements != 1:
+        raise RuntimeError(f"Could not update stylesheet version in {index}")
+    index.write_text(index_source, encoding="utf-8")
     art_names = {scene["art"] for scene in manifest["scenes"] if scene.get("art")}
     audio_names = {cue["file"] for cue in manifest["audioCues"]}
     art_count = sync_selected(APP / "Art", WEB / "assets" / "art", art_names)
@@ -56,7 +75,7 @@ def main() -> None:
     service_worker_source = service_worker.read_text(encoding="utf-8")
     # Bump the shell suffix when the web layout changes so an installed service
     # worker cannot keep serving a previous HTML/CSS/JS shell.
-    cache_name = f"kraehenfels-web-v{version}-shell2"
+    cache_name = f"kraehenfels-web-v{version}-shell7"
     service_worker_source, replacements = re.subn(
         r'const CACHE = "[^"]+";',
         f'const CACHE = "{cache_name}";',

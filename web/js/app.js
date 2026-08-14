@@ -1,4 +1,5 @@
 import { AudioEngine } from "./audio-engine.js";
+import { evaluateRoll, guideKindLabels, guidedFlow } from "./guided-flow.js";
 
 const app = document.querySelector("#app");
 const sceneNav = document.querySelector("#scene-nav");
@@ -48,6 +49,12 @@ const state = {
   threatLevel: Math.min(5, Math.max(0, Number(localStorage.getItem("kraehenfels.threatLevel") || 0))),
   npcStates: stored("kraehenfels.npcStates", {}),
   selectedHooks: stored("kraehenfels.selectedHooks", {}),
+  gmMode: stored("kraehenfels.gmMode", false),
+  guidedIndexes: stored("kraehenfels.guidedIndexes", {}),
+  setupChecks: new Set(stored("kraehenfels.setupChecks", [])),
+  guidedRolls: stored("kraehenfels.guidedRolls", {}),
+  endingID: localStorage.getItem("kraehenfels.endingID") || "",
+  rollOpen: false,
   spoilersOpen: false,
   statusTone: "ok",
 };
@@ -64,6 +71,11 @@ function persist() {
   localStorage.setItem("kraehenfels.threatLevel", String(state.threatLevel));
   localStorage.setItem("kraehenfels.npcStates", JSON.stringify(state.npcStates));
   localStorage.setItem("kraehenfels.selectedHooks", JSON.stringify(state.selectedHooks));
+  localStorage.setItem("kraehenfels.gmMode", JSON.stringify(state.gmMode));
+  localStorage.setItem("kraehenfels.guidedIndexes", JSON.stringify(state.guidedIndexes));
+  localStorage.setItem("kraehenfels.setupChecks", JSON.stringify([...state.setupChecks]));
+  localStorage.setItem("kraehenfels.guidedRolls", JSON.stringify(state.guidedRolls));
+  localStorage.setItem("kraehenfels.endingID", state.endingID);
 }
 
 const audio = new AudioEngine({
@@ -159,10 +171,106 @@ function renderNPC(npc) {
 function renderFrame(view, scene) {
   const isHome = view === "home";
   topbarBack.hidden = isHome;
-  screenTitle.textContent = isHome ? "Krähenfels" : scene.shortTitle;
+  screenTitle.textContent = isHome ? "Krähenfels" : view === "gm-start" ? "Spielleiter-Modus" : scene.shortTitle;
   document.body.dataset.view = view;
   topbarMenuPanel.hidden = true;
   topbarMenu.setAttribute("aria-expanded", "false");
+}
+
+function guideStepsFor(sceneID) {
+  return guidedFlow.steps[sceneID] || [];
+}
+
+function currentGuideIndex(sceneID) {
+  const steps = guideStepsFor(sceneID);
+  return Math.min(Math.max(Number(state.guidedIndexes[sceneID] || 0), 0), Math.max(0, steps.length - 1));
+}
+
+function currentGuideStep(sceneID) {
+  return guideStepsFor(sceneID)[currentGuideIndex(sceneID)];
+}
+
+function guideReference(id) {
+  if (!id) return "";
+  const handout = handoutById(id);
+  const clue = clueById(id);
+  const npc = npcById(id);
+  if (handout) return `${handout.id} · ${handout.title}`;
+  if (clue) return `${clue.id} · ${clue.title}`;
+  if (npc) return `${npc.name} · ${npc.role}`;
+  return id;
+}
+
+function guideReferences(step) {
+  const ids = [...new Set([step.handoutID, ...(step.handoutIDs || []), step.clueID, step.npcID, ...(step.npcIDs || [])].filter(Boolean))];
+  if (!ids.length) return "";
+  return `<div class="guide-references"><span class="eyebrow">Direkt griffbereit</span><div>${ids.map((id) => `<span class="guide-reference">${escapeHtml(guideReference(id))}</span>`).join("")}</div></div>`;
+}
+
+function renderGMStart() {
+  const checked = state.setupChecks.size;
+  return `<div class="gm-start-view">
+    <section class="gm-intro">
+      <p class="home-kicker">Spielleiter-Modus</p>
+      <h2>Heute Abend musst du nichts auswendig können.</h2>
+      <p>Dieser Assistent führt dich durch Vorbereitung, Vorlesetexte, Spieleraktionen, Hinweise und Würfelproben. Du entscheidest jederzeit selbst, ob die Gruppe einen anderen Weg nimmt.</p>
+    </section>
+    <section class="guide-panel setup-panel" aria-labelledby="setup-title">
+      <div class="guide-panel-heading"><div><span class="eyebrow">Vorbereitung</span><h2 id="setup-title">In fünf Minuten startklar</h2></div><b>${checked}/${guidedFlow.setupItems.length}</b></div>
+      <div class="setup-list">${guidedFlow.setupItems.map((item) => `<button class="setup-row" data-setup="${item.id}" type="button" aria-pressed="${state.setupChecks.has(item.id)}"><span class="setup-check">${state.setupChecks.has(item.id) ? "✓" : ""}</span><span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.detail)}</small></span></button>`).join("")}</div>
+    </section>
+    <section class="guide-panel characters-panel" aria-labelledby="characters-title">
+      <div class="guide-panel-heading"><div><span class="eyebrow">Die drei Reisenden</span><h2 id="characters-title">Fertige Figuren für den Tisch</h2></div><span class="guide-muted">Namen kannst du später eintragen</span></div>
+      <div class="character-grid">${guidedFlow.characters.map((character) => `<article class="character-card"><div class="character-avatar">${escapeHtml(character.name.slice(0, 1))}</div><div><h3>${escapeHtml(character.name)}</h3><p class="character-role">${escapeHtml(character.role)}</p><p>${escapeHtml(character.hook)}</p><div class="character-skills">${character.skills.map((skill) => `<span>${escapeHtml(skill)}</span>`).join("")}</div><small>${escapeHtml(character.tablePrompt)}</small></div></article>`).join("")}</div>
+    </section>
+    <section class="guide-panel briefing-panel" aria-labelledby="briefing-title">
+      <div class="guide-panel-heading"><div><span class="eyebrow">Vor dem ersten Satz</span><h2 id="briefing-title">Das sagst du den Spielern</h2></div></div>
+      <blockquote>${escapeHtml(guidedFlow.playerBriefing)}</blockquote>
+      <p class="spoiler-line"><span>NICHT VERRATEN</span> ${escapeHtml(guidedFlow.hiddenFromPlayers)}</p>
+    </section>
+    <button class="button button-primary guide-start-button" data-guide-action="begin" type="button">${checked === guidedFlow.setupItems.length ? "Spielleiter-Modus starten" : "Trotzdem starten"}<span aria-hidden="true">›</span></button>
+  </div>`;
+}
+
+function renderRollPanel(step) {
+  const roll = step.roll;
+  const previous = state.guidedRolls[step.id];
+  if (!state.rollOpen) return `<button class="button button-primary guide-action" data-guide-action="open-roll" type="button">Probe auswerten</button>`;
+  return `<div class="roll-panel"><div class="roll-panel-heading"><div><span class="eyebrow">W100-Probe</span><strong>${escapeHtml(roll.actor)}</strong></div><button class="text-button" data-guide-action="close-roll" type="button">Schließen</button></div><p><b>Fertigkeit:</b> ${escapeHtml(roll.ability)} · <b>Zielwert:</b> ${escapeHtml(roll.target)}</p><p class="roll-modifier">${escapeHtml(roll.modifier)}</p><div class="roll-inputs"><label class="roll-input"><span>Gewürfeltes Ergebnis</span><input data-roll-value type="number" min="1" max="100" inputmode="numeric" value="${previous?.roll || ""}" placeholder="z. B. 42"></label><label class="roll-input"><span>Zielwert der Fertigkeit</span><input data-roll-target type="number" min="1" max="100" inputmode="numeric" value="${previous?.target || 50}" placeholder="z. B. 65"></label></div><button class="button button-primary guide-action" data-guide-action="resolve-roll" data-step="${step.id}" type="button">Ergebnis auswerten</button>${previous ? `<div class="roll-result ${previous.success ? "is-success" : "is-failure"}"><strong>${escapeHtml(previous.label)}</strong><span>${previous.roll} gegen ${previous.target}</span><p>${escapeHtml(previous.success ? roll.success : roll.failure)}</p></div>` : ""}</div>`;
+}
+
+function renderGuideStep(step) {
+  if (!step) return `<div class="guide-empty"><h2>Schritt abgeschlossen</h2><p>Wähle links eine Szene oder kehre zum Start zurück.</p></div>`;
+  const scene = sceneById(step.sceneID || state.currentSceneId);
+  const index = currentGuideIndex(state.currentSceneId);
+  const steps = guideStepsFor(state.currentSceneId);
+  const cue = step.audioCueID ? cueById(step.audioCueID) : null;
+  const options = step.options || [];
+  let action = "";
+  if (step.kind === "roll") action = renderRollPanel(step);
+  else if (options.length) action = `<div class="guide-options">${options.map((option) => `<button class="guide-option" data-guide-option="${option.id}" data-destination="${option.destinationSceneID || ""}" data-ending="${option.endingID || ""}" type="button"><strong>${escapeHtml(option.title)}</strong><small>${escapeHtml(option.detail)}</small><span aria-hidden="true">›</span></button>`).join("")}</div>`;
+  else if (step.kind === "readAloud") action = `<button class="button button-primary guide-action" data-guide-action="read" data-cue="${cue?.id || ""}" type="button">${cue ? "Sound vorbereiten und vorlesen" : "Vorgelesen – weiter"}<span aria-hidden="true">›</span></button>`;
+  else action = `<button class="button button-primary guide-action" data-guide-action="advance" type="button">${escapeHtml(step.actionLabel || "Weiter")}<span aria-hidden="true">›</span></button>`;
+  const clueLine = step.clueID ? `<div class="guide-clue-note"><span>HINWEIS</span> Dieser Hinweis ist garantiert und darf nicht an einem Würfelwurf scheitern.</div>` : "";
+  return `<div class="guided-scene-view">
+    <div class="guide-progress-row"><span>SCHRITT ${index + 1} VON ${steps.length}</span><b>${escapeHtml(scene.shortTitle)}</b></div>
+    <div class="guide-progress-track"><i style="width:${((index + 1) / Math.max(1, steps.length)) * 100}%"></i></div>
+    <section class="guide-scene-hero" style="--scene-art: url('./assets/art/${encodeURIComponent(scene.art)}')"><div><span>${escapeHtml(scene.id)} · ${escapeHtml(scene.duration)}</span><h2>${escapeHtml(scene.title)}</h2><p>${escapeHtml(scene.goal)}</p></div></section>
+    <section class="guide-step-card kind-${step.kind}">
+      <div class="guide-kind"><span>${escapeHtml(guideKindLabels[step.kind] || "SPIELLEITER-SCHRITT")}</span>${step.required ? "<b>PFLICHT</b>" : ""}</div>
+      <h2>${escapeHtml(step.title)}</h2>
+      <p class="guide-step-body">${escapeHtml(step.body)}</p>
+      ${step.roll ? `<div class="roll-brief"><span class="eyebrow">WANN WIRD GEWÜRFELT?</span><strong>${escapeHtml(step.roll.actor)}</strong><p>${escapeHtml(step.roll.ability)} · ${escapeHtml(step.roll.target)}</p><small>${escapeHtml(step.roll.modifier)}</small></div>` : ""}
+      ${clueLine}${guideReferences(step)}
+      ${action}
+    </section>
+    <div class="guide-quick-actions"><button class="quick-action" data-action="materials" type="button">▱ Materialien</button><button class="quick-action" data-action="rules" type="button">▧ Regeln</button><button class="quick-action" data-action="audio-check" type="button">≋ Soundplan</button><button class="quick-action" data-action="dossier" type="button">⌕ Fakten</button></div>
+    <section class="guide-table-note"><div><span class="eyebrow">TISCHNOTIZ</span><p>Was ist gerade passiert? Was bleibt offen?</p></div><textarea data-scene-note="${scene.id}" rows="3" placeholder="Kurz notieren …">${escapeHtml(state.sceneNotes[scene.id] || "")}</textarea></section>
+  </div>`;
+}
+
+function renderGuidedScene(scene) {
+  return renderGuideStep(currentGuideStep(scene.id));
 }
 
 function renderHome(scene) {
@@ -239,6 +347,16 @@ function render() {
   if (state.view === "home") {
     renderFrame("home", scene);
     app.innerHTML = renderHome(scene);
+    return;
+  }
+  if (state.view === "gm-start") {
+    renderFrame("gm-start", scene);
+    app.innerHTML = renderGMStart();
+    return;
+  }
+  if (state.view === "guided") {
+    renderFrame("guided", scene);
+    app.innerHTML = renderGuidedScene(scene);
     return;
   }
   const soundboard = cues.length ? `
@@ -342,14 +460,15 @@ document.addEventListener("click", async (event) => {
   const sceneButton = event.target.closest("[data-scene]");
   if (sceneButton) {
     state.currentSceneId = sceneButton.dataset.scene;
-    state.view = "scene";
+    state.view = state.gmMode ? "guided" : "scene";
+    state.rollOpen = false;
     persist();
     render();
     document.querySelector("#scene-content").focus();
     return;
   }
   const cueButton = event.target.closest("[data-cue]");
-  if (cueButton) return audio.play(cueById(cueButton.dataset.cue));
+  if (cueButton && !cueButton.hasAttribute("data-guide-action")) return audio.play(cueById(cueButton.dataset.cue));
   const clueButton = event.target.closest("[data-clue]");
   if (clueButton) return toggleSet(state.clues, clueButton.dataset.clue);
   const checklistButton = event.target.closest("[data-check]");
@@ -368,8 +487,80 @@ document.addEventListener("click", async (event) => {
     return;
   }
   const action = event.target.closest("[data-action]")?.dataset.action;
+  const guideAction = event.target.closest("[data-guide-action]")?.dataset.guideAction;
+  if (guideAction === "begin") {
+    state.gmMode = true;
+    state.currentSceneId = "S01";
+    state.guidedIndexes.S01 = 0;
+    state.view = "guided";
+    state.rollOpen = false;
+    persist();
+    render();
+    document.querySelector("#scene-content").focus();
+    return;
+  }
+  if (guideAction === "advance") {
+    const steps = guideStepsFor(state.currentSceneId);
+    state.guidedIndexes[state.currentSceneId] = Math.min(currentGuideIndex(state.currentSceneId) + 1, Math.max(0, steps.length - 1));
+    state.rollOpen = false;
+    persist();
+    render();
+    return;
+  }
+  if (guideAction === "read") {
+    const cue = cueById(event.target.closest("[data-cue]")?.dataset.cue || "");
+    // Start audio without making the guided flow wait for a browser autoplay promise.
+    // The cue reports its own success or error in the persistent status line.
+    if (cue) void audio.play(cue);
+    const steps = guideStepsFor(state.currentSceneId);
+    state.guidedIndexes[state.currentSceneId] = Math.min(currentGuideIndex(state.currentSceneId) + 1, Math.max(0, steps.length - 1));
+    persist();
+    render();
+    return;
+  }
+  if (guideAction === "open-roll") { state.rollOpen = true; render(); return; }
+  if (guideAction === "close-roll") { state.rollOpen = false; render(); return; }
+  if (guideAction === "resolve-roll") {
+    const step = currentGuideStep(state.currentSceneId);
+    const value = Number(document.querySelector("[data-roll-value]")?.value || 1);
+    const target = Number(document.querySelector("[data-roll-target]")?.value || 50);
+    const result = evaluateRoll(value, target);
+    state.guidedRolls[step.id] = result;
+    state.rollOpen = false;
+    state.guidedIndexes[state.currentSceneId] = Math.min(currentGuideIndex(state.currentSceneId) + 1, Math.max(0, guideStepsFor(state.currentSceneId).length - 1));
+    if (!result.success && state.currentSceneId === "S06") state.threatLevel = Math.max(state.threatLevel, 4);
+    persist();
+    render();
+    return;
+  }
+  const guideOption = event.target.closest("[data-guide-option]");
+  if (guideOption) {
+    const destination = guideOption.dataset.destination;
+    const ending = guideOption.dataset.ending;
+    if (ending) state.endingID = ending;
+    if (destination) {
+      state.currentSceneId = destination;
+      state.guidedIndexes[destination] = 0;
+      if (destination === "S08") state.completed.add("S07");
+      if (destination === "S02") state.completed.add("S01");
+      state.view = "guided";
+    } else {
+      const steps = guideStepsFor(state.currentSceneId);
+      state.guidedIndexes[state.currentSceneId] = Math.min(currentGuideIndex(state.currentSceneId) + 1, Math.max(0, steps.length - 1));
+    }
+    state.rollOpen = false;
+    persist();
+    render();
+    return;
+  }
+  const setupButton = event.target.closest("[data-setup]");
+  if (setupButton) {
+    toggleSet(state.setupChecks, setupButton.dataset.setup);
+    return;
+  }
   if (action === "home") {
     state.view = "home";
+    state.rollOpen = false;
     render();
     document.querySelector("#scene-content").focus();
     return;
@@ -381,7 +572,8 @@ document.addEventListener("click", async (event) => {
     return;
   }
   if (action === "start" || action === "continue") {
-    state.view = "scene";
+    state.view = action === "start" ? "gm-start" : state.gmMode ? "guided" : "scene";
+    state.rollOpen = false;
     render();
     document.querySelector("#scene-content").focus();
     return;
@@ -477,7 +669,7 @@ document.querySelector("#stop-all").addEventListener("click", () => audio.stopAl
 document.querySelector("#transport-stop").addEventListener("click", () => audio.stopAll());
 document.querySelector("#audio-test").addEventListener("click", () => audio.testTone());
 document.querySelector("#reset-progress").addEventListener("click", () => {
-  state.completed.clear(); state.clues.clear(); state.checklist.clear(); state.currentSceneId = "S01"; persist(); render();
+  state.completed.clear(); state.clues.clear(); state.checklist.clear(); state.setupChecks.clear(); state.guidedIndexes = {}; state.guidedRolls = {}; state.gmMode = false; state.endingID = ""; state.currentSceneId = "S01"; state.view = "home"; persist(); render();
   audioStatus.textContent = "Fortschritt zurückgesetzt.";
 });
 

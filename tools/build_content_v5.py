@@ -12,6 +12,7 @@ CANON = ROOT / "adventure" / "canon.json"
 NATIVE_OUTPUTS = [
     ROOT / "content" / "manifest.json",
     ROOT / "app" / "Kraehenfels" / "Resources" / "manifest.json",
+    ROOT / "web" / "data" / "manifest.json",
 ]
 
 
@@ -114,7 +115,7 @@ def main() -> None:
     for output in NATIVE_OUTPUTS:
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(payload, encoding="utf-8")
-    print("Built native 3.3.0 content. Web 3.1.0 was not changed.")
+    print("Built shared 3.3.0 content for native app and web preview.")
 
 
 if __name__ == "__main__":

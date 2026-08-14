@@ -348,3 +348,115 @@ body { background: var(--ink); padding-bottom: calc(4.65rem + env(safe-area-inse
   .home-card-copy strong { font-size: 1.04rem; }
   .home-scene-copy strong { font-size: 0.98rem; }
 }
+
+/* Desktop command-center view: the iPhone shell stays intact below this breakpoint. */
+@media (min-width: 58.01rem) {
+  body { padding-bottom: 0; }
+  .app-shell { display: grid; grid-template-columns: 18.5rem minmax(0, 1fr); min-height: 100vh; }
+  .sidebar { display: flex; }
+  .main-content { width: auto; min-height: 100vh; margin: 0; padding: var(--space-lg) clamp(1.5rem, 3vw, 3rem) var(--space-2xl); }
+  #app { max-width: 76rem; margin: 0 auto; }
+  .topbar { position: relative; min-height: 3.2rem; margin: 0 auto var(--space-lg); padding: 0; border-bottom: 0; background: transparent; backdrop-filter: none; }
+  .topbar-title { text-align: left; }
+  .topbar-title #screen-title { font-size: 1.1rem; }
+  .topbar-title .audio-status { position: static; width: auto; height: auto; overflow: visible; margin-top: 0.1rem; clip: auto; white-space: normal; }
+  .topbar-back { position: static; min-height: 2.75rem; }
+  .topbar-actions { position: static; transform: none; }
+  .topbar-menu { position: relative; }
+  .topbar-stop { display: inline-flex; }
+  .transport-bar { display: none; }
+  .home-view { max-width: 76rem; padding-top: 0.5rem; }
+  .home-intro h1 { max-width: 14ch; }
+  .home-scenes { margin-top: var(--space-2xl); }
+}
+
+/* Guided GM flow shared with the native start assistant. */
+.gm-start-view, .guided-scene-view { display: grid; gap: var(--space-lg); max-width: 76rem; }
+.gm-intro { max-width: 50rem; padding-top: 0.4rem; }
+.gm-intro h2 { max-width: 18ch; margin: 0.25rem 0 0.65rem; color: var(--frost); font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.045em; line-height: 1.04; }
+.gm-intro > p:last-child { max-width: 62ch; margin: 0; color: var(--quiet); font-size: 1.05rem; }
+.guide-panel { padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid var(--line); border-radius: 1rem; background: var(--panel); }
+.guide-panel-heading, .roll-panel-heading { display: flex; align-items: start; justify-content: space-between; gap: var(--space-md); }
+.guide-panel-heading h2 { margin: 0.2rem 0 0; color: var(--frost); font-size: 1.2rem; }
+.guide-panel-heading > b { color: var(--cobalt); font-variant-numeric: tabular-nums; }
+.guide-muted { color: var(--quiet); font-size: .78rem; }
+.setup-list { display: grid; gap: .2rem; margin-top: var(--space-md); }
+.setup-row { display: grid; grid-template-columns: 1.55rem minmax(0, 1fr); gap: .75rem; width: 100%; padding: .72rem .15rem; border: 0; border-bottom: 1px solid color-mix(in oklch, var(--line), transparent 28%); background: transparent; color: var(--frost); text-align: left; }
+.setup-row:hover { color: white; }
+.setup-row > span:last-child { display: grid; gap: .15rem; }
+.setup-row strong { font-size: .95rem; }
+.setup-row small { color: var(--quiet); font-size: .82rem; line-height: 1.4; }
+.setup-check { display: grid; width: 1.3rem; height: 1.3rem; place-items: center; margin-top: .1rem; border: 1px solid var(--quiet); border-radius: 50%; color: var(--ink); font-size: .72rem; font-weight: 900; }
+.setup-row[aria-pressed="true"] .setup-check { border-color: var(--cobalt); background: var(--cobalt); }
+.character-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-sm); margin-top: var(--space-md); }
+.character-card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .7rem; padding: .9rem; border: 1px solid color-mix(in oklch, var(--line), transparent 25%); border-radius: .8rem; background: var(--ink-soft); }
+.character-avatar { display: grid; width: 2.45rem; height: 2.45rem; place-items: center; border-radius: 999px; background: var(--frost); color: var(--ink); font-weight: 800; }
+.character-card h3, .character-card p { margin: 0; }
+.character-card h3 { color: #f0f6fb; font-size: .98rem; }
+.character-role { color: var(--cobalt); font-size: .76rem; font-weight: 750; }
+.character-card p:not(.character-role) { margin-top: .45rem; color: var(--quiet); font-size: .78rem; line-height: 1.4; }
+.character-skills { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .55rem; }
+.character-skills span { padding: .18rem .35rem; border-radius: .25rem; background: var(--panel-raised); color: var(--frost); font-family: ui-monospace, Consolas, monospace; font-size: .63rem; }
+.character-card small { display: block; margin-top: .6rem; color: var(--quiet); font-size: .72rem; line-height: 1.4; }
+.briefing-panel blockquote { margin: var(--space-md) 0 .8rem; padding-left: 1rem; border-left: 2px solid var(--cobalt); color: var(--frost); font-family: ui-serif, Georgia, serif; font-size: 1.03rem; line-height: 1.55; }
+.spoiler-line { margin: 0; color: var(--rust); font-size: .78rem; }
+.spoiler-line span { font-family: ui-monospace, Consolas, monospace; font-weight: 800; letter-spacing: .08em; }
+.guide-start-button { display: inline-flex; width: 100%; min-height: 3.3rem; align-items: center; justify-content: space-between; padding-inline: 1.1rem; font-size: 1rem; }
+.guide-start-button span { font-size: 1.6rem; font-weight: 300; }
+.guide-progress-row { display: flex; justify-content: space-between; gap: var(--space-md); color: var(--cobalt); font-family: ui-monospace, Consolas, monospace; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.guide-progress-row b { overflow: hidden; color: var(--quiet); font-size: .7rem; letter-spacing: .04em; text-overflow: ellipsis; white-space: nowrap; }
+.guide-progress-track { height: .32rem; overflow: hidden; border-radius: 999px; background: var(--panel-raised); }
+.guide-progress-track i { display: block; height: 100%; border-radius: inherit; background: var(--cobalt); transition: width 180ms ease-out; }
+.guide-scene-hero { position: relative; display: flex; min-height: 12rem; align-items: end; overflow: hidden; border: 1px solid var(--line); border-radius: 1rem; background-image: linear-gradient(0deg, rgb(9 14 23 / .92), transparent 75%), var(--scene-art); background-position: center; background-size: cover; }
+.guide-scene-hero > div { padding: 1.25rem; }
+.guide-scene-hero span { color: var(--frost); font-family: ui-monospace, Consolas, monospace; font-size: .7rem; font-weight: 700; }
+.guide-scene-hero h2 { margin: .35rem 0 .2rem; color: white; font-size: clamp(1.45rem, 4vw, 2.25rem); letter-spacing: -.035em; line-height: 1.05; }
+.guide-scene-hero p { max-width: 58ch; margin: 0; color: var(--frost); font-size: .86rem; }
+.guide-step-card { padding: clamp(1.1rem, 3vw, 1.65rem); border: 1px solid var(--cobalt); border-radius: 1rem; background: color-mix(in oklch, var(--panel), var(--cobalt) 7%); }
+.guide-step-card.kind-gmInfo { border-color: color-mix(in oklch, var(--rust), transparent 20%); background: color-mix(in oklch, var(--panel), var(--rust) 5%); }
+.guide-kind { display: flex; justify-content: space-between; gap: var(--space-md); color: var(--cobalt); font-family: ui-monospace, Consolas, monospace; font-size: .68rem; font-weight: 800; letter-spacing: .12em; }
+.kind-gmInfo .guide-kind { color: var(--rust); }
+.guide-kind b { color: var(--rust); }
+.guide-step-card h2 { margin: .5rem 0 .65rem; color: var(--frost); font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.12; }
+.guide-step-body { max-width: 70ch; margin: 0; color: #e0edf6; font-family: ui-serif, Georgia, serif; font-size: 1.05rem; line-height: 1.58; }
+.guide-action { display: inline-flex; min-width: min(100%, 19rem); align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.15rem; }
+.guide-action span { font-size: 1.35rem; font-weight: 300; }
+.roll-brief { display: grid; gap: .22rem; margin-top: 1rem; padding: .8rem .9rem; border: 1px solid color-mix(in oklch, var(--cobalt), transparent 35%); border-radius: .7rem; background: var(--ink-soft); }
+.roll-brief strong { color: var(--frost); font-size: .86rem; }
+.roll-brief p, .roll-brief small { margin: 0; color: var(--quiet); font-size: .78rem; }
+.guide-clue-note { margin-top: 1rem; padding: .7rem .8rem; border-radius: .55rem; background: color-mix(in oklch, var(--rust), transparent 86%); color: var(--frost); font-size: .8rem; }
+.guide-clue-note span { margin-right: .35rem; color: var(--rust); font-family: ui-monospace, Consolas, monospace; font-size: .65rem; font-weight: 800; letter-spacing: .08em; }
+.guide-references { display: grid; gap: .45rem; margin-top: 1rem; }
+.guide-references > div { display: flex; flex-wrap: wrap; gap: .35rem; }
+.guide-reference { padding: .28rem .45rem; border: 1px solid var(--line); border-radius: .3rem; color: var(--frost); font-size: .72rem; }
+.guide-options { display: grid; gap: .45rem; margin-top: 1.15rem; }
+.guide-option { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .1rem 1rem; width: 100%; padding: .75rem .85rem; border: 1px solid var(--line); border-radius: .65rem; background: var(--ink-soft); color: var(--frost); text-align: left; }
+.guide-option:hover { border-color: var(--cobalt); background: var(--panel-raised); }
+.guide-option strong { font-size: .9rem; }
+.guide-option small { color: var(--quiet); font-size: .76rem; }
+.guide-option span { grid-row: 1 / span 2; grid-column: 2; align-self: center; color: var(--cobalt); font-size: 1.35rem; }
+.roll-panel { display: grid; gap: .7rem; margin-top: 1rem; padding: .9rem; border: 1px solid var(--line); border-radius: .75rem; background: var(--ink-soft); }
+.roll-panel-heading strong { display: block; margin-top: .1rem; color: var(--frost); font-size: .9rem; }
+.roll-panel > p { margin: 0; color: var(--quiet); font-size: .79rem; }
+.roll-modifier { color: var(--frost) !important; }
+.roll-inputs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+.roll-input { display: grid; gap: .3rem; color: var(--quiet); font-size: .72rem; font-weight: 700; }
+.roll-input input { width: 100%; min-height: 2.55rem; border: 1px solid var(--line); border-radius: .55rem; background: var(--panel); color: var(--frost); padding: .5rem .6rem; }
+.roll-result { display: grid; gap: .1rem; padding: .7rem; border-radius: .55rem; background: color-mix(in oklch, var(--cobalt), transparent 84%); }
+.roll-result.is-failure { background: color-mix(in oklch, var(--rust), transparent 84%); }
+.roll-result strong { color: var(--frost); }
+.roll-result span, .roll-result p { margin: 0; color: var(--quiet); font-size: .78rem; }
+.guide-quick-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .55rem; }
+.guide-quick-actions .quick-action { min-height: 3rem; justify-content: center; padding: .5rem .65rem; font-size: .8rem; }
+.guide-table-note { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: var(--space-md); padding: 1rem 0; border-top: 1px solid var(--line); }
+.guide-table-note p { margin: .35rem 0 0; color: var(--quiet); font-size: .84rem; }
+.guide-table-note textarea { width: 100%; min-height: 5rem; border: 1px solid var(--line); border-radius: .65rem; background: var(--ink-soft); color: var(--frost); padding: .65rem; resize: vertical; }
+.guide-empty { padding: 3rem 1rem; border: 1px solid var(--line); border-radius: 1rem; text-align: center; }
+.guide-empty h2 { margin: 0; color: var(--frost); }
+.guide-empty p { color: var(--quiet); }
+
+@media (max-width: 48rem) {
+  .character-grid { grid-template-columns: 1fr; }
+  .guide-quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .guide-table-note { grid-template-columns: 1fr; }
+}

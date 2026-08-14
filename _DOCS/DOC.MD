@@ -6,7 +6,7 @@
 
 ## Kanonische Quelle
 
-Die verbindliche Quelle liegt in [`adventure/canon.json`](../adventure/canon.json). Sie enthält Phasen, Figuren-Verbindungen (technisch weiterhin `travelHooks`), Eskalation, Fakten, drei Enden, Orte, Szenen, NPCs, Hinweise, Handouts und Audio-Cues. `python tools/build_content_v5.py` schreibt den Kanon in `content/` und in das native App-Bundle. `web/data/manifest.json` bleibt für den eingefrorenen Web-Teststand 3.1.0 unverändert. Ortsakten, Beweismatrix und Run-Sheet liegen in `adventure/locations/`, `adventure/evidence/`, `adventure/indexes/` und `adventure/session/`.
+Die verbindliche Quelle liegt in [`adventure/canon.json`](../adventure/canon.json). Sie enthält Phasen, Figuren-Verbindungen (technisch weiterhin `travelHooks`), Eskalation, Fakten, drei Enden, Orte, Szenen, NPCs, Hinweise, Handouts und Audio-Cues. `python tools/build_content_v5.py` schreibt den Kanon synchron in `content/`, das native App-Bundle und `web/data/manifest.json`. Ortsakten, Beweismatrix und Run-Sheet liegen in `adventure/locations/`, `adventure/evidence/`, `adventure/indexes/` und `adventure/session/`.
 
 ## Geschichte
 
@@ -17,7 +17,7 @@ Die drei Reisenden stranden nach einer manipulierten Kutschenpanne im Schwarzwal
 - `adventure/`: autorenfreundliche V3-Quelle und Spielleiterstruktur
 - `content/`: erzeugtes Manifest und längere Spieltexte
 - `app/`: SwiftUI-Leitstand für iOS 17 oder neuer
-- `web/`: offlinefähige PWA für den Test vor dem Sideload
+- `web/`: offlinefähige PWA für den Test vor dem Sideload und am PC
 - `print/`: Rastergrafiken und Druckvorlagen
 - `audio/`: erzeugte V3-Audios und Quellenhinweise
 - `tools/`: reproduzierbare Build- und Validierungsskripte
@@ -58,7 +58,11 @@ python tools/validate_project.py
 python tools/validate_guided_flow.py
 ```
 
-`tools/validate_project.py` prüft IDs und Querverweise, die native Manifest-Synchronität, den eingefrorenen Web-Stand, Szene- und Kartenbilder, exakt die 21 erwarteten nativen Audio-Dateien (20 Cues plus Selbsttest), unreferenzierte Audio-/Art-Dateien, Dubletten im gesamten nativen Paket, Cue-Zeitpunkte, kritische Szenenzuordnungen, PDF-Lesbarkeit und die Spoilertrennung der Spielerunterlagen. Der Kartensatz umfasst MAP01 bis MAP06.
+`tools/validate_project.py` prüft IDs und Querverweise, die native Manifest-Synchronität, den Web-Stand, Szene- und Kartenbilder, exakt die 21 erwarteten nativen Audio-Dateien (20 Cues plus Selbsttest), unreferenzierte Audio-/Art-Dateien, Dubletten im gesamten nativen Paket, Cue-Zeitpunkte, kritische Szenenzuordnungen, PDF-Lesbarkeit und die Spoilertrennung der Spielerunterlagen. Der Kartensatz umfasst MAP01 bis MAP06.
+
+## Web-Leitstand
+
+Die Webansicht startet mit demselben Home-Leitstand wie die native App. Der Button `Spielleiter-Modus starten` öffnet danach den vollständigen GM-Startassistenten mit Vorbereitung, drei Schnellstartfiguren, Spielerbriefing und Spoiler-Trennung. `web/js/guided-flow.js` bildet die 41 kanonischen Schritte aus `GuidedFlowCatalog` ab; Vorlesetexte, SL-Informationen, Spieleraktionen, garantierte Hinweise, NPC-/Handout-Verweise, W100-Proben, Auslöser, Entscheidungen und Epilog sind dadurch offline am PC verfügbar. Auf großen Fenstern zeigt sie eine Desktop-Kommandobrücke mit Szenenleiste links; unterhalb der mobilen Breite wechselt sie automatisch in die iPhone-nahe Oberfläche. `tools/build_web_preview.py` synchronisiert Manifest, Artwork und Audio und versieht JavaScript/CSS sowie den Service Worker mit einem Versionssuffix, damit Browser nach einem Update nicht auf einem alten Shell-Cache hängen bleiben. Lokal startet die Vorschau mit `python -m http.server 4173 --directory web`.
 
 ## Qualitätsregeln
 

@@ -22,6 +22,8 @@ python -m http.server 4173 --directory web
 
 Im Browser `http://localhost:4173` öffnen. Der Browser muss dafür geöffnet bleiben. Beim ersten Ton startet der Browser die Audiowiedergabe. Nutze zuerst **Audio testen**. Wenn das nicht hörbar ist, prüfe Windows-Lautstärke und die aktuell gewählte Audioausgabe.
 
+Am PC zeigt die Vorschau automatisch den breiten Leitstand mit Szenenleiste links. Auf schmalen Browserfenstern wechselt sie in die iPhone-nahe Ansicht. Wenn nach einem Update eine alte Oberfläche erscheint, die Seite einmal mit `Strg+F5` neu laden; der Versionssuffix der Web-Shell verwirft alte Service-Worker-Dateien.
+
 ## Was geprüft werden kann
 
 - Szenenwechsel, Vorlesetexte, Hinweise, Fakten und Checklisten
