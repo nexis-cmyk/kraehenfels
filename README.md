@@ -50,7 +50,7 @@ python tools/validate_project.py
 python tools/validate_guided_flow.py
 ```
 
-`process_audio_v5.py` baut die acht bereits abgenommenen V5-Cues. `generate_audio_v6.py` ersetzt die zwölf markierten Problem-Cues reproduzierbar und kopiert sie in das native Bundle. Danach liegen PDFs unter `outputs/` und alle Audio-Dateien unter `audio/generated/`. Die Web-App bleibt absichtlich auf 3.1.0 und wird von diesen Befehlen nicht verändert. Das iOS-Projekt wird auf macOS mit XcodeGen erzeugt:
+`process_audio_v5.py` baut die acht bereits abgenommenen V5-Cues. `generate_audio_v6.py` ersetzt die zwölf markierten Problem-Cues reproduzierbar und kopiert sie in das native Bundle. Danach liegen PDFs unter `outputs/` und alle Audio-Dateien unter `audio/generated/`. Die Web-App wird mit `tools/build_web_preview.py` separat aus dem aktuellen Inhaltsmanifest und den nativen Ressourcen synchronisiert. Das iOS-Projekt wird auf macOS mit XcodeGen erzeugt:
 
 ```bash
 brew install xcodegen
@@ -83,7 +83,7 @@ Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.z
 
 ## Web-Testversion
 
-Die Browser-Version bleibt als eingefrorener Teststand 3.1.0 erhalten. Audio V5 und der neue vierkanalige Player erscheinen nur in der nativen iPhone-App. Die lokale Startanleitung steht in [`web/README.md`](web/README.md).
+Die Browser-Version wird aus dem aktuellen Inhaltsmanifest und den nativen Audio-/Art-Ressourcen synchronisiert. Szenen, Handouts, Cues und Service-Worker-Cache bleiben dadurch auf demselben Release-Stand. Die lokale Startanleitung steht in [`web/README.md`](web/README.md).
 
 Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `https://nexis-cmyk.github.io/kraehenfels/`. Dafür muss Pages einmal im Repository freigeschaltet werden: **Settings → Pages → Build and deployment → Source: GitHub Actions → Save**. Danach kannst du sie unterwegs als Web-App ausprobieren.
 

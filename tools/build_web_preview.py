@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -44,13 +45,26 @@ def sync_selected(source: Path, target: Path, names: set[str]) -> int:
 
 def main() -> None:
     manifest = json.loads((ROOT / "content" / "manifest.json").read_text(encoding="utf-8"))
+    version = manifest.get("meta", {}).get("version", "dev")
     sync_file(ROOT / "content" / "manifest.json", WEB / "data" / "manifest.json")
     art_names = {scene["art"] for scene in manifest["scenes"] if scene.get("art")}
     audio_names = {cue["file"] for cue in manifest["audioCues"]}
     art_count = sync_selected(APP / "Art", WEB / "assets" / "art", art_names)
     audio_count = sync_selected(APP / "Audio", WEB / "assets" / "audio", audio_names)
     sync_file(ROOT / "altstore" / "icon.png", WEB / "assets" / "icon.png")
-    print(f"Synced browser preview: {art_count} artwork files and {audio_count} audio files")
+    service_worker = WEB / "service-worker.js"
+    service_worker_source = service_worker.read_text(encoding="utf-8")
+    cache_name = f"kraehenfels-web-v{version}"
+    service_worker_source, replacements = re.subn(
+        r'const CACHE = "[^"]+";',
+        f'const CACHE = "{cache_name}";',
+        service_worker_source,
+        count=1,
+    )
+    if replacements != 1:
+        raise RuntimeError(f"Could not update service-worker cache name in {service_worker}")
+    service_worker.write_text(service_worker_source, encoding="utf-8")
+    print(f"Synced browser preview v{version}: {art_count} artwork files and {audio_count} audio files")
 
 
 if __name__ == "__main__":

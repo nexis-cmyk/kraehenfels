@@ -82,8 +82,8 @@ def main() -> None:
         fail("App manifest is out of sync with content manifest")
     web_manifest_path = ROOT / "web" / "data" / "manifest.json"
     web_manifest = json.loads(web_manifest_path.read_text(encoding="utf-8"))
-    if web_manifest["meta"].get("version") != "3.1.0":
-        fail("Web test build must remain frozen at 3.1.0")
+    if web_manifest["meta"].get("version") != manifest["meta"].get("version"):
+        fail("Web test build is out of sync with the content release")
 
     generated = ROOT / "audio" / "generated"
     bundled = ROOT / "app" / "Kraehenfels" / "Resources" / "Audio"
