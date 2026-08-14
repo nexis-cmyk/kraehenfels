@@ -21,3 +21,21 @@ python tools/validate_project.py
 ```
 
 Zusätzlich wurden die Spielerkarte sowie alle fünf Handout-Seiten per Poppler als PNG gerendert und visuell geprüft. Temporäre Raster liegen nur unter `_TMP/handout-final-qa/`.
+
+## Native Simulator-Vorschau
+
+Die verlässliche PC-Vorschau für Krähenfels ist die native iOS-Simulator-App,
+nicht eine nachgebildete Webansicht. So stimmen SwiftUI-Layout, Navigation,
+Audio und Spielleiter-Flow exakt mit der seitlich installierten App überein.
+
+Der Workflow `.github/workflows/ios.yml` baut auf macOS einen Debug-
+Simulator-Build und lädt `Kraehenfels-simulator.zip` als GitHub-Artefakt
+`kraehenfels-ios-simulator-app` hoch. Das ZIP enthält die `.app` in der von
+Appetize erwarteten Struktur.
+
+Appetize akzeptiert nur eine gezippte iOS-Simulator-`.app`, keine AltStore-IPA.
+Der Upload läuft über <https://appetize.io/upload>. Ein automatischer Upload
+benötigt einen Appetize-API-Key; diesen nicht im Repository hinterlegen.
+
+Nach dem Push den GitHub-Workflow abwarten. Dann kann die Person mit dem
+Appetize-Konto das Artefakt hochladen und auf mehreren iPhone-Größen testen.
