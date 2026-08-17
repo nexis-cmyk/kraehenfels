@@ -15,7 +15,7 @@ Das Repository enthält:
 
 ## iPhone-Build und AltStore
 
-Der aktuelle native Release-Kandidat ist `v3.3.0-rc3` (App-Version `3.3.0`, Build `4`). Den IPA-Build erzeugt macOS oder GitHub Actions; die IPA bleibt unsigniert und wird erst durch AltStore mit deinem Apple-Account signiert.
+Der aktuelle native Release ist `v3.3.1` (Build `4`). Den IPA-Build erzeugt macOS oder GitHub Actions; die IPA bleibt unsigniert und wird erst durch AltStore mit deinem Apple-Account signiert.
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
 - [Release-Übersicht](https://github.com/nexis-cmyk/kraehenfels/releases)

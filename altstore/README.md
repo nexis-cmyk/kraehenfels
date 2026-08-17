@@ -1,12 +1,12 @@
 # AltStore-Feed
 
-Der Feed liegt als [`source.json`](source.json) im Repository und ist aktuell auf den geprüften Release-Tag `v3.0.0` gepinnt. Der macOS-Release-Workflow erzeugt bei weiteren Versionen zusätzlich eine ausgefüllte `source.generated.json` mit Größe und SHA-256.
+Der Feed liegt als [`source.json`](source.json) im Repository und ist aktuell auf den geprüften Release-Tag `v3.3.1` gepinnt. Der macOS-Release-Workflow erzeugt bei weiteren Versionen zusätzlich eine ausgefüllte `source.generated.json` mit Größe und SHA-256.
 
 In AltStore Classic: `Sources` öffnen, `+` wählen und diese Feed-URL eintragen:
 
 Aktueller Release-Feed (für die Installation von V3):
 
-`https://github.com/nexis-cmyk/kraehenfels/releases/download/v3.0.0/source.generated.json`
+`https://github.com/nexis-cmyk/kraehenfels/releases/download/v3.3.1/source.generated.json`
 
 Dauerhafter Feed:
 
