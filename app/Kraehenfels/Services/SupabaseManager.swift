@@ -191,11 +191,11 @@ final class SupabaseManager: ObservableObject {
     }
 
     private func fetchRatings() async throws -> [String: Int] {
-        let response = try await client
+        let rows: [AudioRatingRow] = try await client
             .from("audio_ratings")
             .select("cue_id,rating")
             .execute()
-        let rows = try response.value as [AudioRatingRow]
+            .value
         return Dictionary(uniqueKeysWithValues: rows.map { ($0.cueID, $0.rating) })
     }
 
