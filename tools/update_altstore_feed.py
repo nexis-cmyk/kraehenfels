@@ -47,8 +47,11 @@ def main() -> None:
     app["buildVersion"] = build_version
     app["versionDate"] = datetime.now(timezone.utc).date().isoformat()
     app["downloadURL"] = release_url
-    if "-" in release_version:
-        app["versionDescription"] = f"Release Candidate {release_version}"
+    app["versionDescription"] = (
+        f"Release Candidate {release_version}"
+        if "-" in release_version
+        else f"Release {release_version}"
+    )
     app["iconURL"] = f"{raw_root}/altstore/icon.png"
     app["size"] = len(ipa_bytes)
     app["sha256"] = hashlib.sha256(ipa_bytes).hexdigest()
