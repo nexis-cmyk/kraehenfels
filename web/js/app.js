@@ -1,5 +1,6 @@
 import { AudioEngine } from "./audio-engine.js";
 import { evaluateRoll, guideKindLabels, guidedFlow } from "./guided-flow.js";
+import { SupabaseSync } from "./supabase-sync.js";
 
 const app = document.querySelector("#app");
 const sceneNav = document.querySelector("#scene-nav");
@@ -53,10 +54,12 @@ const state = {
   guidedIndexes: stored("kraehenfels.guidedIndexes", {}),
   setupChecks: new Set(stored("kraehenfels.setupChecks", [])),
   guidedRolls: stored("kraehenfels.guidedRolls", {}),
+  audioRatings: stored("kraehenfels.audioRatings", {}),
   endingID: localStorage.getItem("kraehenfels.endingID") || "",
   rollOpen: false,
   spoilersOpen: false,
   statusTone: "ok",
+  cloud: { status: "starting", error: "", session: null, ratings: {}, online: navigator.onLine },
 };
 
 function persist() {
@@ -75,6 +78,7 @@ function persist() {
   localStorage.setItem("kraehenfels.guidedIndexes", JSON.stringify(state.guidedIndexes));
   localStorage.setItem("kraehenfels.setupChecks", JSON.stringify([...state.setupChecks]));
   localStorage.setItem("kraehenfels.guidedRolls", JSON.stringify(state.guidedRolls));
+  localStorage.setItem("kraehenfels.audioRatings", JSON.stringify(state.audioRatings));
   localStorage.setItem("kraehenfels.endingID", state.endingID);
 }
 
@@ -85,6 +89,17 @@ const audio = new AudioEngine({
     audioStatus.dataset.tone = tone;
   },
   onChange: render,
+});
+
+const cloud = new SupabaseSync((snapshot) => {
+  state.cloud = snapshot;
+  // Remote rows are the source of truth for a signed-in session. Local-only
+  // ratings stay visible until the next sync has a chance to upload them.
+  if (snapshot.session && Object.keys(snapshot.ratings).length) {
+    state.audioRatings = { ...state.audioRatings, ...snapshot.ratings };
+    persist();
+  }
+  if (state.manifest) render();
 });
 
 function escapeHtml(value = "") {
@@ -144,13 +159,71 @@ function toggleSet(set, value) {
 
 function renderCue(cue) {
   const active = audio.isPlaying(cue.id);
+  const rating = Number(state.audioRatings[cue.id] || 0);
   const clue = cue.isClue ? `<span class="pill pill-warning">Hinweis: ${cue.printFallbackId}</span>` : "";
-  return `<button class="cue-row ${active ? "is-playing" : ""}" data-cue="${cue.id}" type="button" aria-pressed="${active}">
-    <span class="cue-action" aria-hidden="true">${active ? "Ⅱ" : "▶"}</span>
+  return `<div class="cue-row ${active ? "is-playing" : ""}" data-cue="${cue.id}">
+    <button class="cue-play" data-cue-play="${cue.id}" type="button" aria-pressed="${active}" aria-label="${active ? "Stoppen" : "Starten"}: ${escapeHtml(cue.title)}">
+      <span class="cue-action" aria-hidden="true">${active ? "Ⅱ" : "▶"}</span>
+    </button>
     <span class="cue-copy"><strong>${escapeHtml(cue.title)}</strong><small>${cue.id} · ${classForCategory(cue.category)}</small></span>
     ${clue}
     <span class="cue-state">${active ? "Läuft" : "Start"}</span>
-  </button>`;
+    <span class="cue-rating" aria-label="Klangbewertung">
+      <button class="cue-rating-button ${rating === 1 ? "is-good" : ""}" data-rating-cue="${cue.id}" data-rating="1" type="button" aria-pressed="${rating === 1}" title="Klang passt">✓</button>
+      <button class="cue-rating-button ${rating === -1 ? "is-bad" : ""}" data-rating-cue="${cue.id}" data-rating="-1" type="button" aria-pressed="${rating === -1}" title="Klang passt nicht">×</button>
+    </span>
+  </div>`;
+}
+
+function cloudStatusCopy() {
+  if (!state.cloud.online) return "Offline · lokale Bewertungen bleiben erhalten";
+  if (state.cloud.status === "connected") return state.cloud.session?.user?.email ? `Verbunden als ${state.cloud.session.user.email}` : "Bewertungen werden live synchronisiert";
+  if (state.cloud.status === "error") return state.cloud.error || "Cloud-Synchronisierung fehlgeschlagen";
+  if (state.cloud.status === "unavailable") return "Cloud nicht erreichbar · lokal weiterarbeiten";
+  if (state.cloud.status === "signed-out") return "Noch nicht verbunden · lokal weiterarbeiten";
+  return "Cloud-Verbindung wird vorbereitet …";
+}
+
+function renderCloudCard() {
+  const signedIn = Boolean(state.cloud.session);
+  return `<section class="cloud-card ${signedIn ? "is-connected" : ""}" aria-labelledby="cloud-title">
+    <div class="cloud-card-copy"><span class="eyebrow">LIVE-SYNC</span><h2 id="cloud-title">Soundbewertungen zentral sammeln</h2><p>${escapeHtml(cloudStatusCopy())}</p></div>
+    <div class="cloud-card-actions">
+      ${signedIn ? `<button class="button button-quiet" data-action="cloud-sign-out" type="button">Abmelden</button>` : `<button class="button button-primary" data-action="cloud-sign-in" type="button">Mit Google anmelden</button>`}
+      <span class="cloud-rating-count">${Object.keys(state.audioRatings).length} bewertet</span>
+    </div>
+    ${state.cloud.error ? `<small class="cloud-error">${escapeHtml(state.cloud.error)}</small>` : ""}
+  </section>`;
+}
+
+function renderAuthGate() {
+  const busy = state.cloud.status === "starting" || state.cloud.status === "authenticating";
+  const unavailable = state.cloud.status === "unavailable";
+  const title = busy ? "Anmeldung wird geprüft." : unavailable ? "Cloud nicht erreichbar." : "Nur für die Spielleitung.";
+  const detail = busy
+    ? "Einen Moment — Krähenfels prüft deine sichere Sitzung."
+    : unavailable
+      ? "Die Verbindung zu Supabase konnte nicht hergestellt werden. Prüfe deine Internetverbindung und versuche es erneut."
+      : "Melde dich mit Google an, damit Soundbewertungen und dein Spielstand deinem Konto zugeordnet werden können.";
+  const action = unavailable
+    ? `<button class="button button-primary auth-button" data-action="cloud-retry" type="button">Verbindung erneut prüfen</button>`
+    : `<button class="button button-primary auth-button" data-action="cloud-sign-in" type="button" ${busy ? "disabled" : ""}><span class="google-mark" aria-hidden="true">G</span>${state.cloud.status === "authenticating" ? "Weiter zu Google …" : "Mit Google anmelden"}</button>`;
+  return `<section class="auth-view" aria-labelledby="auth-title">
+    <div class="auth-card">
+      <img class="auth-icon" src="./assets/icon.png" alt="" />
+      <p class="home-kicker">Krähenfels · Die letzte Kutsche</p>
+      <h1 id="auth-title">${title}</h1>
+      <p class="auth-lead">${detail}</p>
+      <div class="auth-points" aria-label="Vorteile der Anmeldung">
+        <div><span aria-hidden="true">✓</span><p><strong>Dein Leitstand bleibt geschützt.</strong><small>Nur dein angemeldetes Konto kann die Spieloberfläche öffnen.</small></p></div>
+        <div><span aria-hidden="true">↗</span><p><strong>Soundbewertungen live speichern.</strong><small>„Passt“ und „Falsch“ werden zwischen Web und iPhone synchronisiert.</small></p></div>
+        <div><span aria-hidden="true">⌁</span><p><strong>Beim nächsten Mal direkt weiterspielen.</strong><small>Deine Sitzung wird sicher auf diesem Gerät wiedererkannt.</small></p></div>
+      </div>
+      ${action}
+      ${state.cloud.error ? `<p class="auth-error" role="alert">${escapeHtml(state.cloud.error)}</p>` : ""}
+      <p class="auth-footnote">Google verwaltet die Anmeldung. Krähenfels erhält nur die für die Sitzung nötige Konto-ID und E-Mail-Adresse.</p>
+    </div>
+  </section>`;
 }
 
 function renderNPC(npc) {
@@ -291,6 +364,8 @@ function renderHome(scene) {
       <p class="home-subtitle">Drei Reisende · Schwarzwald · November 1890</p>
     </section>
 
+    ${renderCloudCard()}
+
     <button class="home-start-card" data-action="start" type="button">
       <span class="home-icon home-icon-play" aria-hidden="true">▶</span>
       <span class="home-card-copy"><strong>Spielleiter-Modus starten</strong><small>Vorbereitung, fertige Figuren und Schritt-für-Schritt-Führung</small></span>
@@ -336,6 +411,13 @@ function renderHome(scene) {
 function render() {
   if (!state.manifest) return;
   const scene = sceneById(state.currentSceneId) || state.manifest.scenes[0];
+  const authenticated = Boolean(state.cloud.session);
+  document.body.dataset.authRequired = authenticated ? "false" : "true";
+  if (!authenticated) {
+    renderFrame("auth", scene);
+    app.innerHTML = renderAuthGate();
+    return;
+  }
   const cues = scene.audioCueIds.map(cueById).filter(Boolean);
   const clues = scene.clueIds.map(clueById).filter(Boolean);
   const npcs = scene.npcIds.map(npcById).filter(Boolean);
@@ -389,6 +471,8 @@ function render() {
       <div class="section-heading"><h2 id="read-aloud-title">Vorlesen</h2><span aria-hidden="true">“</span></div>
       <p>${escapeHtml(scene.readAloud)}</p>
     </section>
+
+    ${renderCloudCard()}
 
     <section class="content-section table-section" aria-labelledby="table-title">
       <div class="section-heading"><div><h2 id="table-title">Am Tisch</h2><p>Nur auf diesem Gerät gespeichert.</p></div><button class="text-button" data-action="clear-table" type="button">Tischdaten löschen</button></div>
@@ -467,8 +551,18 @@ document.addEventListener("click", async (event) => {
     document.querySelector("#scene-content").focus();
     return;
   }
-  const cueButton = event.target.closest("[data-cue]");
-  if (cueButton && !cueButton.hasAttribute("data-guide-action")) return audio.play(cueById(cueButton.dataset.cue));
+  const ratingButton = event.target.closest("[data-rating-cue]");
+  if (ratingButton) {
+    const cueID = ratingButton.dataset.ratingCue;
+    const rating = Number(ratingButton.dataset.rating);
+    state.audioRatings[cueID] = rating;
+    persist();
+    render();
+    void cloud.setRating(cueID, rating);
+    return;
+  }
+  const cueButton = event.target.closest("[data-cue-play]");
+  if (cueButton) return audio.play(cueById(cueButton.dataset.cuePlay));
   const clueButton = event.target.closest("[data-clue]");
   if (clueButton) return toggleSet(state.clues, clueButton.dataset.clue);
   const checklistButton = event.target.closest("[data-check]");
@@ -563,6 +657,18 @@ document.addEventListener("click", async (event) => {
     state.rollOpen = false;
     render();
     document.querySelector("#scene-content").focus();
+    return;
+  }
+  if (action === "cloud-sign-in") {
+    await cloud.signInWithGoogle();
+    return;
+  }
+  if (action === "cloud-retry") {
+    await cloud.init();
+    return;
+  }
+  if (action === "cloud-sign-out") {
+    await cloud.signOut();
     return;
   }
   if (action === "menu") {
@@ -681,6 +787,14 @@ async function boot() {
     state.manifest = await response.json();
     if (!sceneById(state.currentSceneId)) state.currentSceneId = state.manifest.scenes[0].id;
     render();
+    const localRatings = { ...state.audioRatings };
+    await cloud.init();
+    if (cloud.session) {
+      await cloud.pushLocalRatings(localRatings, cloud.ratings);
+      state.audioRatings = { ...state.audioRatings, ...cloud.ratings };
+      persist();
+      render();
+    }
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("./service-worker.js").catch(() => undefined);
   } catch (error) {
     app.innerHTML = `<section class="error-state"><h2>Leitstand konnte nicht starten</h2><p>Starte den lokalen Server über die Anleitung in <code>web/README.md</code>. Die App braucht einen Server, damit sie Inhalte und Audio laden kann.</p></section>`;

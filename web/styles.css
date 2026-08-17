@@ -150,16 +150,60 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .audio-mix label { display: grid; gap: 0.35rem; color: var(--quiet); font-size: 0.75rem; font-weight: 700; }
 input[type="range"] { width: 100%; accent-color: var(--cobalt); }
 .cue-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: var(--space-xs); }
-.cue-row { display: grid; grid-template-columns: 1.8rem minmax(0, 1fr) auto; align-items: center; gap: var(--space-sm); min-height: 4.4rem; padding: var(--space-sm); border: 1px solid color-mix(in oklch, var(--line), transparent 35%); border-radius: 0.625rem; background: var(--ink-soft); color: var(--frost); text-align: left; transition: background-color 180ms ease-out, border-color 180ms ease-out; }
+.cue-row { display: grid; grid-template-columns: 1.8rem minmax(0, 1fr) auto auto; align-items: center; gap: var(--space-sm); min-height: 4.4rem; padding: var(--space-sm); border: 1px solid color-mix(in oklch, var(--line), transparent 35%); border-radius: 0.625rem; background: var(--ink-soft); color: var(--frost); text-align: left; transition: background-color 180ms ease-out, border-color 180ms ease-out; }
 .cue-row:hover { border-color: var(--cobalt); background: var(--panel-raised); }
 .cue-row.is-playing { border-color: var(--cobalt); background: color-mix(in oklch, var(--panel-raised), var(--cobalt) 12%); }
+.cue-play { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; padding: 0; border: 0; border-radius: 0.45rem; background: transparent; color: var(--frost); }
+.cue-play:hover { background: color-mix(in oklch, var(--cobalt), transparent 70%); }
 .cue-action { display: grid; width: 1.75rem; height: 1.75rem; place-items: center; border-radius: 0.45rem; background: var(--cobalt); color: var(--ink); font-size: 0.7rem; font-weight: 900; }
 .cue-copy { display: grid; min-width: 0; }
 .cue-copy strong { overflow: hidden; font-size: 0.85rem; text-overflow: ellipsis; white-space: nowrap; }
 .cue-copy small { color: var(--quiet); font-size: 0.72rem; }
 .cue-state { color: var(--quiet); font-size: 0.7rem; font-weight: 750; }
+.cue-rating { display: inline-flex; gap: 0.25rem; }
+.cue-rating-button { display: grid; width: 1.65rem; height: 1.65rem; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 0.45rem; background: transparent; color: var(--quiet); font-size: 0.9rem; font-weight: 850; }
+.cue-rating-button:hover { border-color: var(--frost); color: var(--frost); }
+.cue-rating-button.is-good { border-color: color-mix(in oklch, #32d05a, transparent 20%); background: color-mix(in oklch, #32d05a, transparent 82%); color: #51e477; }
+.cue-rating-button.is-bad { border-color: color-mix(in oklch, var(--rust), transparent 20%); background: color-mix(in oklch, var(--rust), transparent 82%); color: #ef988b; }
 .pill { align-self: center; padding: 0.22rem 0.38rem; border-radius: 0.25rem; font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 0.58rem; font-weight: 800; letter-spacing: 0.04em; }
 .pill-warning { background: color-mix(in oklch, var(--rust), transparent 82%); color: oklch(0.84 0.07 30); }
+
+.cloud-card { display: flex; align-items: end; justify-content: space-between; gap: var(--space-lg); margin: 0 0 var(--space-xl); padding: var(--space-md); border: 1px solid color-mix(in oklch, var(--cobalt), transparent 60%); border-radius: 0.85rem; background: color-mix(in oklch, var(--panel), var(--cobalt) 7%); }
+.cloud-card.is-connected { border-color: color-mix(in oklch, #32d05a, transparent 55%); background: color-mix(in oklch, var(--panel), #32d05a 5%); }
+.cloud-card-copy { min-width: 0; }
+.cloud-card-copy h2 { margin: 0.25rem 0 0; color: var(--frost); font-size: 1rem; }
+.cloud-card-copy p { margin: 0.35rem 0 0; color: var(--quiet); font-size: 0.82rem; line-height: 1.45; }
+.cloud-card-actions { display: flex; flex: 0 0 auto; align-items: center; gap: var(--space-sm); }
+.cloud-rating-count { color: var(--quiet); font-size: 0.72rem; white-space: nowrap; }
+.cloud-error { display: block; margin-top: var(--space-sm); color: var(--rust); font-size: 0.75rem; }
+
+/* The leadstand is account-gated: keep the shell quiet until Google has
+   established a Supabase session. The auth card owns the full first view. */
+body[data-auth-required="true"] { padding-bottom: 0; }
+body[data-auth-required="true"] .sidebar,
+body[data-auth-required="true"] .topbar,
+body[data-auth-required="true"] .transport-bar { display: none; }
+body[data-auth-required="true"] .skip-link { display: none; }
+body[data-auth-required="true"] .app-shell { display: block; min-height: 100vh; }
+body[data-auth-required="true"] .main-content { min-height: 100vh; padding: 0; }
+body[data-auth-required="true"] #app { max-width: none; min-height: 100vh; }
+.auth-view { display: grid; min-height: 100vh; place-items: center; padding: clamp(1.25rem, 5vw, 4rem); background: radial-gradient(circle at 50% 0%, rgb(55 103 151 / 0.2), transparent 45%), var(--ink); }
+.auth-card { width: min(100%, 33rem); padding: clamp(1.45rem, 5vw, 2.5rem); border: 1px solid color-mix(in oklch, var(--cobalt), transparent 42%); border-radius: 1.35rem; background: linear-gradient(145deg, color-mix(in oklch, var(--panel), var(--cobalt) 8%), var(--panel)); box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 0.28); text-align: center; }
+.auth-icon { width: 4.4rem; height: 4.4rem; margin-bottom: 1.15rem; border: 1px solid color-mix(in oklch, var(--frost), transparent 60%); border-radius: 1rem; box-shadow: var(--shadow); }
+.auth-card .home-kicker { margin-bottom: 0.75rem; }
+.auth-card h1 { margin: 0; color: var(--frost); font-size: clamp(1.9rem, 6vw, 2.7rem); letter-spacing: -0.045em; line-height: 1.05; }
+.auth-lead { max-width: 31ch; margin: 0.85rem auto 0; color: var(--quiet); font-size: 0.98rem; line-height: 1.5; }
+.auth-points { display: grid; gap: 0.7rem; margin: 1.65rem 0; text-align: left; }
+.auth-points > div { display: grid; grid-template-columns: 1.8rem minmax(0, 1fr); gap: 0.7rem; align-items: start; padding: 0.7rem; border: 1px solid color-mix(in oklch, var(--line), transparent 25%); border-radius: 0.75rem; background: rgb(9 14 23 / 0.34); }
+.auth-points > div > span { display: grid; width: 1.65rem; height: 1.65rem; place-items: center; border-radius: 0.45rem; background: color-mix(in oklch, var(--cobalt), transparent 78%); color: var(--frost); font-weight: 850; }
+.auth-points p { display: grid; gap: 0.16rem; margin: 0; }
+.auth-points strong { color: var(--frost); font-size: 0.82rem; }
+.auth-points small { color: var(--quiet); font-size: 0.75rem; line-height: 1.4; }
+.auth-button { display: inline-flex; width: 100%; min-height: 3.1rem; align-items: center; justify-content: center; gap: 0.55rem; border-radius: 0.8rem; font-size: 0.92rem; }
+.auth-button:disabled { cursor: wait; opacity: 0.7; }
+.google-mark { display: grid; width: 1.35rem; height: 1.35rem; place-items: center; border-radius: 50%; background: white; color: #4285f4; font-family: Arial, sans-serif; font-size: 0.85rem; font-weight: 800; }
+.auth-error { margin: 0.8rem 0 0; color: var(--rust); font-size: 0.78rem; line-height: 1.45; }
+.auth-footnote { margin: 1.15rem 0 0; color: color-mix(in oklch, var(--quiet), transparent 10%); font-size: 0.68rem; line-height: 1.45; }
 
 .lower-grid { margin-top: var(--space-2xl); }
 .dossier-section { margin-top: var(--space-xl); }
@@ -347,6 +391,9 @@ body { background: var(--ink); padding-bottom: calc(4.65rem + env(safe-area-inse
   .home-intro h1 { font-size: 2.65rem; }
   .home-card-copy strong { font-size: 1.04rem; }
   .home-scene-copy strong { font-size: 0.98rem; }
+  .cloud-card { align-items: start; flex-direction: column; }
+  .cloud-card-actions { width: 100%; justify-content: space-between; }
+  .cloud-card-actions .button { flex: 1; }
 }
 
 /* Desktop command-center view: the iPhone shell stays intact below this breakpoint. */

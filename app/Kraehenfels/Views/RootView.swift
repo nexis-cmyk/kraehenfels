@@ -3,8 +3,22 @@ import SwiftUI
 struct RootView: View {
     @EnvironmentObject private var content: ContentStore
     @EnvironmentObject private var session: SessionStore
+    @EnvironmentObject private var cloud: SupabaseManager
 
     var body: some View {
+        Group {
+            if cloud.status == .connected {
+                leadstand
+            } else {
+                AuthGateView()
+            }
+        }
+        .task {
+            _ = await cloud.start()
+        }
+    }
+
+    private var leadstand: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {

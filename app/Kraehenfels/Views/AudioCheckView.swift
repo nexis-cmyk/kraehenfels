@@ -4,6 +4,7 @@ struct AudioCheckView: View {
     @EnvironmentObject private var content: ContentStore
     @EnvironmentObject private var audio: AudioEngine
     @EnvironmentObject private var session: SessionStore
+    @EnvironmentObject private var cloud: SupabaseManager
 
     var body: some View {
         ScrollView {
@@ -12,7 +13,10 @@ struct AudioCheckView: View {
                 ForEach(content.manifest.audioCues) { cue in
                     cueCard(cue)
                 }
-                Button("Bewertungen zurücksetzen") { session.clearAudioRatings() }
+                Button("Bewertungen zurücksetzen") {
+                    session.clearAudioRatings()
+                    Task { await cloud.clearRatings() }
+                }
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(FrostTheme.warning)
                     .frame(maxWidth: .infinity, minHeight: 44)
@@ -23,6 +27,11 @@ struct AudioCheckView: View {
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle("Audio-Check")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            let remote = await cloud.start()
+            session.mergeAudioRatings(remote)
+            await cloud.pushLocalRatings(session.audioRatings)
+        }
     }
 
     private var intro: some View {
@@ -38,6 +47,7 @@ struct AudioCheckView: View {
                 Text("Hör jeden Cue einmal über die Box und einmal über das iPhone. Markiere nur, ob Klang und Beschreibung wirklich zusammenpassen.")
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.9))
+                CloudAccountView()
                 Button {
                     audio.runSelfTest()
                 } label: {
@@ -127,9 +137,11 @@ struct AudioCheckView: View {
                 HStack(spacing: 10) {
                     ratingButton("Passt", icon: "checkmark", selected: rating == 1, color: .green) {
                         session.setAudioRating(cue.id, rating: 1)
+                        Task { await cloud.setRating(cue.id, rating: 1) }
                     }
                     ratingButton("Falsch", icon: "xmark", selected: rating == -1, color: FrostTheme.warning) {
                         session.setAudioRating(cue.id, rating: -1)
+                        Task { await cloud.setRating(cue.id, rating: -1) }
                     }
                 }
             }

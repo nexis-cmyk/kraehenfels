@@ -11,6 +11,7 @@ Das Repository enthält:
 - eine native iOS-Begleitapp ab iOS 17 mit geführtem Spielleiter-Modus, Nachtstand, NPCs, Pflichtspuren, Vorlesetexten, Würfelhelfer, Tischnotizen und Audio-Selbsttest
 - GitHub Actions für Tests, IPA-Build und AltStore-Feed
 - eine offlinefähige Web-Testversion für Leitstand und Soundboard
+- eine Supabase-Anbindung mit verpflichtender Google-Anmeldung, persönlichen Soundbewertungen und Live-Sync zwischen Web und iOS
 
 ## iPhone-Build und AltStore
 
@@ -86,6 +87,10 @@ Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.z
 Die Browser-Version wird aus dem aktuellen Inhaltsmanifest und den nativen Audio-/Art-Ressourcen synchronisiert. Szenen, Handouts, Cues und Service-Worker-Cache bleiben dadurch auf demselben Release-Stand. Die lokale Startanleitung steht in [`web/README.md`](web/README.md).
 
 Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `https://nexis-cmyk.github.io/kraehenfels/`. Dafür muss Pages einmal im Repository freigeschaltet werden: **Settings → Pages → Build and deployment → Source: GitHub Actions → Save**. Danach kannst du sie unterwegs als Web-App ausprobieren.
+
+## Supabase-Live-Sync
+
+Die Leitstände verlangen vor dem Öffnen der Spieloberfläche eine Google-Anmeldung. Danach synchronisieren sie Soundbewertungen mit dem Supabase-Projekt. Die Einrichtung der Google-OAuth-Daten, die Redirect-URLs und die RLS-Struktur stehen in [`supabase/README.md`](supabase/README.md).
 
 ## Audio
 

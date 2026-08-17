@@ -393,6 +393,11 @@ final class SessionStore: ObservableObject {
         audioRatings[cueID] = min(max(rating, -1), 1)
     }
 
+    func mergeAudioRatings(_ incoming: [String: Int]) {
+        guard !incoming.isEmpty else { return }
+        audioRatings.merge(incoming) { _, remote in min(max(remote, -1), 1) }
+    }
+
     func clearAudioRatings() {
         audioRatings = [:]
     }
