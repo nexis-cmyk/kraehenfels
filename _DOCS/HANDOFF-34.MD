@@ -17,6 +17,11 @@
 - `python tools/validate_project.py` bestanden, inklusive PDF-, Audio-, Map- und Manifest-Prüfung.
 - Native Xcode-/Swift-Buildprüfung ist auf Windows nicht ausführbar; der aktualisierte GitHub-Workflow baut und testet auf macOS mit einem 11-Zoll-iPad-Simulator.
 
-## Offener Release-Schritt
+## Release abgeschlossen
 
-Nach dem Push muss der Workflow mit Tag `v4.0.0` laufen. Erst danach werden die echte IPA, `source.generated.json`, Größe und SHA-256 in der dauerhaften AltStore-Quelle ersetzt. Die derzeitige `altstore/source.json` ist die V4-Metadatenvorlage und enthält noch keine Release-Prüfsumme.
+- GitHub-Workflow `iPad release IPA` mit Tag `v4.0.0` erfolgreich.
+- IPA: `https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.0.0/Kraehenfels.ipa`
+- Größe: `82,404,155` Bytes.
+- SHA-256: `dd3a68985388ee311d22cffbdbc814c1dafb6cb2a2095cbda5b7fa855a85fe2b`.
+- IPA geprüft: Version `4.0.0`, Build `5`, `UIDeviceFamily [2]`, Manifest vorhanden, 22 Audio-Dateien und 21 Art-Dateien.
+- Dauerhafte AltStore-Quelle und Release-Feed enthalten nun dieselben Größe-/Hashwerte.
