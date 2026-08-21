@@ -50,9 +50,10 @@ final class SessionStore: ObservableObject {
         var finaleSuccesses: Int?
         var finaleFailures: Int?
         var finaleOutcome: String?
+        var hasStartedSession: Bool?
     }
 
-    private let storageKey = "kraehenfels.sessionJournal.v3"
+    private let storageKey = "kraehenfels.sessionJournal.v4"
     private let defaults: UserDefaults
 
     @Published var playerNames: [String] {
@@ -104,6 +105,10 @@ final class SessionStore: ObservableObject {
     }
 
     @Published var guidedStepIndex: Int {
+        didSet { persist() }
+    }
+
+    @Published private(set) var hasStartedSession: Bool {
         didSet { persist() }
     }
 
@@ -160,6 +165,7 @@ final class SessionStore: ObservableObject {
             selectedHooks = snapshot.selectedHooks
             audioRatings = snapshot.audioRatings ?? [:]
             guidedStepIndex = max(0, snapshot.guidedStepIndex ?? 0)
+            hasStartedSession = snapshot.hasStartedSession ?? false
             completedGuideStepIDs = Set(snapshot.completedGuideStepIDs ?? [])
             setupChecks = Set(snapshot.setupChecks ?? [])
             doorStates = snapshot.doorStates ?? [:]
@@ -183,6 +189,7 @@ final class SessionStore: ObservableObject {
             selectedHooks = [:]
             audioRatings = [:]
             guidedStepIndex = 0
+            hasStartedSession = false
             completedGuideStepIDs = []
             setupChecks = []
             doorStates = [:]
@@ -247,9 +254,11 @@ final class SessionStore: ObservableObject {
         finaleSuccesses = 0
         finaleFailures = 0
         finaleOutcome = nil
+        hasStartedSession = false
     }
 
     func beginGuidedSession() {
+        hasStartedSession = true
         sessionNote = ""
         sceneNotes = [:]
         currentSceneID = "S01"
@@ -425,7 +434,8 @@ final class SessionStore: ObservableObject {
             finaleMode: finaleMode,
             finaleSuccesses: finaleSuccesses,
             finaleFailures: finaleFailures,
-            finaleOutcome: finaleOutcome
+            finaleOutcome: finaleOutcome,
+            hasStartedSession: hasStartedSession
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: storageKey)

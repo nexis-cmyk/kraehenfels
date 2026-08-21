@@ -97,4 +97,22 @@ final class ContentStoreTests: XCTestCase {
         XCTAssertEqual(session.recordFinaleRoll(fumble), .resolved(success: false))
         XCTAssertEqual(session.finaleFailures, 2)
     }
+
+    @MainActor
+    func testV4SessionStartsFreshAndPersistsResumeState() {
+        let suiteName = "kraehenfels.tests.v4-session"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let session = SessionStore(defaults: defaults)
+        XCTAssertFalse(session.hasStartedSession)
+        XCTAssertEqual(session.currentSceneID, "S01")
+
+        session.beginGuidedSession()
+        XCTAssertTrue(session.hasStartedSession)
+
+        let resumed = SessionStore(defaults: defaults)
+        XCTAssertTrue(resumed.hasStartedSession)
+        XCTAssertEqual(resumed.currentSceneID, "S01")
+    }
 }

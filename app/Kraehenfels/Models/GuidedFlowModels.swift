@@ -197,7 +197,7 @@ enum GuidedFlowCatalog {
     static let setupItems: [SetupItem] = [
         SetupItem(id: "print", title: "Drucksachen", detail: "Spielerkarte, Detailkarten, Handouts H01–H10 und drei Figurenblätter."),
         SetupItem(id: "dice", title: "Würfel und Stifte", detail: "W100 (oder zwei W10), W10 für Initiative und Schaden, Papier für Notizen."),
-        SetupItem(id: "audio", title: "Audioausgabe", detail: "iPhone-Lautsprecher oder Bluetooth-Box; Audio-Check einmal abspielen."),
+        SetupItem(id: "audio", title: "Audioausgabe", detail: "iPad-Lautsprecher oder Bluetooth-Box; Audio-Check einmal abspielen."),
         SetupItem(id: "spoilers", title: "Spoiler trennen", detail: "H09 und die SL-Karte bleiben bei dir. Spieler sehen nur die Spielerkarte."),
         SetupItem(id: "safety", title: "Sicherheitscheck", detail: "Kurz klären, welche Horror-Motive heute okay sind und wann ihr pausiert.")
     ]

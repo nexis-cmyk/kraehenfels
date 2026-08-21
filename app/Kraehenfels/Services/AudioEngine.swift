@@ -280,7 +280,7 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
             }
         }
         let route = outputs.isEmpty ? "kein Ausgabegerät" : outputs.joined(separator: ", ")
-        let muted = session.outputVolume <= 0.001 ? " · iPhone-Lautstärke ist stumm" : ""
+        let muted = session.outputVolume <= 0.001 ? " · iPad-Lautstärke ist stumm" : ""
         sessionStatus = "Ausgabe: \(route)\(muted)"
     }
 

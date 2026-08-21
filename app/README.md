@@ -1,4 +1,4 @@
-# iPhone-App
+# iPad-App
 
 Die App ist ein offline-first SwiftUI-Begleiter für die Spielleitung. Szenen, Hinweise, Regeln und Audio-Cues liegen im Bundle. Es gibt keine Anmeldung und keine Netzwerkabhängigkeit während der Runde.
 
@@ -22,11 +22,11 @@ Atmosphäre und Musik laufen als Schleife. Effekte sind One-Shots. Die Lautstär
 
 Der iOS-Workflow erzeugt bei jedem Push nach `main` zusätzlich das Artefakt
 `kraehenfels-ios-simulator-app`. Es enthält `Kraehenfels-simulator.zip` mit der
-echten iOS-Simulator-App (`.app`) und ist direkt für Appetize geeignet.
+echten iPad-Simulator-App (`.app`) und ist direkt für Appetize geeignet.
 
 1. In GitHub zu **Actions → iOS build → letzter erfolgreicher Lauf** gehen.
 2. Unter **Artifacts** `kraehenfels-ios-simulator-app` herunterladen und entpacken.
 3. [Appetize Upload](https://appetize.io/upload) öffnen, die enthaltene
-   `Kraehenfels-simulator.zip` hochladen und anschließend ein iPhone-Modell wählen.
+   `Kraehenfels-simulator.zip` hochladen und anschließend ein iPad-Modell wählen.
 
 Die Vorschau ist die native SwiftUI-App – nicht die separate Browser-Vorschau.

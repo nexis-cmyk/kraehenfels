@@ -8,14 +8,14 @@ Das Repository enthält:
 - eine spoilerfreie Dorfkarte, eine markierte SL-Karte und drei Detailkarten
 - Handouts, drei sofort spielbare Schnellstartfiguren und optionale Bögen für eigene Figuren
 - 20 technisch geprüfte Atmosphären, Musik-Layer und Soundeffekte. Zwölf problematische Cues liegen als V6-Ersatzfassungen vor
-- eine native iOS-Begleitapp ab iOS 17 mit geführtem Spielleiter-Modus, Nachtstand, NPCs, Pflichtspuren, Vorlesetexten, Würfelhelfer, Tischnotizen und Audio-Selbsttest
+- eine native iPad-Begleitapp ab iOS 17 mit geführtem Spielleiter-Modus, Nachtstand, NPCs, Pflichtspuren, Vorlesetexten, Würfelhelfer, Tischnotizen und Audio-Selbsttest
 - GitHub Actions für Tests, IPA-Build und AltStore-Feed
 - eine offlinefähige Web-Testversion für Leitstand und Soundboard
-- eine Supabase-Anbindung mit verpflichtender Google-Anmeldung, persönlichen Soundbewertungen und Live-Sync zwischen Web und iOS
+- lokale Soundbewertungen und lokale Tischnotizen ohne Konto oder Internetzwang
 
-## iPhone-Build und AltStore
+## iPad-Build und AltStore
 
-Der aktuelle native Release ist `v3.3.1` (Build `4`). Den IPA-Build erzeugt macOS oder GitHub Actions; die IPA bleibt unsigniert und wird erst durch AltStore mit deinem Apple-Account signiert.
+Der aktuelle native Release ist `v4.0.0` (Build `5`). Die App ist für iPad ausgelegt. Den IPA-Build erzeugt macOS oder GitHub Actions; die IPA bleibt unsigniert und wird erst durch AltStore mit deinem Apple-Account signiert.
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
 - [Release-Übersicht](https://github.com/nexis-cmyk/kraehenfels/releases)
@@ -88,15 +88,11 @@ Die Browser-Version wird aus dem aktuellen Inhaltsmanifest und den nativen Audio
 
 Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `https://nexis-cmyk.github.io/kraehenfels/`. Dafür muss Pages einmal im Repository freigeschaltet werden: **Settings → Pages → Build and deployment → Source: GitHub Actions → Save**. Danach kannst du sie unterwegs als Web-App ausprobieren.
 
-## Supabase-Live-Sync
-
-Die Leitstände verlangen vor dem Öffnen der Spieloberfläche eine Google-Anmeldung. Danach synchronisieren sie Soundbewertungen mit dem Supabase-Projekt. Die Einrichtung der Google-OAuth-Daten, die Redirect-URLs und die RLS-Struktur stehen in [`supabase/README.md`](supabase/README.md).
-
 ## Audio
 
 Audio V6 umfasst acht Ortsatmosphären, ein durchgehendes Krähenfels-Motiv, einen zusätzlichen Prozessions-Layer und zehn One-Shots. Die acht im Hörtest passenden V5-Dateien bleiben unverändert. Die zwölf Ersatzdateien werden lokal aus vorhandenen Quellen und Filtern zusammengesetzt, auf 48 kHz normalisiert und auf Dubletten geprüft. Der technische Bericht steht in [`_DOCS/AUDIO-V6-QA.md`](_DOCS/AUDIO-V6-QA.md), die Zuordnung und Prompttexte in [`_DOCS/AUDIO-SOURCES-V6.md`](_DOCS/AUDIO-SOURCES-V6.md).
 
-Die App behandelt Grundmusik, Prozessionsmusik, Atmosphäre und Effekte unabhängig. Ein Szenen-Preset tauscht deshalb nur die Atmosphäre aus. M01 läuft auf Wunsch durch den ganzen Abend, die Vorlesen-Taste senkt Musik ab, und STOP beendet alle Ebenen sofort. Unter Einstellungen gibt es einen Hörtest, mit dem jeder Cue auf iPhone und Bluetooth-Box als passend oder falsch markiert werden kann.
+Die App behandelt Grundmusik, Prozessionsmusik, Atmosphäre und Effekte unabhängig. Ein Szenen-Preset tauscht deshalb nur die Atmosphäre aus. M01 läuft auf Wunsch durch den ganzen Abend, die Vorlesen-Taste senkt Musik ab, und STOP beendet alle Ebenen sofort. Unter Einstellungen gibt es einen Hörtest, mit dem jeder Cue auf dem iPad und einer Bluetooth-Box als passend oder falsch markiert werden kann.
 
 ```powershell
 python tools/process_audio_v5.py

@@ -1,4 +1,4 @@
-name: iOS release IPA
+name: iPad release IPA
 
 on:
   push:
@@ -44,7 +44,7 @@ jobs:
             -configuration Release \
             -derivedDataPath "$RUNNER_TEMP/derived" \
             MARKETING_VERSION="${{ steps.release.outputs.app_version }}" \
-            CURRENT_PROJECT_VERSION=4 \
+            CURRENT_PROJECT_VERSION=5 \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             build

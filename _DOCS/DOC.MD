@@ -16,14 +16,14 @@ Die drei Reisenden stranden nach einer manipulierten Kutschenpanne im Schwarzwal
 
 - `adventure/`: autorenfreundliche V3-Quelle und Spielleiterstruktur
 - `content/`: erzeugtes Manifest und längere Spieltexte
-- `app/`: SwiftUI-Leitstand für iOS 17 oder neuer
+- `app/`: SwiftUI-Leitstand für iPadOS 17 oder neuer
 - `web/`: offlinefähige PWA für den Test vor dem Sideload und am PC
 - `print/`: Rastergrafiken und Druckvorlagen
 - `audio/`: erzeugte V3-Audios und Quellenhinweise
 - `tools/`: reproduzierbare Build- und Validierungsskripte
 - `outputs/`: finale PDFs, ZIP-Archive und Einladung
 
-Die App bleibt frei navigierbar. Der Einstieg über `GMStartView` führt zuerst durch Vorbereitung, Materialtrennung, Sicherheitscheck und die drei Schnellstartfiguren. `GuidedGMView` zeigt danach pro Szene klar getrennte Karten für Vorlesen, SL-Information, Spieleraktion, Auslöser, Hinweis, Würfelprobe und nächsten Schritt. Materialien, Karten, NPC-Dossiers, Fakten und Regeln bleiben direkt aus dem aktuellen Schritt erreichbar. Der Ablauf entscheidet keine Handlung automatisch. Hinweise werden nie durch einen einzelnen misslungenen Wurf blockiert.
+Die iPad-App bleibt frei navigierbar und nutzt im Querformat eine dreiteilige Navigation: Szenen links, aktueller Schritt in der Mitte und automatisch passender Kontext rechts. Der Einstieg über `GMStartView` führt zuerst durch Vorbereitung, Materialtrennung, Sicherheitscheck und die drei Schnellstartfiguren. `GuidedGMView` zeigt danach pro Szene klar getrennte Karten für Vorlesen, SL-Information, Spieleraktion, Auslöser, Hinweis, Würfelprobe und nächsten Schritt. Materialien, Karten, NPC-Dossiers, Fakten und Regeln bleiben direkt aus dem aktuellen Schritt erreichbar. Der Ablauf entscheidet keine Handlung automatisch. Hinweise werden nie durch einen einzelnen misslungenen Wurf blockiert. Krähenfels speichert Spielstand und Audio-Bewertungen lokal und benötigt kein Konto.
 
 Der Leitstand führt die kanonischen Wege aus dem Gasthaus getrennt: Kirche, Schmiede und Waldspur sind in beliebiger Reihenfolge möglich. Das Archiv wird erst nach zwei besuchten Ermittlungsorten angeboten. Im Finale kann die Spielleitung zwischen der geführten Gefahrenszene und einem vollständigen HTBAH-Kampf umschalten. Der Türzustand des Gästezimmers und die Würfelhistorie werden im Sitzungsjournal gespeichert.
 

@@ -7,7 +7,7 @@ struct SessionView: View {
     var body: some View {
         Form {
             Section {
-                Text("Diese Angaben bleiben nur auf diesem iPhone. Du kannst sie vor jeder Runde neu setzen.")
+                Text("Diese Angaben bleiben nur auf diesem iPad. Du kannst sie vor jeder Runde neu setzen.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } header: {
@@ -66,7 +66,7 @@ struct SessionView: View {
             Button("Löschen", role: .destructive) { session.clearJournal() }
             Button("Abbrechen", role: .cancel) { }
         } message: {
-            Text("Die drei Namen sowie alle eigenen Session- und Szenennotizen werden von diesem iPhone entfernt.")
+            Text("Die drei Namen sowie alle eigenen Session- und Szenennotizen werden von diesem iPad entfernt.")
         }
     }
 }

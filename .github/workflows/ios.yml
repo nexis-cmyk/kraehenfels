@@ -2,7 +2,7 @@ name: iOS build
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
         run: HOMEBREW_NO_REQUIRE_TAP_TRUST=1 brew install xcodegen
       - name: Generate project
         run: cd app && xcodegen generate
-      - name: Build iOS app
+      - name: Build iPad app
         id: build
         continue-on-error: true
         run: |
@@ -35,29 +35,29 @@ jobs:
             build 2>&1 | tee "$RUNNER_TEMP/xcodebuild.log"
           status=${PIPESTATUS[0]}
           echo "status=$status" >> "$GITHUB_OUTPUT"
-      - name: Report iOS build errors
+      - name: Report iPad build errors
         if: steps.build.outputs.status != '0'
         run: |
           grep -E 'error:|fatal error:' "$RUNNER_TEMP/xcodebuild.log" | tail -n 80 | while IFS= read -r line; do
             echo "::error::$line"
           done
           exit 1
-      - name: Package iOS Simulator app for Appetize
+      - name: Package iPad Simulator app for Appetize
         run: |
           APP_PATH="$RUNNER_TEMP/derived/Build/Products/Debug-iphonesimulator/Kraehenfels.app"
           test -d "$APP_PATH"
           mkdir -p "$RUNNER_TEMP/appetize"
           ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$RUNNER_TEMP/appetize/Kraehenfels-simulator.zip"
-      - name: Upload Appetize-ready simulator build
+      - name: Upload Appetize-ready iPad simulator build
         uses: actions/upload-artifact@v4
         with:
-          name: kraehenfels-ios-simulator-app
+          name: kraehenfels-ipad-simulator-app
           path: ${{ runner.temp }}/appetize/Kraehenfels-simulator.zip
           if-no-files-found: error
           retention-days: 14
-      - name: Run iOS unit tests
+      - name: Run iPad unit tests
         run: |
-          DEVICE_ID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next(device["udid"] for devices in data["devices"].values() for device in devices if device.get("isAvailable") and device["name"].startswith("iPhone")))')
+          DEVICE_ID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next(device["udid"] for devices in data["devices"].values() for device in devices if device.get("isAvailable") and "iPad Pro" in device["name"] and "11" in device["name"]))')
           xcodebuild \
             -project app/Kraehenfels.xcodeproj \
             -scheme Kraehenfels \
