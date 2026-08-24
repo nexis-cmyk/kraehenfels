@@ -103,7 +103,10 @@ struct RootView: View {
         case .home:
             WorkspaceHomeView(selection: $selection)
         case .preparation:
-            GMStartView(onExit: { selection = .home })
+            GMStartView(
+                onStart: { selection = .scene(session.currentSceneID) },
+                onExit: { selection = .home }
+            )
         case .scene(_):
             GuidedGMView(onExit: { selection = session.hasStartedSession ? .home : .preparation })
         case .materials:

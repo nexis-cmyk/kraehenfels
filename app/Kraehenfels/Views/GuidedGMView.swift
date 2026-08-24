@@ -5,9 +5,11 @@ struct GMStartView: View {
     @EnvironmentObject private var audio: AudioEngine
     @EnvironmentObject private var content: ContentStore
     @State private var startSession = false
+    let onStart: (() -> Void)?
     let onExit: (() -> Void)?
 
-    init(onExit: (() -> Void)? = nil) {
+    init(onStart: (() -> Void)? = nil, onExit: (() -> Void)? = nil) {
+        self.onStart = onStart
         self.onExit = onExit
     }
 
@@ -150,7 +152,11 @@ struct GMStartView: View {
                 if let music = content.musicBed, !audio.isPlaying(music) {
                     audio.play(music)
                 }
-                startSession = true
+                if let onStart {
+                    onStart()
+                } else {
+                    startSession = true
+                }
             } label: {
                 Label("Spielleiter-Modus starten", systemImage: "play.fill")
                     .font(.headline)
@@ -336,7 +342,7 @@ struct GuidedGMView: View {
                 }
             }
 
-            if let step = currentStep, step.options.isEmpty, step.kind == .roll, step.roll?.required == false {
+            if let step = currentStep, step.options.isEmpty, let roll = step.roll, !roll.required {
                 Button("Ohne Probe weiter") {
                     advance(step)
                 }
@@ -355,22 +361,22 @@ struct GuidedGMView: View {
     }
 
     private func primaryActionTitle(for step: GuideStep) -> String {
+        if step.roll != nil { return "Würfelhelfer öffnen" }
         if step.kind == .readAloud { return "Sound vorbereiten und vorlesen" }
-        if step.kind == .roll { return "Würfelhelfer öffnen" }
         return step.actionLabel
     }
 
     private func primaryActionSymbol(for step: GuideStep) -> String {
+        if step.roll != nil { return "dice.fill" }
         if step.kind == .readAloud { return "quote.bubble.fill" }
-        if step.kind == .roll { return "dice.fill" }
         return "arrow.right"
     }
 
     private func primaryAction(for step: GuideStep) {
-        if step.kind == .readAloud {
-            readAloudStep = step
-        } else if step.kind == .roll, step.roll != nil {
+        if step.roll != nil {
             rollStep = step
+        } else if step.kind == .readAloud {
+            readAloudStep = step
         } else {
             advance(step)
         }
@@ -494,7 +500,7 @@ struct GuidedGMView: View {
                 .foregroundStyle(.white.opacity(0.92))
                 .fixedSize(horizontal: false, vertical: true)
             if let roll = step.roll {
-                rollSummary(roll)
+                rollSessionPanel(step, roll)
             } else {
                 noRollSummary(step)
             }
@@ -549,18 +555,40 @@ struct GuidedGMView: View {
         .background(FrostTheme.ink.opacity(0.42), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
-    private func rollSummary(_ roll: RollSpec) -> some View {
+    private func rollSessionPanel(_ step: GuideStep, _ roll: RollSpec) -> some View {
         VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline) {
+                Label("Würfelsession", systemImage: "dice.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(FrostTheme.frost)
+                Spacer()
+                Text(roll.required ? "PFLICHT" : "OPTIONAL")
+                    .font(.caption2.monospaced().weight(.bold))
+                    .foregroundStyle(roll.required ? FrostTheme.warning : FrostTheme.accent)
+            }
             Label("Wer: \(roll.actor)", systemImage: "person.fill")
-            Label("\(roll.die) auf \(roll.ability)", systemImage: "dice.fill")
+            Label("\(roll.die) auf \(roll.ability)", systemImage: "dice")
             Label("Ziel: \(roll.target)", systemImage: "scope")
-            Label("Erfolg: \(roll.success)", systemImage: "checkmark.circle")
-            Label("Misserfolg: \(roll.failure)", systemImage: "xmark.circle")
             Label(roll.modifier, systemImage: "plusminus")
-            Label(roll.required ? "Diese Probe ist für den Schritt vorgesehen." : "Optional: nur bei einer riskanten Handlung würfeln.", systemImage: roll.required ? "exclamationmark.circle" : "questionmark.circle")
+            Text(roll.required ? "Diese Probe gehört zum aktuellen Schritt." : "Würfle nur, wenn die Gruppe die riskante Handlung tatsächlich versucht.")
+                .font(.caption)
+                .foregroundStyle(FrostTheme.quiet)
+                .fixedSize(horizontal: false, vertical: true)
             if roll.guaranteedClue {
                 Label("Pflicht-Hinweis bleibt unabhängig vom Ergebnis erhalten.", systemImage: "lock.open.fill")
             }
+            if let previous = session.rollHistory[step.id] {
+                Label("Letztes Ergebnis: \(previous)", systemImage: "clock.arrow.circlepath")
+                    .foregroundStyle(FrostTheme.accent)
+            }
+            Button {
+                rollStep = step
+            } label: {
+                Label("Würfelhelfer öffnen", systemImage: "dice.fill")
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(FrostTheme.accent)
         }
         .font(.caption)
         .foregroundStyle(.white.opacity(0.82))
@@ -1083,7 +1111,7 @@ struct CombatReferenceView: View {
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
-                    combatRule("1 · Reihenfolge", "Alle würfeln W10 + Handeln. Die höchste Zahl handelt zuerst. Bei Überraschung setzt die betroffene Figur die erste Runde aus.")
+                    combatRule("1 · Reihenfolge", "Alle würfeln 1W10 plus den Begabungswert Handeln. Die höchste Zahl handelt zuerst. Bei Überraschung setzt die betroffene Figur die erste Runde aus.")
                     combatRule("2 · Angriff", "Angreifer würfelt eine passende Fertigkeitsprobe mit W100. Bei Erfolg trifft der Angriff; bei Misserfolg entsteht kein Schaden.")
                     combatRule("3 · Parade", "Eine Figur darf einmal pro Runde mit Handeln parieren. Kritische Angriffe und Schusswaffen sind nicht parierbar.")
                     combatRule("4 · Schaden", "Würfle die zur Waffe passende Anzahl W10. Kritische Angriffe verdoppeln den Schaden. Ziehe die Summe von den LP ab.")

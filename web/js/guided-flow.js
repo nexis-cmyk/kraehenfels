@@ -12,8 +12,8 @@ export const guideKindLabels = {
 export function evaluateRoll(roll, target, gifted = false) {
   const safeRoll = Math.min(Math.max(Number(roll) || 1, 1), 100);
   const safeTarget = Math.min(Math.max(Number(target) || 1, 1), 100);
-  const criticalSuccess = !gifted && safeRoll <= Math.max(1, Math.floor(safeTarget / 10));
-  const criticalFailure = safeRoll >= Math.min(100, 90 + Math.floor(safeTarget / 10));
+  const criticalSuccess = safeRoll <= safeTarget * 0.10;
+  const criticalFailure = safeRoll >= 90 + safeTarget * 0.10;
   return {
     roll: safeRoll,
     target: safeTarget,

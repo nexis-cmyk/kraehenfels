@@ -289,6 +289,14 @@ function renderRollPanel(step) {
   return `<div class="roll-panel"><div class="roll-panel-heading"><div><span class="eyebrow">W100-Probe</span><strong>${escapeHtml(roll.actor)}</strong></div><button class="text-button" data-guide-action="close-roll" type="button">Schließen</button></div><p><b>Fertigkeit:</b> ${escapeHtml(roll.ability)} · <b>Zielwert:</b> ${escapeHtml(roll.target)}</p><p class="roll-modifier">${escapeHtml(roll.modifier)}</p><div class="roll-inputs"><label class="roll-input"><span>Gewürfeltes Ergebnis</span><input data-roll-value type="number" min="1" max="100" inputmode="numeric" value="${previous?.roll || ""}" placeholder="z. B. 42"></label><label class="roll-input"><span>Zielwert der Fertigkeit</span><input data-roll-target type="number" min="1" max="100" inputmode="numeric" value="${previous?.target || 50}" placeholder="z. B. 65"></label></div><button class="button button-primary guide-action" data-guide-action="resolve-roll" data-step="${step.id}" type="button">Ergebnis auswerten</button>${previous ? `<div class="roll-result ${previous.success ? "is-success" : "is-failure"}"><strong>${escapeHtml(previous.label)}</strong><span>${previous.roll} gegen ${previous.target}</span><p>${escapeHtml(previous.success ? roll.success : roll.failure)}</p></div>` : ""}</div>`;
 }
 
+function renderRulesSection() {
+  const rules = state.manifest.rules || [];
+  return `<section class="content-section rules-section" aria-labelledby="rules-title">
+    <div class="section-heading"><div><h2 id="rules-title">Regeln</h2><p>How to be a Hero, kurz am Tisch.</p></div><span>W100-System</span></div>
+    <div class="rules-list">${rules.map((entry) => `<article class="rule-row"><h3>${escapeHtml(entry.title)}</h3><p>${escapeHtml(entry.body)}</p></article>`).join("")}</div>
+  </section>`;
+}
+
 function renderGuideStep(step) {
   if (!step) return `<div class="guide-empty"><h2>Schritt abgeschlossen</h2><p>Wähle links eine Szene oder kehre zum Start zurück.</p></div>`;
   const scene = sceneById(step.sceneID || state.currentSceneId);
@@ -297,7 +305,7 @@ function renderGuideStep(step) {
   const cue = step.audioCueID ? cueById(step.audioCueID) : null;
   const options = step.options || [];
   let action = "";
-  if (step.kind === "roll") action = renderRollPanel(step);
+  if (step.roll) action = renderRollPanel(step);
   else if (options.length) action = `<div class="guide-options">${options.map((option) => `<button class="guide-option" data-guide-option="${option.id}" data-destination="${option.destinationSceneID || ""}" data-ending="${option.endingID || ""}" type="button"><strong>${escapeHtml(option.title)}</strong><small>${escapeHtml(option.detail)}</small><span aria-hidden="true">›</span></button>`).join("")}</div>`;
   else if (step.kind === "readAloud") action = `<button class="button button-primary guide-action" data-guide-action="read" data-cue="${cue?.id || ""}" type="button">${cue ? "Sound vorbereiten und vorlesen" : "Vorgelesen – weiter"}<span aria-hidden="true">›</span></button>`;
   else action = `<button class="button button-primary guide-action" data-guide-action="advance" type="button">${escapeHtml(step.actionLabel || "Weiter")}<span aria-hidden="true">›</span></button>`;
@@ -443,6 +451,8 @@ function render() {
       <div class="section-heading"><h2 id="read-aloud-title">Vorlesen</h2><span aria-hidden="true">“</span></div>
       <p>${escapeHtml(scene.readAloud)}</p>
     </section>
+
+    ${renderRulesSection()}
 
     <section class="content-section table-section" aria-labelledby="table-title">
       <div class="section-heading"><div><h2 id="table-title">Am Tisch</h2><p>Nur auf diesem Gerät gespeichert.</p></div><button class="text-button" data-action="clear-table" type="button">Tischdaten löschen</button></div>
@@ -658,7 +668,7 @@ document.addEventListener("click", async (event) => {
   if (action === "materials" || action === "rules" || action === "audio-check" || action === "dossier") {
     state.view = "scene";
     render();
-    const target = { materials: ".handout-section", rules: ".dossier-section", "audio-check": ".soundboard", dossier: ".dossier-section" }[action];
+    const target = { materials: ".handout-section", rules: ".rules-section", "audio-check": ".soundboard", dossier: ".dossier-section" }[action];
     requestAnimationFrame(() => document.querySelector(target)?.scrollIntoView({ behavior: "smooth", block: "start" }));
     return;
   }
