@@ -1,12 +1,12 @@
 # AltStore-Feed
 
-Der Feed liegt als [`source.json`](source.json) im Repository und ist auf den iPad-Release `v4.0.0` ausgelegt. Der macOS-Release-Workflow erzeugt bei weiteren Versionen zusätzlich eine ausgefüllte `source.generated.json` mit Größe und SHA-256.
+Der Feed liegt als [`source.json`](source.json) im Repository und ist auf den iPad-Release `v4.1.0` ausgelegt. Der macOS-Release-Workflow erzeugt bei weiteren Versionen zusätzlich eine ausgefüllte `source.generated.json` mit Größe und SHA-256.
 
 In AltStore Classic: `Sources` öffnen, `+` wählen und diese Feed-URL eintragen:
 
-Aktueller Release-Feed (für die Installation von V3):
+Aktueller Release-Feed (für die Installation von v4.1.0):
 
-`https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.0.0/source.generated.json`
+`https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.1.0/source.generated.json`
 
 Dauerhafter Feed:
 

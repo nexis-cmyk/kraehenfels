@@ -11,20 +11,31 @@
       "bundleIdentifier": "de.kraehenfels.spielleitung",
       "developerName": "Krähenfels",
       "subtitle": "Die letzte Kutsche",
-      "version": "4.0.0",
-      "buildVersion": "5",
-      "versionDate": "2026-08-21",
-      "versionDescription": "Release 4.0.0",
-      "downloadURL": "https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.0.0/Kraehenfels.ipa",
-      "size": 82404155,
-      "sha256": "dd3a68985388ee311d22cffbdbc814c1dafb6cb2a2095cbda5b7fa855a85fe2b",
+      "version": "4.1.0",
+      "buildVersion": "6",
+      "versionDate": "2026-08-24",
+      "versionDescription": "Release 4.1.0",
+      "downloadURL": "https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.1.0/Kraehenfels.ipa",
+      "size": 82442393,
+      "sha256": "cf81c2027d0382aa878eba89cffd73d57adef68a275225e1a2117a098d73beea",
       "localizedDescription": "Geführter Szenenleitstand mit Vorlesetexten, NPCs, Pflichtspuren, Szenenbildern, papiergebundenen Hinweisen, lokalen Tischnotizen, manuellem Nachtstand und einem getrennten Soundboard für Atmosphäre, Musik und Effekte.",
       "iconURL": "https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/icon.png",
       "tintColor": "#6EAF7A",
       "appPermissions": {
         "entitlements": [],
-        "privacy": []
-      }
+        "privacy": {}
+      },
+      "versions": [
+        {
+          "version": "4.1.0",
+          "buildVersion": "6",
+          "date": "2026-08-24",
+          "localizedDescription": "Release 4.1.0",
+          "downloadURL": "https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.1.0/Kraehenfels.ipa",
+          "size": 82442393,
+          "sha256": "cf81c2027d0382aa878eba89cffd73d57adef68a275225e1a2117a098d73beea"
+        }
+      ]
     }
   ]
 }
