@@ -1,5 +1,5 @@
 import { AudioEngine } from "./audio-engine.js";
-import { evaluateRoll, guideKindLabels, guidedFlow } from "./guided-flow.js";
+import { evaluateRoll, guideKindLabels } from "./guided-flow.js";
 
 const app = document.querySelector("#app");
 const sceneNav = document.querySelector("#scene-nav");
@@ -10,18 +10,14 @@ const topbarBack = document.querySelector("#topbar-back");
 const screenTitle = document.querySelector("#screen-title");
 const topbarMenu = document.querySelector("#topbar-menu");
 const topbarMenuPanel = document.querySelector("#topbar-menu-panel");
-const nightPhases = [
-  { title: "Der Bruch", detail: "Manipulierte Kutsche, Schnee und der erste falsche Schutz.", symbol: "✦" },
-  { title: "Das Dorf", detail: "Gasthaus, Kirche und Schmiede öffnen ihre Widersprüche.", symbol: "⌂" },
-  { title: "Die Spur", detail: "Namen, Buchseiten und der Weg zur Alten Eiche.", symbol: "⌕" },
-  { title: "Der Ruf", detail: "Die Glocke schlägt. Das Dorf muss sich entscheiden.", symbol: "!" },
-  { title: "Der Morgen", detail: "Drei mögliche Enden und die Rechnung des Waldes.", symbol: "◉" },
-];
+let nightPhases = [];
+const phaseSymbols = ["✦", "⌂", "⌕", "!", "◉"];
 
 function normalizedNightPhase(value) {
   const index = Number(value);
   if (!Number.isFinite(index)) return 0;
-  return Math.min(Math.max(Math.trunc(index), 0), nightPhases.length - 1);
+  const phaseCount = nightPhases.length || 5;
+  return Math.min(Math.max(Math.trunc(index), 0), phaseCount - 1);
 }
 
 const stored = (key, fallback) => {
@@ -51,6 +47,7 @@ const state = {
   selectedHooks: stored("kraehenfels.selectedHooks", {}),
   gmMode: stored("kraehenfels.gmMode", false),
   guidedIndexes: stored("kraehenfels.guidedIndexes", {}),
+  guideHistory: stored("kraehenfels.guideHistory", []),
   setupChecks: new Set(stored("kraehenfels.setupChecks", [])),
   guidedRolls: stored("kraehenfels.guidedRolls", {}),
   audioRatings: stored("kraehenfels.audioRatings", {}),
@@ -74,6 +71,7 @@ function persist() {
   localStorage.setItem("kraehenfels.selectedHooks", JSON.stringify(state.selectedHooks));
   localStorage.setItem("kraehenfels.gmMode", JSON.stringify(state.gmMode));
   localStorage.setItem("kraehenfels.guidedIndexes", JSON.stringify(state.guidedIndexes));
+  localStorage.setItem("kraehenfels.guideHistory", JSON.stringify(state.guideHistory));
   localStorage.setItem("kraehenfels.setupChecks", JSON.stringify([...state.setupChecks]));
   localStorage.setItem("kraehenfels.guidedRolls", JSON.stringify(state.guidedRolls));
   localStorage.setItem("kraehenfels.audioRatings", JSON.stringify(state.audioRatings));
@@ -180,6 +178,9 @@ function renderNPC(npc) {
 function renderFrame(view, scene) {
   const isHome = view === "home";
   topbarBack.hidden = isHome;
+  const backLabel = view === "guided" ? (state.guideHistory.length ? "Zurück" : "Übersicht") : "Krähenfels";
+  topbarBack.dataset.action = view === "guided" ? "guide-back" : "home";
+  topbarBack.querySelector("span:last-child").textContent = backLabel;
   screenTitle.textContent = isHome ? "Krähenfels" : view === "gm-start" ? "Spielleiter-Modus" : scene.shortTitle;
   document.body.dataset.view = view;
   topbarMenuPanel.hidden = true;
@@ -187,7 +188,7 @@ function renderFrame(view, scene) {
 }
 
 function guideStepsFor(sceneID) {
-  return guidedFlow.steps[sceneID] || [];
+  return state.manifest?.guide?.steps?.[sceneID] || [];
 }
 
 function currentGuideIndex(sceneID) {
@@ -197,6 +198,46 @@ function currentGuideIndex(sceneID) {
 
 function currentGuideStep(sceneID) {
   return guideStepsFor(sceneID)[currentGuideIndex(sceneID)];
+}
+
+function pushGuidePosition() {
+  state.guideHistory.push({ sceneID: state.currentSceneId, stepIndex: currentGuideIndex(state.currentSceneId) });
+}
+
+function advanceGuideStep() {
+  const steps = guideStepsFor(state.currentSceneId);
+  const step = currentGuideStep(state.currentSceneId);
+  if (step?.clueID) state.clues.add(step.clueID);
+  pushGuidePosition();
+  state.guidedIndexes[state.currentSceneId] = Math.min(currentGuideIndex(state.currentSceneId) + 1, Math.max(0, steps.length - 1));
+  state.rollOpen = false;
+}
+
+function resetDependentPath(destination) {
+  const order = ["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08"];
+  const index = order.indexOf(destination);
+  if (index < 0) return;
+  const dependent = new Set(order.slice(index + 1));
+  state.completed = new Set([...state.completed].filter((sceneID) => !dependent.has(sceneID)));
+  state.guidedIndexes = Object.fromEntries(Object.entries(state.guidedIndexes).filter(([sceneID]) => !dependent.has(sceneID)));
+  state.guidedRolls = Object.fromEntries(Object.entries(state.guidedRolls).filter(([stepID]) => !dependent.has(stepID.slice(0, 3))));
+  state.guideHistory = state.guideHistory.filter((position) => !dependent.has(position.sceneID));
+  if (index < order.indexOf("S07")) state.endingID = "";
+}
+
+function goBackInGuide() {
+  const previous = state.guideHistory.pop();
+  if (!previous) {
+    state.view = "home";
+  } else {
+    state.currentSceneId = previous.sceneID;
+    state.guidedIndexes[previous.sceneID] = previous.stepIndex;
+    state.view = "guided";
+  }
+  state.rollOpen = false;
+  persist();
+  render();
+  document.querySelector("#scene-content").focus();
 }
 
 function guideReference(id) {
@@ -225,19 +266,19 @@ function renderGMStart() {
       <p>Dieser Assistent führt dich durch Vorbereitung, Vorlesetexte, Spieleraktionen, Hinweise und Würfelproben. Du entscheidest jederzeit selbst, ob die Gruppe einen anderen Weg nimmt.</p>
     </section>
     <section class="guide-panel setup-panel" aria-labelledby="setup-title">
-      <div class="guide-panel-heading"><div><span class="eyebrow">Vorbereitung</span><h2 id="setup-title">In fünf Minuten startklar</h2></div><b>${checked}/${guidedFlow.setupItems.length}</b></div>
-      <div class="setup-list">${guidedFlow.setupItems.map((item) => `<button class="setup-row" data-setup="${item.id}" type="button" aria-pressed="${state.setupChecks.has(item.id)}"><span class="setup-check">${state.setupChecks.has(item.id) ? "✓" : ""}</span><span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.detail)}</small></span></button>`).join("")}</div>
+      <div class="guide-panel-heading"><div><span class="eyebrow">Vorbereitung</span><h2 id="setup-title">In fünf Minuten startklar</h2></div><b>${checked}/${state.manifest.guide.setupItems.length}</b></div>
+      <div class="setup-list">${state.manifest.guide.setupItems.map((item) => `<button class="setup-row" data-setup="${item.id}" type="button" aria-pressed="${state.setupChecks.has(item.id)}"><span class="setup-check">${state.setupChecks.has(item.id) ? "✓" : ""}</span><span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.detail)}</small></span></button>`).join("")}</div>
     </section>
     <section class="guide-panel characters-panel" aria-labelledby="characters-title">
       <div class="guide-panel-heading"><div><span class="eyebrow">Die drei Reisenden</span><h2 id="characters-title">Fertige Figuren für den Tisch</h2></div><span class="guide-muted">Namen kannst du später eintragen</span></div>
-      <div class="character-grid">${guidedFlow.characters.map((character) => `<article class="character-card"><div class="character-avatar">${escapeHtml(character.name.slice(0, 1))}</div><div><h3>${escapeHtml(character.name)}</h3><p class="character-role">${escapeHtml(character.role)}</p><p>${escapeHtml(character.hook)}</p><div class="character-skills">${character.skills.map((skill) => `<span>${escapeHtml(skill)}</span>`).join("")}</div><small>${escapeHtml(character.tablePrompt)}</small></div></article>`).join("")}</div>
+      <div class="character-grid">${state.manifest.guide.characters.map((character) => `<article class="character-card"><div class="character-avatar">${escapeHtml(character.name.slice(0, 1))}</div><div><h3>${escapeHtml(character.name)}</h3><p class="character-role">${escapeHtml(character.role)}</p><p>${escapeHtml(character.hook)}</p><div class="character-skills">${character.skills.map((skill) => `<span>${escapeHtml(skill)}</span>`).join("")}</div><small>${escapeHtml(character.tablePrompt)}</small></div></article>`).join("")}</div>
     </section>
     <section class="guide-panel briefing-panel" aria-labelledby="briefing-title">
       <div class="guide-panel-heading"><div><span class="eyebrow">Vor dem ersten Satz</span><h2 id="briefing-title">Das sagst du den Spielern</h2></div></div>
-      <blockquote>${escapeHtml(guidedFlow.playerBriefing)}</blockquote>
-      <p class="spoiler-line"><span>NICHT VERRATEN</span> ${escapeHtml(guidedFlow.hiddenFromPlayers)}</p>
+      <blockquote>${escapeHtml(state.manifest.guide.playerBriefing)}</blockquote>
+      <p class="spoiler-line"><span>NICHT VERRATEN</span> ${escapeHtml(state.manifest.guide.hiddenFromPlayers)}</p>
     </section>
-    <button class="button button-primary guide-start-button" data-guide-action="begin" type="button">${checked === guidedFlow.setupItems.length ? "Spielleiter-Modus starten" : "Trotzdem starten"}<span aria-hidden="true">›</span></button>
+    <button class="button button-primary guide-start-button" data-guide-action="begin" type="button">${checked === state.manifest.guide.setupItems.length ? "Spielleiter-Modus starten" : "Trotzdem starten"}<span aria-hidden="true">›</span></button>
   </div>`;
 }
 
@@ -266,13 +307,17 @@ function renderGuideStep(step) {
     <div class="guide-progress-track"><i style="width:${((index + 1) / Math.max(1, steps.length)) * 100}%"></i></div>
     <section class="guide-scene-hero" style="--scene-art: url('./assets/art/${encodeURIComponent(scene.art)}')"><div><span>${escapeHtml(scene.id)} · ${escapeHtml(scene.duration)}</span><h2>${escapeHtml(scene.title)}</h2><p>${escapeHtml(scene.goal)}</p></div></section>
     <section class="guide-step-card kind-${step.kind}">
-      <div class="guide-kind"><span>${escapeHtml(guideKindLabels[step.kind] || "SPIELLEITER-SCHRITT")}</span>${step.required ? "<b>PFLICHT</b>" : ""}</div>
+      <div class="guide-kind"><span>${escapeHtml(guideKindLabels[step.kind] || "SPIELLEITER-SCHRITT")}</span>${step.roll?.required ? "<b>PFLICHT</b>" : ""}</div>
       <h2>${escapeHtml(step.title)}</h2>
       <p class="guide-step-body">${escapeHtml(step.body)}</p>
       ${step.roll ? `<div class="roll-brief"><span class="eyebrow">WANN WIRD GEWÜRFELT?</span><strong>${escapeHtml(step.roll.actor)}</strong><p>${escapeHtml(step.roll.ability)} · ${escapeHtml(step.roll.target)}</p><small>${escapeHtml(step.roll.modifier)}</small></div>` : ""}
       ${clueLine}${guideReferences(step)}
       ${action}
     </section>
+    <div class="guide-footer">
+      <button class="button button-quiet" data-guide-action="back" type="button"><span aria-hidden="true">←</span> ${state.guideHistory.length ? "Zurück" : "Übersicht"}</button>
+      <span>${options.length ? "Wähle oben den nächsten Schritt." : "Der nächste Schritt bleibt unten sichtbar."}</span>
+    </div>
     <div class="guide-quick-actions"><button class="quick-action" data-action="materials" type="button">▱ Materialien</button><button class="quick-action" data-action="rules" type="button">▧ Regeln</button><button class="quick-action" data-action="audio-check" type="button">≋ Soundplan</button><button class="quick-action" data-action="dossier" type="button">⌕ Fakten</button></div>
     <section class="guide-table-note"><div><span class="eyebrow">TISCHNOTIZ</span><p>Was ist gerade passiert? Was bleibt offen?</p></div><textarea data-scene-note="${scene.id}" rows="3" placeholder="Kurz notieren …">${escapeHtml(state.sceneNotes[scene.id] || "")}</textarea></section>
   </div>`;
@@ -510,6 +555,7 @@ document.addEventListener("click", async (event) => {
     state.gmMode = true;
     state.currentSceneId = "S01";
     state.guidedIndexes.S01 = 0;
+    state.guideHistory = [];
     state.view = "guided";
     state.rollOpen = false;
     persist();
@@ -517,10 +563,12 @@ document.addEventListener("click", async (event) => {
     document.querySelector("#scene-content").focus();
     return;
   }
+  if (guideAction === "back") {
+    goBackInGuide();
+    return;
+  }
   if (guideAction === "advance") {
-    const steps = guideStepsFor(state.currentSceneId);
-    state.guidedIndexes[state.currentSceneId] = Math.min(currentGuideIndex(state.currentSceneId) + 1, Math.max(0, steps.length - 1));
-    state.rollOpen = false;
+    advanceGuideStep();
     persist();
     render();
     return;
@@ -530,8 +578,7 @@ document.addEventListener("click", async (event) => {
     // Start audio without making the guided flow wait for a browser autoplay promise.
     // The cue reports its own success or error in the persistent status line.
     if (cue) void audio.play(cue);
-    const steps = guideStepsFor(state.currentSceneId);
-    state.guidedIndexes[state.currentSceneId] = Math.min(currentGuideIndex(state.currentSceneId) + 1, Math.max(0, steps.length - 1));
+    advanceGuideStep();
     persist();
     render();
     return;
@@ -544,8 +591,7 @@ document.addEventListener("click", async (event) => {
     const target = Number(document.querySelector("[data-roll-target]")?.value || 50);
     const result = evaluateRoll(value, target);
     state.guidedRolls[step.id] = result;
-    state.rollOpen = false;
-    state.guidedIndexes[state.currentSceneId] = Math.min(currentGuideIndex(state.currentSceneId) + 1, Math.max(0, guideStepsFor(state.currentSceneId).length - 1));
+    advanceGuideStep();
     if (!result.success && state.currentSceneId === "S06") state.threatLevel = Math.max(state.threatLevel, 4);
     persist();
     render();
@@ -557,14 +603,17 @@ document.addEventListener("click", async (event) => {
     const ending = guideOption.dataset.ending;
     if (ending) state.endingID = ending;
     if (destination) {
+      const currentScene = state.currentSceneId;
+      const needsConfirmation = state.completed.has(destination);
+      if (needsConfirmation && !window.confirm("Gefundene Hinweise und Tischnotizen bleiben erhalten. Spätere Szenen werden ab dem neuen Ziel zurückgesetzt. Pfad neu setzen?")) return;
+      state.completed.add(currentScene);
+      pushGuidePosition();
+      if (needsConfirmation) resetDependentPath(destination);
       state.currentSceneId = destination;
       state.guidedIndexes[destination] = 0;
-      if (destination === "S08") state.completed.add("S07");
-      if (destination === "S02") state.completed.add("S01");
       state.view = "guided";
     } else {
-      const steps = guideStepsFor(state.currentSceneId);
-      state.guidedIndexes[state.currentSceneId] = Math.min(currentGuideIndex(state.currentSceneId) + 1, Math.max(0, steps.length - 1));
+      advanceGuideStep();
     }
     state.rollOpen = false;
     persist();
@@ -581,6 +630,10 @@ document.addEventListener("click", async (event) => {
     state.rollOpen = false;
     render();
     document.querySelector("#scene-content").focus();
+    return;
+  }
+  if (action === "guide-back") {
+    goBackInGuide();
     return;
   }
   if (action === "menu") {
@@ -687,7 +740,7 @@ document.querySelector("#stop-all").addEventListener("click", () => audio.stopAl
 document.querySelector("#transport-stop").addEventListener("click", () => audio.stopAll());
 document.querySelector("#audio-test").addEventListener("click", () => audio.testTone());
 document.querySelector("#reset-progress").addEventListener("click", () => {
-  state.completed.clear(); state.clues.clear(); state.checklist.clear(); state.setupChecks.clear(); state.guidedIndexes = {}; state.guidedRolls = {}; state.gmMode = false; state.endingID = ""; state.currentSceneId = "S01"; state.view = "home"; persist(); render();
+  state.completed.clear(); state.clues.clear(); state.checklist.clear(); state.setupChecks.clear(); state.guidedIndexes = {}; state.guideHistory = []; state.guidedRolls = {}; state.gmMode = false; state.endingID = ""; state.currentSceneId = "S01"; state.view = "home"; persist(); render();
   audioStatus.textContent = "Fortschritt zurückgesetzt.";
 });
 
@@ -697,6 +750,8 @@ async function boot() {
     const response = await fetch("./data/manifest.json", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     state.manifest = await response.json();
+    nightPhases = (state.manifest.phases || []).map((phase, index) => ({ ...phase, symbol: phaseSymbols[index] || "•" }));
+    state.nightPhase = normalizedNightPhase(state.nightPhase);
     if (!sceneById(state.currentSceneId)) state.currentSceneId = state.manifest.scenes[0].id;
     render();
     render();

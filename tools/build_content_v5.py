@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the native 3.3 manifest from the shared canon."""
+"""Build the native 3.3 manifest from the shared adventure sources."""
 
 from __future__ import annotations
 
@@ -9,6 +9,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CANON = ROOT / "adventure" / "canon.json"
+GUIDE = ROOT / "adventure" / "guide.json"
+RULES = ROOT / "adventure" / "rules.json"
 NATIVE_OUTPUTS = [
     ROOT / "content" / "manifest.json",
     ROOT / "app" / "Kraehenfels" / "Resources" / "manifest.json",
@@ -92,6 +94,10 @@ SCENE_AUDIO = {
 
 def main() -> None:
     manifest = json.loads(CANON.read_text(encoding="utf-8"))
+    manifest.pop("guide", None)
+    manifest.pop("rules", None)
+    manifest["guide"] = json.loads(GUIDE.read_text(encoding="utf-8"))
+    manifest["rules"] = json.loads(RULES.read_text(encoding="utf-8"))
     manifest["meta"]["version"] = "3.3.0"
     manifest["audioCues"] = AUDIO_CUES
     cues = {item["id"]: item for item in AUDIO_CUES}
@@ -111,11 +117,12 @@ def main() -> None:
         ]
 
     payload = json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
-    CANON.write_text(payload, encoding="utf-8")
+    canon_payload = {key: value for key, value in manifest.items() if key not in {"guide", "rules"}}
+    CANON.write_text(json.dumps(canon_payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     for output in NATIVE_OUTPUTS:
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(payload, encoding="utf-8")
-    print("Built shared 3.3.0 content for native app and web preview.")
+    print("Built shared 3.3.0 content, guided flow, and rules for native app and web preview.")
 
 
 if __name__ == "__main__":

@@ -16,20 +16,19 @@ struct RootView: View {
     @EnvironmentObject private var content: ContentStore
     @EnvironmentObject private var session: SessionStore
     @State private var selection: WorkspaceDestination?
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             sidebar
-        } content: {
-            centerContent
         } detail: {
-            contextInspector
+            centerContent
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    AudioTransportBar()
+                }
         }
         .navigationSplitViewStyle(.balanced)
-        .tint(FrostTheme.cobalt)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            AudioTransportBar()
-        }
+        .tint(FrostTheme.accent)
         .background(FrostTheme.ink.ignoresSafeArea())
         .onAppear {
             if selection == nil {
@@ -38,10 +37,9 @@ struct RootView: View {
         }
         .onChange(of: selection) { _, destination in
             guard case let .scene(sceneID) = destination else { return }
-            if session.currentSceneID != sceneID {
-                session.currentSceneID = sceneID
-                session.guidedStepIndex = 0
-            }
+            guard session.currentSceneID != sceneID else { return }
+            session.currentSceneID = sceneID
+            session.guidedStepIndex = 0
         }
     }
 
@@ -62,21 +60,22 @@ struct RootView: View {
                         HStack(spacing: 10) {
                             Text(scene.id)
                                 .font(.caption.monospaced().weight(.bold))
-                                .foregroundStyle(session.completedSceneIDs.contains(scene.id) ? FrostTheme.cobalt : FrostTheme.quiet)
+                                .foregroundStyle(session.completedSceneIDs.contains(scene.id) ? FrostTheme.accent : FrostTheme.quiet)
                                 .frame(width: 30, alignment: .leading)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(scene.shortTitle)
                                     .font(.subheadline.weight(.medium))
                                 Text(session.isRecommendedScene(scene.id) ? "empfohlen · \(scene.duration)" : scene.duration)
                                     .font(.caption)
-                                    .foregroundStyle(session.isRecommendedScene(scene.id) ? FrostTheme.cobalt : FrostTheme.quiet)
+                                    .foregroundStyle(session.isRecommendedScene(scene.id) ? FrostTheme.accent : FrostTheme.quiet)
                             }
                             Spacer(minLength: 0)
                             if session.completedSceneIDs.contains(scene.id) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(FrostTheme.cobalt)
+                                    .foregroundStyle(FrostTheme.accent)
                             }
                         }
+                        .frame(minHeight: 44)
                     }
                 }
             }
@@ -95,6 +94,7 @@ struct RootView: View {
         .background(FrostTheme.panel)
         .navigationTitle("Krähenfels")
         .safeAreaPadding(.top, 8)
+        .navigationSplitViewColumnWidth(min: 250, ideal: 282, max: 330)
     }
 
     @ViewBuilder
@@ -103,9 +103,9 @@ struct RootView: View {
         case .home:
             WorkspaceHomeView(selection: $selection)
         case .preparation:
-            GMStartView()
+            GMStartView(onExit: { selection = .home })
         case .scene(_):
-            GuidedGMView()
+            GuidedGMView(onExit: { selection = session.hasStartedSession ? .home : .preparation })
         case .materials:
             MaterialsView()
         case .rules:
@@ -118,16 +118,6 @@ struct RootView: View {
             CaseFileView()
         case .settings:
             SettingsView()
-        }
-    }
-
-    @ViewBuilder
-    private var contextInspector: some View {
-        switch selection ?? .home {
-        case .scene(let sceneID):
-            StepContextInspector(sceneID: sceneID)
-        default:
-            WorkspaceHelpInspector()
         }
     }
 }
@@ -145,9 +135,8 @@ private struct WorkspaceHomeView: View {
                 nightPanel
                 materialPanel
             }
-            .frame(maxWidth: 760, alignment: .leading)
+            .frame(maxWidth: 800, alignment: .leading)
             .padding(28)
-            .safeAreaPadding(.bottom, 92)
         }
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle("Leitstand")
@@ -156,9 +145,9 @@ private struct WorkspaceHomeView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 7) {
-            Text("KRÄHENFELS · DIE LETZTE KUTSCHE")
+            Text("KRÄHNFELS · DIE LETZTE KUTSCHE")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(FrostTheme.cobalt)
+                .foregroundStyle(FrostTheme.accent)
             Text("Dein Leitstand für die Nacht.")
                 .font(.system(size: 38, weight: .bold, design: .rounded))
                 .foregroundStyle(FrostTheme.frost)
@@ -173,7 +162,7 @@ private struct WorkspaceHomeView: View {
             HStack(alignment: .top, spacing: 16) {
                 Image(systemName: session.hasStartedSession ? "arrow.clockwise.circle.fill" : "play.circle.fill")
                     .font(.system(size: 36))
-                    .foregroundStyle(FrostTheme.cobalt)
+                    .foregroundStyle(FrostTheme.accent)
                 VStack(alignment: .leading, spacing: 6) {
                     Text(session.hasStartedSession ? "Runde fortsetzen" : "Spielleiter-Modus starten")
                         .font(.title3.weight(.semibold))
@@ -188,10 +177,11 @@ private struct WorkspaceHomeView: View {
                 } label: {
                     Image(systemName: "chevron.right")
                         .frame(width: 44, height: 44)
-                        .background(FrostTheme.cobalt.opacity(0.16), in: Circle())
+                        .background(FrostTheme.accent.opacity(0.16), in: Circle())
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(FrostTheme.cobalt)
+                .foregroundStyle(FrostTheme.accent)
+                .accessibilityLabel(session.hasStartedSession ? "Runde fortsetzen" : "Spielleiter-Modus starten")
             }
         }
     }
@@ -204,16 +194,16 @@ private struct WorkspaceHomeView: View {
                     Spacer()
                     Text("Stufe \(session.threatLevel)/5")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(session.threatLevel >= 4 ? FrostTheme.warning : FrostTheme.cobalt)
+                        .foregroundStyle(session.threatLevel >= 4 ? FrostTheme.warning : FrostTheme.accent)
                 }
                 HStack(spacing: 7) {
                     ForEach(0..<6, id: \.self) { index in
                         Capsule()
-                            .fill(index <= session.threatLevel ? (index >= 4 ? FrostTheme.warning : FrostTheme.cobalt) : FrostTheme.panelRaised)
+                            .fill(index <= session.threatLevel ? (index >= 4 ? FrostTheme.warning : FrostTheme.accent) : FrostTheme.panelRaised)
                             .frame(height: 7)
                     }
                 }
-                Text(session.currentNightPhase.detail)
+                Text(content.phase(at: session.nightPhaseIndex)?.detail ?? "")
                     .font(.subheadline)
                     .foregroundStyle(FrostTheme.quiet)
                 Stepper("Dorfspannung manuell setzen", value: Binding(get: { session.threatLevel }, set: { session.setThreatLevel($0) }), in: 0...5)
@@ -244,13 +234,13 @@ private struct WorkspaceHomeView: View {
     }
 }
 
-private struct StepContextInspector: View {
+struct WorkspaceContextView: View {
     @EnvironmentObject private var content: ContentStore
     @EnvironmentObject private var session: SessionStore
     let sceneID: String
 
     private var step: GuideStep? {
-        let steps = GuidedFlowCatalog.steps(for: sceneID)
+        let steps = content.steps(for: sceneID)
         guard steps.indices.contains(session.guidedStepIndex) else { return steps.last }
         return steps[session.guidedStepIndex]
     }
@@ -262,7 +252,7 @@ private struct StepContextInspector: View {
                 if let step {
                     Label(step.kind.label, systemImage: step.kind.symbol)
                         .font(.headline)
-                        .foregroundStyle(FrostTheme.cobalt)
+                        .foregroundStyle(FrostTheme.accent)
                     Text(step.title)
                         .font(.title3.weight(.semibold))
                         .foregroundStyle(FrostTheme.frost)
@@ -275,7 +265,7 @@ private struct StepContextInspector: View {
                             VStack(alignment: .leading, spacing: 5) {
                                 Label("Würfelprobe", systemImage: "dice")
                                     .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(FrostTheme.cobalt)
+                                    .foregroundStyle(FrostTheme.accent)
                                 Text("\(roll.actor) · \(roll.ability)")
                                     .font(.subheadline)
                                 Text("Ziel: \(roll.target)")
@@ -299,7 +289,7 @@ private struct StepContextInspector: View {
     private func contextRow(_ title: String, value: String, symbol: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: symbol)
-                .foregroundStyle(FrostTheme.cobalt)
+                .foregroundStyle(FrostTheme.accent)
                 .frame(width: 22)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -310,25 +300,5 @@ private struct StepContextInspector: View {
                     .foregroundStyle(FrostTheme.frost)
             }
         }
-    }
-}
-
-private struct WorkspaceHelpInspector: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Image(systemName: "info.circle")
-                .font(.title2)
-                .foregroundStyle(FrostTheme.cobalt)
-            Text("Leitstand-Kontext")
-                .font(.headline)
-                .foregroundStyle(FrostTheme.frost)
-            Text("Wähle links eine Szene. Der mittlere Bereich führt dich durch den Abend; hier erscheinen die dazugehörigen Sounds, NPCs, Hinweise und Würfelproben.")
-                .font(.subheadline)
-                .foregroundStyle(FrostTheme.quiet)
-        }
-        .frame(maxWidth: 320, alignment: .leading)
-        .padding(24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(FrostTheme.panel.opacity(0.82).ignoresSafeArea())
     }
 }

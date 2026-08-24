@@ -6,7 +6,7 @@
 
 ## Kanonische Quelle
 
-Die verbindliche Quelle liegt in [`adventure/canon.json`](../adventure/canon.json). Sie enthält Phasen, Figuren-Verbindungen (technisch weiterhin `travelHooks`), Eskalation, Fakten, drei Enden, Orte, Szenen, NPCs, Hinweise, Handouts und Audio-Cues. `python tools/build_content_v5.py` schreibt den Kanon synchron in `content/`, das native App-Bundle und `web/data/manifest.json`. Ortsakten, Beweismatrix und Run-Sheet liegen in `adventure/locations/`, `adventure/evidence/`, `adventure/indexes/` und `adventure/session/`.
+Die verbindlichen Quellen liegen in [`adventure/canon.json`](../adventure/canon.json), [`adventure/guide.json`](../adventure/guide.json) und [`adventure/rules.json`](../adventure/rules.json). Sie enthalten Kanon, geführten Spielleiterablauf, Vorbereitung, Schnellstartfiguren und Kurzregeln. `python tools/build_content_v5.py` schreibt diese Quellen synchron in `content/`, das native App-Bundle und `web/data/manifest.json`. Ortsakten, Beweismatrix und Run-Sheet liegen in `adventure/locations/`, `adventure/evidence/`, `adventure/indexes/` und `adventure/session/`.
 
 ## Geschichte
 
@@ -14,7 +14,7 @@ Die drei Reisenden stranden nach einer manipulierten Kutschenpanne im Schwarzwal
 
 ## Architektur
 
-- `adventure/`: autorenfreundliche V3-Quelle und Spielleiterstruktur
+- `adventure/`: autorenfreundliche Quellen und Spielleiterstruktur
 - `content/`: erzeugtes Manifest und längere Spieltexte
 - `app/`: SwiftUI-Leitstand für iPadOS 17 oder neuer
 - `web/`: offlinefähige PWA für den Test vor dem Sideload und am PC
@@ -23,7 +23,7 @@ Die drei Reisenden stranden nach einer manipulierten Kutschenpanne im Schwarzwal
 - `tools/`: reproduzierbare Build- und Validierungsskripte
 - `outputs/`: finale PDFs, ZIP-Archive und Einladung
 
-Die iPad-App bleibt frei navigierbar und nutzt im Querformat eine dreiteilige Navigation: Szenen links, aktueller Schritt in der Mitte und automatisch passender Kontext rechts. Der Einstieg über `GMStartView` führt zuerst durch Vorbereitung, Materialtrennung, Sicherheitscheck und die drei Schnellstartfiguren. `GuidedGMView` zeigt danach pro Szene klar getrennte Karten für Vorlesen, SL-Information, Spieleraktion, Auslöser, Hinweis, Würfelprobe und nächsten Schritt. Materialien, Karten, NPC-Dossiers, Fakten und Regeln bleiben direkt aus dem aktuellen Schritt erreichbar. Der Ablauf entscheidet keine Handlung automatisch. Hinweise werden nie durch einen einzelnen misslungenen Wurf blockiert. Krähenfels speichert Spielstand und Audio-Bewertungen lokal und benötigt kein Konto.
+Die iPad-App bleibt frei navigierbar und nutzt im Querformat eine zweispaltige Navigation: Szenen links und der aktuelle Spielleiterschritt rechts. Der Kontext öffnet sich nur bei Bedarf als Sheet. Der Einstieg über `GMStartView` führt zuerst durch Vorbereitung, Materialtrennung, Sicherheitscheck und die drei Schnellstartfiguren. `GuidedGMView` zeigt danach pro Szene klar getrennte Karten für Vorlesen, SL-Information, Spieleraktion, Auslöser, Hinweis, Würfelprobe und nächsten Schritt. Die Zurück-Taste bleibt im geführten Ablauf sichtbar. Der Audio-Bereich liegt als festes Dock im sicheren unteren Rand; ScrollViews reservieren diesen Platz über `safeAreaInset`. Materialien, Karten, NPC-Dossiers, Fakten und Regeln bleiben direkt aus dem aktuellen Schritt erreichbar. Der Ablauf entscheidet keine Handlung automatisch. Hinweise werden nie durch einen einzelnen misslungenen Wurf blockiert. Krähenfels speichert Spielstand und Audio-Bewertungen lokal und benötigt kein Konto.
 
 Der Leitstand führt die kanonischen Wege aus dem Gasthaus getrennt: Kirche, Schmiede und Waldspur sind in beliebiger Reihenfolge möglich. Das Archiv wird erst nach zwei besuchten Ermittlungsorten angeboten. Im Finale kann die Spielleitung zwischen der geführten Gefahrenszene und einem vollständigen HTBAH-Kampf umschalten. Der Türzustand des Gästezimmers und die Würfelhistorie werden im Sitzungsjournal gespeichert.
 
@@ -62,7 +62,7 @@ python tools/validate_guided_flow.py
 
 ## Web-Leitstand
 
-Die Webansicht startet mit demselben Home-Leitstand wie die native App. Der Button `Spielleiter-Modus starten` öffnet danach den vollständigen GM-Startassistenten mit Vorbereitung, drei Schnellstartfiguren, Spielerbriefing und Spoiler-Trennung. `web/js/guided-flow.js` bildet die 41 kanonischen Schritte aus `GuidedFlowCatalog` ab; Vorlesetexte, SL-Informationen, Spieleraktionen, garantierte Hinweise, NPC-/Handout-Verweise, W100-Proben, Auslöser, Entscheidungen und Epilog sind dadurch offline am PC verfügbar. Auf großen Fenstern zeigt sie eine Desktop-Kommandobrücke mit Szenenleiste links; unterhalb der mobilen Breite wechselt sie automatisch in die iPhone-nahe Oberfläche. `tools/build_web_preview.py` synchronisiert Manifest, Artwork und Audio und versieht JavaScript/CSS sowie den Service Worker mit einem Versionssuffix, damit Browser nach einem Update nicht auf einem alten Shell-Cache hängen bleiben. Lokal startet die Vorschau mit `python -m http.server 4173 --directory web`.
+Die Webansicht startet mit demselben Home-Leitstand wie die native App. Der Button `Spielleiter-Modus starten` öffnet danach den vollständigen GM-Startassistenten mit Vorbereitung, drei Schnellstartfiguren, Spielerbriefing und Spoiler-Trennung. Die 41 kanonischen Schritte kommen aus `content/manifest.json`; `web/js/guided-flow.js` enthält nur die gemeinsame W100-Auswertung und UI-Bezeichnungen. Die Webversion zeigt eine sichtbare Zurück-Taste, speichert den Guided-Verlauf und fragt vor einem Pfadwechsel nach. Auf großen Fenstern zeigt sie eine Kommandobrücke mit Szenenleiste links; unterhalb der mobilen Breite wechselt sie automatisch in die kompakte Oberfläche. `tools/build_web_preview.py` synchronisiert Manifest, Artwork und Audio und versieht JavaScript/CSS sowie den Service Worker mit einem Versionssuffix, damit Browser nach einem Update nicht auf einem alten Shell-Cache hängen bleiben. Lokal startet die Vorschau mit `python -m http.server 4173 --directory web`.
 
 ## Qualitätsregeln
 

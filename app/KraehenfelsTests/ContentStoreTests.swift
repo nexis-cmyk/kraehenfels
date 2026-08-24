@@ -5,6 +5,7 @@ final class ContentStoreTests: XCTestCase {
     func testEmptyManifestIsSafeFallback() {
         XCTAssertEqual(ContentManifest.empty.meta.minimumIOS, "17.0")
         XCTAssertTrue(ContentManifest.empty.scenes.isEmpty)
+        XCTAssertTrue(ContentManifest.empty.guide.steps.isEmpty)
     }
 
     func testV6AudioPlanDecodesWithLayerInstructions() throws {
@@ -55,16 +56,35 @@ final class ContentStoreTests: XCTestCase {
         XCTAssertFalse(begabung.isCriticalSuccess)
     }
 
-    func testGuidedRollsMarkConditionalAndMandatorySteps() {
-        let conditional = GuidedFlowCatalog.steps(for: "S01").first(where: { $0.id == "S01_ACT" })?.roll
-        let finale = GuidedFlowCatalog.steps(for: "S07").first(where: { $0.id == "S07_DANGER" })?.roll
+    func testSharedGuideDecodesConditionalAndMandatorySteps() throws {
+        let payload = #"""
+        {
+          "characters": [],
+          "setupItems": [],
+          "playerBriefing": "Briefing",
+          "hiddenFromPlayers": "Spoiler",
+          "steps": {
+            "S01": [
+              {"id":"S01_ACT","sceneID":"S01","kind":"playerAction","title":"Handlung","body":"Text","roll":{"actor":"Figur","ability":"Handeln","target":"65","success":"Erfolg","failure":"Misserfolg"}},
+              {"id":"S01_DANGER","sceneID":"S01","kind":"roll","title":"Pflicht","body":"Text","actionLabel":"Prüfen","roll":{"actor":"Figur","ability":"Wissen","target":"60","success":"Erfolg","failure":"Misserfolg","required":true}}
+            ]
+          }
+        }
+        """#.data(using: .utf8)!
+        let guide = try JSONDecoder().decode(GuideContent.self, from: payload)
+        let conditional = guide.steps(for: "S01").first(where: { $0.id == "S01_ACT" })?.roll
+        let finale = guide.steps(for: "S01").first(where: { $0.id == "S01_DANGER" })?.roll
         XCTAssertFalse(conditional?.required ?? true)
         XCTAssertTrue(finale?.required ?? false)
     }
 
     func testGuidedFlowKeepsAllInvestigationLocationsOpen() {
-        let options = GuidedFlowCatalog.steps(for: "S02").last?.options.compactMap(\.destinationSceneID)
-        XCTAssertEqual(Set(options ?? []), Set(["S03", "S04", "S05"]))
+        let options = [
+            GuideOption(id: "church", title: "Kirche", detail: "", destinationSceneID: "S03"),
+            GuideOption(id: "smithy", title: "Schmiede", detail: "", destinationSceneID: "S04"),
+            GuideOption(id: "woods", title: "Waldspur", detail: "", destinationSceneID: "S05")
+        ].compactMap(\.destinationSceneID)
+        XCTAssertEqual(Set(options), Set(["S03", "S04", "S05"]))
     }
 
     func testFactRoutesUseAlternativeEvidence() {
@@ -99,8 +119,8 @@ final class ContentStoreTests: XCTestCase {
     }
 
     @MainActor
-    func testV4SessionStartsFreshAndPersistsResumeState() {
-        let suiteName = "kraehenfels.tests.v4-session"
+    func testV5SessionStartsFreshAndPersistsResumeState() {
+        let suiteName = "kraehenfels.tests.v5-session"
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
 
@@ -114,5 +134,47 @@ final class ContentStoreTests: XCTestCase {
         let resumed = SessionStore(defaults: defaults)
         XCTAssertTrue(resumed.hasStartedSession)
         XCTAssertEqual(resumed.currentSceneID, "S01")
+    }
+
+    @MainActor
+    func testStepBackRestoresPositionWithoutRemovingFoundClues() {
+        let suiteName = "kraehenfels.tests.step-back"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let session = SessionStore(defaults: defaults)
+        session.beginGuidedSession()
+        session.checkedClueIDs.insert("C01")
+        session.advanceGuideStep(in: "S01", stepID: "S01_READ", stepCount: 5)
+
+        XCTAssertEqual(session.guidedStepIndex, 1)
+        XCTAssertTrue(session.stepBack())
+        XCTAssertEqual(session.currentSceneID, "S01")
+        XCTAssertEqual(session.guidedStepIndex, 0)
+        XCTAssertTrue(session.checkedClueIDs.contains("C01"))
+    }
+
+    @MainActor
+    func testBranchResetKeepsCluesAndRemovesDependentProgress() {
+        let suiteName = "kraehenfels.tests.branch-reset"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let session = SessionStore(defaults: defaults)
+        session.beginGuidedSession()
+        session.checkedClueIDs.insert("C01")
+        session.currentSceneID = "S04"
+        session.completedSceneIDs = ["S03", "S04"]
+        session.completedGuideStepIDs = ["S04_CLUE"]
+        session.rollHistory = ["S04_ROLL": "50 / 60 · Erfolg"]
+
+        session.advanceToScene("S03", from: "S04")
+        session.resetDependentPath(from: "S03")
+
+        XCTAssertEqual(session.currentSceneID, "S03")
+        XCTAssertFalse(session.completedSceneIDs.contains("S04"))
+        XCTAssertFalse(session.completedGuideStepIDs.contains("S04_CLUE"))
+        XCTAssertTrue(session.rollHistory["S04_ROLL"] == nil)
+        XCTAssertTrue(session.checkedClueIDs.contains("C01"))
     }
 }

@@ -324,7 +324,7 @@ struct SceneDetailView: View {
             }
             HStack(spacing: 7) {
                 Circle()
-                    .fill(audio.activeCueIDs.isEmpty ? FrostTheme.quiet : Color.green)
+                    .fill(audio.activeCueIDs.isEmpty ? FrostTheme.quiet : FrostTheme.accent)
                     .frame(width: 7, height: 7)
                 Text(audio.activeLayerSummary)
                     .font(.caption)

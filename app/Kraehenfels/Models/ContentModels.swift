@@ -14,8 +14,10 @@ struct ContentManifest: Codable {
     let audioCues: [AudioCue]
     let npcs: [NPCEntry]
     let clues: [ClueEntry]
+    let guide: GuideContent
+    let rules: [RuleEntry]
 
-    init(meta: ContentMeta, phases: [PhaseEntry] = [], travelHooks: [TravelHook] = [], threatLevels: [ThreatLevel] = [], facts: [FactEntry] = [], endings: [EndingEntry] = [], maps: [MapEntry] = [], locations: [LocationEntry] = [], scenes: [SceneEntry], handouts: [HandoutEntry], audioCues: [AudioCue], npcs: [NPCEntry] = [], clues: [ClueEntry] = []) {
+    init(meta: ContentMeta, phases: [PhaseEntry] = [], travelHooks: [TravelHook] = [], threatLevels: [ThreatLevel] = [], facts: [FactEntry] = [], endings: [EndingEntry] = [], maps: [MapEntry] = [], locations: [LocationEntry] = [], scenes: [SceneEntry], handouts: [HandoutEntry], audioCues: [AudioCue], npcs: [NPCEntry] = [], clues: [ClueEntry] = [], guide: GuideContent = .empty, rules: [RuleEntry] = []) {
         self.meta = meta
         self.phases = phases
         self.travelHooks = travelHooks
@@ -29,6 +31,8 @@ struct ContentManifest: Codable {
         self.audioCues = audioCues
         self.npcs = npcs
         self.clues = clues
+        self.guide = guide
+        self.rules = rules
     }
 
     init(from decoder: Decoder) throws {
@@ -46,15 +50,17 @@ struct ContentManifest: Codable {
         audioCues = try container.decode([AudioCue].self, forKey: .audioCues)
         npcs = try container.decodeIfPresent([NPCEntry].self, forKey: .npcs) ?? []
         clues = try container.decodeIfPresent([ClueEntry].self, forKey: .clues) ?? []
+        guide = try container.decodeIfPresent(GuideContent.self, forKey: .guide) ?? .empty
+        rules = try container.decodeIfPresent([RuleEntry].self, forKey: .rules) ?? []
     }
 
     static let empty = ContentManifest(
         meta: ContentMeta(title: "Krähenfels: Die letzte Kutsche", appTitle: "Krähenfels", subtitle: "SL-Begleiter", system: "How to be a Hero", setting: "Schwarzwald, November 1890", language: "de", version: "3.3.0", minimumIOS: "17.0"),
-        scenes: [], handouts: [], audioCues: []
+        scenes: [], handouts: [], audioCues: [], guide: .empty, rules: []
     )
 
     private enum CodingKeys: String, CodingKey {
-        case meta, phases, travelHooks, threatLevels, facts, endings, maps, locations, scenes, handouts, audioCues, npcs, clues
+        case meta, phases, travelHooks, threatLevels, facts, endings, maps, locations, scenes, handouts, audioCues, npcs, clues, guide, rules
     }
 }
 
