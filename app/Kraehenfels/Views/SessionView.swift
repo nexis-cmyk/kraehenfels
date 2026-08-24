@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SessionView: View {
+    @EnvironmentObject private var content: ContentStore
     @EnvironmentObject private var session: SessionStore
     @State private var showClearConfirmation = false
 
@@ -27,11 +28,11 @@ struct SessionView: View {
                     get: { session.nightPhaseIndex },
                     set: { session.setNightPhase($0) }
                 )) {
-                    ForEach(SessionStore.nightPhases) { phase in
-                        Label(phase.title, systemImage: phase.symbol).tag(phase.id)
+                    ForEach(Array(content.manifest.phases.enumerated()), id: \.offset) { index, phase in
+                        Label(phase.title, systemImage: phase.symbol).tag(index)
                     }
                 }
-                Text(session.currentNightPhase.detail)
+                Text(content.phase(at: session.nightPhaseIndex)?.detail ?? "")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } header: {

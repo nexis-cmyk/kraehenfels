@@ -5,6 +5,11 @@ struct GMStartView: View {
     @EnvironmentObject private var audio: AudioEngine
     @EnvironmentObject private var content: ContentStore
     @State private var startSession = false
+    let onExit: (() -> Void)?
+
+    init(onExit: (() -> Void)? = nil) {
+        self.onExit = onExit
+    }
 
     var body: some View {
         ScrollView {
@@ -16,13 +21,18 @@ struct GMStartView: View {
                 startButton
             }
             .padding(20)
-            .safeAreaPadding(.bottom, 88)
         }
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle("Spiel starten")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $startSession) {
-            GuidedGMView()
+            GuidedGMView(onExit: {
+                if let onExit {
+                    onExit()
+                } else {
+                    startSession = false
+                }
+            })
         }
     }
 
@@ -47,11 +57,11 @@ struct GMStartView: View {
             HStack {
                 SectionLabel(title: "Vorbereitung")
                 Spacer()
-                Text("\(session.setupChecks.count)/\(GuidedFlowCatalog.setupItems.count)")
+                Text("\(session.setupChecks.count)/\(content.setupItems.count)")
                     .font(.caption.monospaced().weight(.bold))
                     .foregroundStyle(FrostTheme.cobalt)
             }
-            ForEach(GuidedFlowCatalog.setupItems, id: \.id) { item in
+            ForEach(content.setupItems, id: \.id) { item in
                 Button { session.toggleSetup(item.id) } label: {
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: session.setupChecks.contains(item.id) ? "checkmark.circle.fill" : "circle")
@@ -83,7 +93,7 @@ struct GMStartView: View {
             Text("Diese Figuren sind sofort spielbereit. Lies nur den kurzen Hook vor; die übrigen Informationen bleiben bei dir.")
                 .font(.subheadline)
                 .foregroundStyle(FrostTheme.quiet)
-            ForEach(GuidedFlowCatalog.characters) { character in
+            ForEach(content.guideCharacters) { character in
                 FrostCard {
                     HStack(alignment: .top, spacing: 12) {
                         Text(String(character.name.prefix(1)))
@@ -120,11 +130,11 @@ struct GMStartView: View {
                 Label("Was du den Spielern sagst", systemImage: "person.3.fill")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(FrostTheme.frost)
-                Text("Ihr seid Reisende im Schwarzwald des Jahres 1890. Eine Kutschenpanne zwingt euch nach Krähenfels. Ihr wisst noch nichts von einem Pakt. Ihr dürft jederzeit Fragen stellen, Orte wählen und eigene Lösungen versuchen.")
+                Text(content.manifest.guide.playerBriefing)
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.9))
                     .fixedSize(horizontal: false, vertical: true)
-                Label("Nicht verraten: Knochenhirsch, Opferbuch, verdrehter Pakt und die drei Enden.", systemImage: "eye.slash.fill")
+                Label("Nicht verraten: \(content.manifest.guide.hiddenFromPlayers)", systemImage: "eye.slash.fill")
                     .font(.caption)
                     .foregroundStyle(FrostTheme.warning)
                     .fixedSize(horizontal: false, vertical: true)
@@ -135,7 +145,7 @@ struct GMStartView: View {
     private var startButton: some View {
         VStack(spacing: 9) {
             Button {
-                session.playerNames = GuidedFlowCatalog.characters.map(\.name)
+                session.playerNames = content.guideCharacters.map(\.name)
                 session.beginGuidedSession()
                 if let music = content.musicBed, !audio.isPlaying(music) {
                     audio.play(music)
@@ -157,18 +167,27 @@ struct GMStartView: View {
 }
 
 struct GuidedGMView: View {
+    let onExit: (() -> Void)?
     @EnvironmentObject private var content: ContentStore
     @EnvironmentObject private var audio: AudioEngine
     @EnvironmentObject private var session: SessionStore
+    @Environment(\.dismiss) private var dismiss
     @State private var rollStep: GuideStep?
     @State private var readAloudStep: GuideStep?
     @State private var showMaterials = false
     @State private var showRules = false
     @State private var showCombat = false
     @State private var showAudioPlan = false
+    @State private var showContext = false
+    @State private var pendingDestination: String?
+    @State private var showBranchChangeConfirmation = false
+
+    init(onExit: (() -> Void)? = nil) {
+        self.onExit = onExit
+    }
 
     private var steps: [GuideStep] {
-        let base = GuidedFlowCatalog.steps(for: session.currentSceneID)
+        let base = content.steps(for: session.currentSceneID)
         guard session.currentSceneID == "S07" else { return base }
         if session.finaleMode == "combat" {
             return base.filter { $0.id != "S07_DANGER" }
@@ -194,8 +213,6 @@ struct GuidedGMView: View {
                     stepCard(step)
                     if !step.options.isEmpty {
                         optionsPanel(step)
-                    } else {
-                        actionButton(step)
                     }
                 } else {
                     emptyFlow
@@ -204,7 +221,9 @@ struct GuidedGMView: View {
                 sessionNote
             }
             .padding(20)
-            .safeAreaPadding(.bottom, 88)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            guideFooter
         }
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle(content.scene(for: session.currentSceneID)?.shortTitle ?? "Spielleitung")
@@ -214,7 +233,7 @@ struct GuidedGMView: View {
                 Menu {
                     Button("Materialien öffnen", systemImage: "folder") { showMaterials = true }
                     Button("Regeln öffnen", systemImage: "dice") { showRules = true }
-                    Button("Schritt zurück", systemImage: "arrow.left") { stepBack() }
+                    Button("Kontext anzeigen", systemImage: "sidebar.right") { showContext = true }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                         .foregroundStyle(FrostTheme.frost)
@@ -256,8 +275,105 @@ struct GuidedGMView: View {
         .sheet(isPresented: $showCombat) {
             CombatReferenceView()
         }
+        .sheet(isPresented: $showContext) {
+            NavigationStack {
+                WorkspaceContextView(sceneID: session.currentSceneID)
+            }
+            .presentationDetents([.medium, .large])
+        }
+        .alert("Diesen Pfad neu wählen?", isPresented: $showBranchChangeConfirmation) {
+            Button("Abbrechen", role: .cancel) {
+                pendingDestination = nil
+            }
+            Button("Pfad neu setzen", role: .destructive) {
+                if let pendingDestination {
+                    move(to: pendingDestination, resettingDependentPath: true)
+                }
+            }
+        } message: {
+            Text("Gefundene Hinweise und Tischnotizen bleiben erhalten. Spätere Szenen werden ab dem neuen Ziel zurückgesetzt.")
+        }
         .navigationDestination(isPresented: $showMaterials) { MaterialsView() }
         .navigationDestination(isPresented: $showRules) { RulesView() }
+    }
+
+    private var guideFooter: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 10) {
+                Button {
+                    if !session.stepBack() {
+                        if let onExit {
+                            onExit()
+                        } else {
+                            dismiss()
+                        }
+                    }
+                } label: {
+                    Label(session.guideHistory.isEmpty ? "Übersicht" : "Zurück", systemImage: "chevron.left")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(minWidth: 106, minHeight: 48)
+                }
+                .buttonStyle(.bordered)
+                .tint(FrostTheme.accent)
+                .accessibilityHint("Geht zum vorherigen Spielleiterschritt zurück. Gefundene Hinweise bleiben erhalten.")
+
+                if let step = currentStep, step.options.isEmpty {
+                    Button {
+                        primaryAction(for: step)
+                    } label: {
+                        Label(primaryActionTitle(for: step), systemImage: primaryActionSymbol(for: step))
+                            .font(.headline)
+                            .foregroundStyle(FrostTheme.ink)
+                            .frame(maxWidth: .infinity, minHeight: 48)
+                            .background(FrostTheme.frost, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Text("Wähle den nächsten Schritt oben")
+                        .font(.caption)
+                        .foregroundStyle(FrostTheme.quiet)
+                        .frame(maxWidth: .infinity, minHeight: 48)
+                }
+            }
+
+            if let step = currentStep, step.options.isEmpty, step.kind == .roll, step.roll?.required == false {
+                Button("Ohne Probe weiter") {
+                    advance(step)
+                }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(FrostTheme.quiet)
+                .frame(maxWidth: .infinity, minHeight: 40)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+        .padding(.bottom, 8)
+        .background(.ultraThinMaterial)
+        .overlay(alignment: .top) {
+            Divider().overlay(FrostTheme.line)
+        }
+    }
+
+    private func primaryActionTitle(for step: GuideStep) -> String {
+        if step.kind == .readAloud { return "Sound vorbereiten und vorlesen" }
+        if step.kind == .roll { return "Würfelhelfer öffnen" }
+        return step.actionLabel
+    }
+
+    private func primaryActionSymbol(for step: GuideStep) -> String {
+        if step.kind == .readAloud { return "quote.bubble.fill" }
+        if step.kind == .roll { return "dice.fill" }
+        return "arrow.right"
+    }
+
+    private func primaryAction(for step: GuideStep) {
+        if step.kind == .readAloud {
+            readAloudStep = step
+        } else if step.kind == .roll, step.roll != nil {
+            rollStep = step
+        } else {
+            advance(step)
+        }
     }
 
     private var progressHeader: some View {
@@ -367,7 +483,7 @@ struct GuidedGMView: View {
                 Spacer()
                 if session.completedGuideStepIDs.contains(step.id) {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
+                        .foregroundStyle(FrostTheme.accent)
                 }
             }
             Text(step.title)
@@ -419,7 +535,7 @@ struct GuidedGMView: View {
                     .foregroundStyle(session.finaleOutcome == "failure" ? FrostTheme.warning : FrostTheme.cobalt)
             }
             ProgressView(value: Double(session.finaleSuccesses), total: 2)
-                .tint(.green)
+                .tint(FrostTheme.accent)
             Text(session.finaleOutcome == "success"
                  ? "Die Gefahrenszene ist zugunsten der Gruppe entschieden."
                  : session.finaleOutcome == "failure"
@@ -597,39 +713,6 @@ struct GuidedGMView: View {
         }
     }
 
-    private func actionButton(_ step: GuideStep) -> some View {
-        VStack(spacing: 8) {
-            Button {
-                if step.kind == .readAloud {
-                    readAloudStep = step
-                } else if step.kind == .roll, step.roll != nil {
-                    rollStep = step
-                } else {
-                    advance(step)
-                }
-            } label: {
-                let title = step.kind == .readAloud
-                    ? "Sound vorbereiten und vorlesen"
-                    : step.kind == .roll ? "Würfelhelfer öffnen" : step.actionLabel
-                let icon = step.kind == .readAloud
-                    ? "quote.bubble.fill"
-                    : step.kind == .roll ? "dice.fill" : "arrow.right"
-                Label(title, systemImage: icon)
-                    .font(.headline)
-                    .foregroundStyle(FrostTheme.ink)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(FrostTheme.frost, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            }
-            if step.kind == .roll, step.roll?.required == false {
-                Button("Ohne Probe weiter") { advance(step) }
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(FrostTheme.quiet)
-                    .frame(maxWidth: .infinity, minHeight: 40)
-            }
-        }
-    }
-
     private func availableOptions(for step: GuideStep) -> [GuideOption] {
         guard ["S03", "S04", "S05"].contains(step.sceneID) else { return step.options }
         let visited = session.completedSceneIDs.union(Set([session.currentSceneID]))
@@ -691,14 +774,31 @@ struct GuidedGMView: View {
             session.setSelectedEnding(endingID)
             advance(step)
         } else if let destination = option.destinationSceneID {
-            audio.stopLayer("ambient", fadeMilliseconds: 600)
-            if let cueID = step.audioCueID,
-               let cue = content.cue(for: cueID),
-               cue.mode == "loop" {
-                audio.play(cue)
+            let needsConfirmation = session.completedSceneIDs.contains(destination)
+            if needsConfirmation {
+                pendingDestination = destination
+                showBranchChangeConfirmation = true
+            } else {
+                move(to: destination, resettingDependentPath: false)
             }
+        }
+    }
+
+    private func move(to destination: String, resettingDependentPath: Bool) {
+        audio.stopLayer("ambient", fadeMilliseconds: 600)
+        if let step = currentStep,
+           let cueID = step.audioCueID,
+           let cue = content.cue(for: cueID),
+           cue.mode == "loop" {
+            audio.play(cue)
+        }
+        if resettingDependentPath {
+            session.advanceToScene(destination, from: session.currentSceneID)
+            session.resetDependentPath(from: destination)
+        } else {
             session.advanceToScene(destination, from: session.currentSceneID)
         }
+        pendingDestination = nil
     }
 
     private func advance(_ step: GuideStep) {
@@ -719,21 +819,12 @@ struct GuidedGMView: View {
         session.advanceGuideStep(in: session.currentSceneID, stepID: step.id, stepCount: count)
     }
 
-    private func stepBack() {
-        guard session.guidedStepIndex > 0 else { return }
-        session.guidedStepIndex -= 1
-    }
-
     private func stepColor(_ kind: GuideStepKind) -> Color {
         switch kind {
         case .readAloud: return FrostTheme.frost
         case .gmInfo: return FrostTheme.warning
         case .playerAction: return FrostTheme.cobalt
-        case .trigger: return .orange
-        case .roll: return .mint
-        case .clue: return .cyan
-        case .choice: return .purple
-        case .next: return .green
+        case .trigger, .roll, .clue, .choice, .next: return FrostTheme.accent
         }
     }
 
@@ -741,7 +832,7 @@ struct GuidedGMView: View {
         switch kind {
         case .readAloud: return FrostTheme.panelRaised
         case .gmInfo: return FrostTheme.warning.opacity(0.12)
-        case .roll: return Color.blue.opacity(0.16)
+        case .roll: return FrostTheme.accent.opacity(0.14)
         default: return FrostTheme.panel
         }
     }
@@ -840,7 +931,7 @@ struct RollHelperView: View {
         VStack(alignment: .leading, spacing: 8) {
             Label(result.label, systemImage: result.isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .font(.headline)
-                .foregroundStyle(result.isSuccess ? .green : FrostTheme.warning)
+                .foregroundStyle(result.isSuccess ? FrostTheme.accent : FrostTheme.warning)
             Text("\(result.roll) gegen \(result.target)")
                 .font(.subheadline)
                 .foregroundStyle(.white)
@@ -856,7 +947,7 @@ struct RollHelperView: View {
                 dismiss()
             }
             .buttonStyle(.borderedProminent)
-            .tint(result.isSuccess ? .green : FrostTheme.warning)
+            .tint(result.isSuccess ? FrostTheme.accent : FrostTheme.warning)
         }
         .padding(15)
         .background(FrostTheme.panel, in: RoundedRectangle(cornerRadius: 16, style: .continuous))

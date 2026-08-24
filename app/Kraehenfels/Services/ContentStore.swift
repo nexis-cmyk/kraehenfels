@@ -21,6 +21,11 @@ final class ContentStore: ObservableObject {
         manifest.scenes.first(where: { $0.id == id })
     }
 
+    func phase(at index: Int) -> PhaseEntry? {
+        guard manifest.phases.indices.contains(index) else { return nil }
+        return manifest.phases[index]
+    }
+
     func handout(for id: String) -> HandoutEntry? {
         manifest.handouts.first(where: { $0.id == id })
     }
@@ -38,6 +43,18 @@ final class ContentStore: ObservableObject {
             guard let cue = cue(for: plan.cueId) else { return nil }
             return (plan, cue)
         }
+    }
+
+    func steps(for sceneID: String) -> [GuideStep] {
+        manifest.guide.steps(for: sceneID)
+    }
+
+    var guideCharacters: [QuickCharacter] {
+        manifest.guide.characters
+    }
+
+    var setupItems: [SetupItem] {
+        manifest.guide.setupItems
     }
 
     func maps(for scene: SceneEntry) -> [MapEntry] {

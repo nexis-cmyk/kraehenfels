@@ -26,8 +26,8 @@ Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-
 
 ## Projektstruktur
 
-- `adventure/`: kanonische V3-Quelle, Ortsakten, Beweismatrix und Run-Sheet
-- `content/`: aus dem Kanon erzeugte Geschichte, Szenen, Hinweise und Cue-IDs
+- `adventure/`: kanonische Quelle, Guided Flow, Kurzregeln, Ortsakten, Beweismatrix und Run-Sheet
+- `content/`: aus den Adventure-Quellen erzeugte Geschichte, Szenen, Hinweise, Guided Flow und Cue-IDs
 - `print/`: Quellen und Generator für die Druckunterlagen
 - `audio/`: prozedurale Audioerzeugung und Metadaten
 - `app/`: SwiftUI-App und Tests
@@ -85,6 +85,8 @@ Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.z
 ## Web-Testversion
 
 Die Browser-Version wird aus dem aktuellen Inhaltsmanifest und den nativen Audio-/Art-Ressourcen synchronisiert. Szenen, Handouts, Cues und Service-Worker-Cache bleiben dadurch auf demselben Release-Stand. Die lokale Startanleitung steht in [`web/README.md`](web/README.md).
+
+Der geführte Spielleiter-Ablauf stammt aus `adventure/guide.json`. Native App und Web-Teststand verwenden dieselben 41 Schritte, Vorbereitungspunkte und Verzweigungen.
 
 Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `https://nexis-cmyk.github.io/kraehenfels/`. Dafür muss Pages einmal im Repository freigeschaltet werden: **Settings → Pages → Build and deployment → Source: GitHub Actions → Save**. Danach kannst du sie unterwegs als Web-App ausprobieren.
 

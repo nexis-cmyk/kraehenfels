@@ -20,7 +20,6 @@ struct AudioCheckView: View {
                     .frame(maxWidth: .infinity, minHeight: 44)
             }
             .padding(20)
-            .safeAreaPadding(.bottom, 88)
         }
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle("Audio-Check")
@@ -64,7 +63,7 @@ struct AudioCheckView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 ProgressView(value: Double(ratedCount), total: Double(max(content.manifest.audioCues.count, 1)))
-                    .tint(ratedCount == content.manifest.audioCues.count ? .green : FrostTheme.cobalt)
+                    .tint(ratedCount == content.manifest.audioCues.count ? FrostTheme.accent : FrostTheme.cobalt)
                 Text(audio.sessionStatus)
                     .font(.caption)
                     .foregroundStyle(FrostTheme.quiet)
@@ -109,7 +108,7 @@ struct AudioCheckView: View {
                     Spacer()
                     if let rating {
                         Image(systemName: rating > 0 ? "checkmark.seal.fill" : "xmark.octagon.fill")
-                            .foregroundStyle(rating > 0 ? .green : FrostTheme.warning)
+                            .foregroundStyle(rating > 0 ? FrostTheme.accent : FrostTheme.warning)
                     }
                 }
 
@@ -127,7 +126,7 @@ struct AudioCheckView: View {
                 }
 
                 HStack(spacing: 10) {
-                    ratingButton("Passt", icon: "checkmark", selected: rating == 1, color: .green) {
+                    ratingButton("Passt", icon: "checkmark", selected: rating == 1, color: FrostTheme.accent) {
                         session.setAudioRating(cue.id, rating: 1)
                     }
                     ratingButton("Falsch", icon: "xmark", selected: rating == -1, color: FrostTheme.warning) {

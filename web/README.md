@@ -1,6 +1,6 @@
 # Krähenfels Web-Test
 
-Die Web-Testversion ist eine offlinefähige Vorschau des aktuellen Spielleiter-Leitstands für `Krähenfels: Die letzte Kutsche`. Sie startet mit derselben Leitstand-Übersicht wie die native iPad-App und führt von dort in die Szenen. Sie wird aus dem Inhaltsmanifest und den nativen Ressourcen synchronisiert und nutzt dieselben Szenen, Handouts, NPCs, Karten und Audio-Dateien wie die iPad-App.
+Die Web-Testversion ist eine offlinefähige Vorschau des aktuellen Spielleiter-Leitstands für `Krähenfels: Die letzte Kutsche`. Sie startet mit derselben Leitstand-Übersicht wie die native iPad-App und führt von dort in die Szenen. Sie wird aus dem Inhaltsmanifest und den nativen Ressourcen synchronisiert und nutzt denselben Guided Flow, dieselben Szenen, Handouts, NPCs, Karten und Audio-Dateien wie die iPad-App.
 
 Die veröffentlichte Testversion liegt nach dem GitHub-Pages-Workflow unter `https://nexis-cmyk.github.io/kraehenfels/`. Falls GitHub Pages im Repository noch nicht aktiv ist, einmal **Settings → Pages → Build and deployment → Source: GitHub Actions → Save** wählen. Beim ersten Öffnen braucht die Seite Internet, danach stehen die bereits geladenen Inhalte offline zur Verfügung.
 
@@ -32,6 +32,7 @@ Am PC zeigt die Vorschau automatisch den breiten Leitstand mit Szenenleiste link
 - Spoiler-Schalter und Spielerhandouts
 - Szenen-Presets, einzelne Effekte und Lautstärkemischung
 - Stopp-Taste, Fortschritt und Speicherung im Browser
+- sichtbare Zurück-Taste, Verlauf und Bestätigung beim Wechsel eines bereits begonnenen Pfads
 - drei Reisende, allgemeine Sessionnotiz und eine eigene Notiz pro Szene
 
 Die Browser-Version ist ein Testleitstand. Die Installation auf dem iPad erfolgt über die signierte IPA in AltStore.

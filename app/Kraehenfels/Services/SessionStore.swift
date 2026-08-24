@@ -12,20 +12,12 @@ final class SessionStore: ObservableObject {
         }
     }
 
-    struct NightPhase: Identifiable, Equatable {
-        let id: Int
-        let title: String
-        let detail: String
-        let symbol: String
+    struct GuidePosition: Codable, Equatable, Hashable {
+        let sceneID: String
+        let stepIndex: Int
     }
 
-    static let nightPhases = [
-        NightPhase(id: 0, title: "Der Bruch", detail: "Manipulierte Kutsche, Schnee und der erste falsche Schutz.", symbol: "car.side.fill"),
-        NightPhase(id: 1, title: "Das Dorf", detail: "Gasthaus, Kirche und Schmiede öffnen ihre Widersprüche.", symbol: "house.lodge.fill"),
-        NightPhase(id: 2, title: "Die Spur", detail: "Namen, Buchseiten und der Weg zur Alten Eiche.", symbol: "magnifyingglass"),
-        NightPhase(id: 3, title: "Der Ruf", detail: "Die Glocke schlägt. Das Dorf muss sich entscheiden.", symbol: "bell.and.waves.left.and.right.fill"),
-        NightPhase(id: 4, title: "Der Morgen", detail: "Drei mögliche Enden und die Rechnung des Waldes.", symbol: "sunrise.fill"),
-    ]
+    private static let nightPhaseCount = 5
 
     private struct Snapshot: Codable {
         var playerNames: [String]
@@ -51,9 +43,11 @@ final class SessionStore: ObservableObject {
         var finaleFailures: Int?
         var finaleOutcome: String?
         var hasStartedSession: Bool?
+        var guideHistory: [GuidePosition]?
     }
 
-    private let storageKey = "kraehenfels.sessionJournal.v4"
+    private let storageKey = "kraehenfels.sessionJournal.v5"
+    private let legacyStorageKey = "kraehenfels.sessionJournal.v4"
     private let defaults: UserDefaults
 
     @Published var playerNames: [String] {
@@ -116,6 +110,10 @@ final class SessionStore: ObservableObject {
         didSet { persist() }
     }
 
+    @Published private(set) var guideHistory: [GuidePosition] {
+        didSet { persist() }
+    }
+
     @Published var setupChecks: Set<String> {
         didSet { persist() }
     }
@@ -150,7 +148,8 @@ final class SessionStore: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        if let data = defaults.data(forKey: storageKey),
+        let loadedData = defaults.data(forKey: storageKey) ?? defaults.data(forKey: legacyStorageKey)
+        if let data = loadedData,
            let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) {
             playerNames = Self.normalizedNames(snapshot.playerNames)
             sessionNote = snapshot.sessionNote
@@ -175,6 +174,7 @@ final class SessionStore: ObservableObject {
             finaleSuccesses = min(max(snapshot.finaleSuccesses ?? 0, 0), 2)
             finaleFailures = min(max(snapshot.finaleFailures ?? 0, 0), 2)
             finaleOutcome = snapshot.finaleOutcome
+            guideHistory = snapshot.guideHistory ?? []
         } else {
             playerNames = ["", "", ""]
             sessionNote = ""
@@ -199,11 +199,12 @@ final class SessionStore: ObservableObject {
             finaleSuccesses = 0
             finaleFailures = 0
             finaleOutcome = nil
+            guideHistory = []
         }
-    }
 
-    var currentNightPhase: NightPhase {
-        Self.nightPhases[Self.normalizedNightPhase(nightPhaseIndex)]
+        if defaults.data(forKey: storageKey) == nil, loadedData != nil {
+            persist()
+        }
     }
 
     func setNightPhase(_ index: Int) {
@@ -246,6 +247,7 @@ final class SessionStore: ObservableObject {
         audioRatings = [:]
         guidedStepIndex = 0
         completedGuideStepIDs = []
+        guideHistory = []
         setupChecks = []
         doorStates = [:]
         rollHistory = [:]
@@ -276,10 +278,12 @@ final class SessionStore: ObservableObject {
         finaleOutcome = nil
         doorStates = ["inn.guestroom": true]
         completedGuideStepIDs = []
+        guideHistory = []
         nightPhaseIndex = 0
     }
 
     func advanceGuideStep(in sceneID: String, stepID: String, stepCount: Int) {
+        guideHistory.append(GuidePosition(sceneID: sceneID, stepIndex: guidedStepIndex))
         completedGuideStepIDs.insert(stepID)
         if guidedStepIndex + 1 < stepCount {
             guidedStepIndex += 1
@@ -290,6 +294,7 @@ final class SessionStore: ObservableObject {
 
     func advanceToScene(_ sceneID: String, from currentID: String? = nil) {
         if let currentID {
+            guideHistory.append(GuidePosition(sceneID: currentID, stepIndex: guidedStepIndex))
             completedSceneIDs.insert(currentID)
         }
         currentSceneID = sceneID
@@ -301,6 +306,32 @@ final class SessionStore: ObservableObject {
         case "S07": nightPhaseIndex = 3
         case "S08": nightPhaseIndex = 4
         default: break
+        }
+    }
+
+    @discardableResult
+    func stepBack() -> Bool {
+        guard let previous = guideHistory.popLast() else { return false }
+        currentSceneID = previous.sceneID
+        guidedStepIndex = max(0, previous.stepIndex)
+        return true
+    }
+
+    func resetDependentPath(from sceneID: String) {
+        let sceneOrder = ["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08"]
+        guard let index = sceneOrder.firstIndex(of: sceneID) else { return }
+        let dependentScenes = Set(sceneOrder.dropFirst(index + 1))
+        completedSceneIDs.subtract(dependentScenes)
+        completedGuideStepIDs = completedGuideStepIDs.filter { stepID in
+            !dependentScenes.contains(String(stepID.prefix(3)))
+        }
+        rollHistory = rollHistory.filter { stepID, _ in
+            !dependentScenes.contains(String(stepID.prefix(3)))
+        }
+        guideHistory = guideHistory.filter { !dependentScenes.contains($0.sceneID) }
+        if index < (sceneOrder.firstIndex(of: "S07") ?? sceneOrder.count) {
+            selectedEndingID = nil
+            resetFinaleProgress()
         }
     }
 
@@ -435,7 +466,8 @@ final class SessionStore: ObservableObject {
             finaleSuccesses: finaleSuccesses,
             finaleFailures: finaleFailures,
             finaleOutcome: finaleOutcome,
-            hasStartedSession: hasStartedSession
+            hasStartedSession: hasStartedSession,
+            guideHistory: guideHistory
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: storageKey)
@@ -446,7 +478,7 @@ final class SessionStore: ObservableObject {
     }
 
     private static func normalizedNightPhase(_ index: Int) -> Int {
-        min(max(index, 0), nightPhases.count - 1)
+        min(max(index, 0), nightPhaseCount - 1)
     }
 
     private static func normalizedThreat(_ level: Int) -> Int {

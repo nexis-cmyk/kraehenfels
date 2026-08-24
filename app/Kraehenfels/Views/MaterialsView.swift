@@ -154,7 +154,6 @@ struct HandoutPreviewView: View {
                     }
                 }
                 .padding(20)
-                .safeAreaPadding(.bottom, 88)
             }
         }
         .background(FrostTheme.ink.ignoresSafeArea())
@@ -228,7 +227,6 @@ struct NPCDossierView: View {
                     .background(FrostTheme.panel, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
                 .padding(20)
-                .safeAreaPadding(.bottom, 88)
             }
         }
         .background(FrostTheme.ink.ignoresSafeArea())

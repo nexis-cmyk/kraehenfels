@@ -14,7 +14,7 @@ Die App wird von einer unerfahrenen Spielleitung während einer Tischrunde benut
 
 ## Product Purpose
 
-Krähenfels verbindet Szenenführung, Audio-Cues und die wichtigsten HTBAH-Regeln in einer offline nutzbaren iPhone-App. Die App soll Unsicherheit beim Leiten verringern, ohne die Aufmerksamkeit vom Spieltisch auf das Telefon zu ziehen.
+Krähenfels verbindet Szenenführung, Audio-Cues und die wichtigsten HTBAH-Regeln in einer offline nutzbaren iPad-App. Die App soll Unsicherheit beim Leiten verringern, ohne die Aufmerksamkeit vom Spieltisch auf das Display zu ziehen.
 
 ## Positioning
 
@@ -31,6 +31,8 @@ Keine generische Halloween-App, keine Pergament-Skeuomorphie und keine leuchtend
 ## Design Principles
 
 - Die aktuelle Szene und der nächste sinnvolle Cue sind sofort sichtbar.
+- Die Tablet-Ansicht zeigt Navigation und Leiterschritt gemeinsam, ohne eine dauerhafte dritte Spalte.
+- Zurück bleibt im geführten Ablauf sichtbar. Gefundene Hinweise und Tischnotizen bleiben beim Zurückgehen erhalten.
 - Ein einziger Stopp-Befehl beendet jede laufende Spur zuverlässig.
 - Atmosphäre und Lesbarkeit schlagen Dekoration.
 - Gedruckte Hinweise bleiben vollständig nutzbar, auch wenn die App ausfällt.
