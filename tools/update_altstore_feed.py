@@ -55,6 +55,17 @@ def main() -> None:
     app["iconURL"] = f"{raw_root}/altstore/icon.png"
     app["size"] = len(ipa_bytes)
     app["sha256"] = hashlib.sha256(ipa_bytes).hexdigest()
+    app["versions"] = [
+        {
+            "version": version,
+            "buildVersion": build_version,
+            "date": app["versionDate"],
+            "localizedDescription": app["versionDescription"],
+            "downloadURL": release_url,
+            "size": len(ipa_bytes),
+            "sha256": app["sha256"],
+        }
+    ]
     data["iconURL"] = f"{raw_root}/altstore/icon.png"
     data["website"] = f"https://github.com/{args.repo}"
     args.output.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
