@@ -2350,18 +2350,28 @@
     },
     {
       "id": "target-value",
-      "title": "Zielwert bestimmen",
-      "body": "Passt eine gelernte Fähigkeit, würfelt die Figur auf deren Wert. Fehlt eine passende Fähigkeit, würfelt sie auf die zugehörige Begabung: Handeln, Wissen oder Soziales. Der Zielwert steht auf dem Figurenblatt."
+      "title": "Fähigkeit oder Begabung",
+      "body": "Passt eine gelernte Fähigkeit, würfelt die Figur auf deren Wert. Fehlt eine passende Fähigkeit, würfelt sie auf den relevanten Begabungswert: Handeln, Wissen oder Soziales."
     },
     {
       "id": "roll",
-      "title": "Probe",
-      "body": "W100 gleich oder kleiner als der verwendete Wert ist Erfolg. Kritischer Erfolg ist das untere Zehntel des Wertes. Kritischer Misserfolg beginnt bei 90 plus einem Zehntel des verwendeten Wertes und reicht bis 100."
+      "title": "W100-Wurf",
+      "body": "Das Kernstück des How to be a Hero-Regelwerks ist der W100-Wurf. Nutze einen hundertseitigen Würfel oder zwei W10: einen für die Zehner- und einen für die Einerstelle."
     },
     {
-      "id": "gifted",
-      "title": "Begabung",
-      "body": "Eine Begabungsprobe ist erlaubt, wenn keine gelernte Fähigkeit passt. Sie kann keinen kritischen Erfolg erzielen. Ein kritischer Misserfolg bleibt auch bei einer Begabung möglich."
+      "id": "success-check",
+      "title": "Erfolgsprüfung",
+      "body": "Ein Wurf ist ein Erfolg, wenn das Ergebnis kleiner oder gleich dem relevanten Fähigkeits- oder Begabungswert ist."
+    },
+    {
+      "id": "critical-results",
+      "title": "Kritische Ergebnisse",
+      "body": "Ein kritischer Erfolg tritt ein, wenn der Wurf kleiner oder gleich 10 Prozent des verwendeten Wertes ist. Ein kritischer Misserfolg tritt ein, wenn der Wurf größer oder gleich 90 Prozent plus 10 Prozent des verwendeten Wertes ist. Diese Regeln gelten auch für Begabungsproben."
+    },
+    {
+      "id": "standard-dice",
+      "title": "Keine Spezialwürfel",
+      "body": "Für die Basisregeln brauchst du keine Spezialwürfel. Standardwürfel reichen aus."
     },
     {
       "id": "flash-of-insight",
@@ -2371,7 +2381,7 @@
     {
       "id": "combat",
       "title": "Kampf",
-      "body": "Initiative ist W10 plus Handeln und wird vor jedem Kampf neu gewürfelt. Wer überrascht wurde, setzt die erste Runde aus. Ein Angriff ist eine passende Fertigkeitsprobe. Einmal pro Runde darf eine Figur auf Handeln parieren. Kritische Angriffe und Schusswaffen sind nicht parierbar."
+      "body": "Für die Initiative würfelt jede Figur 1W10 plus den Begabungswert Handeln. Wer überrascht wurde, setzt die erste Runde aus. Ein Angriff ist eine passende Fertigkeitsprobe. Einmal pro Runde darf eine Figur auf Handeln parieren. Kritische Angriffe und Schusswaffen sind nicht parierbar."
     },
     {
       "id": "damage",

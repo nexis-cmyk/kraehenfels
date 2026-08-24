@@ -44,7 +44,7 @@ jobs:
             -configuration Release \
             -derivedDataPath "$RUNNER_TEMP/derived" \
             MARKETING_VERSION="${{ steps.release.outputs.app_version }}" \
-            CURRENT_PROJECT_VERSION=6 \
+            CURRENT_PROJECT_VERSION=7 \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             build

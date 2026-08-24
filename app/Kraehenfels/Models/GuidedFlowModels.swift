@@ -246,8 +246,8 @@ enum RollEvaluator {
     static func evaluate(roll: Int, target: Int, begabung: Bool = false) -> Result {
         let safeRoll = min(max(roll, 1), 100)
         let safeTarget = min(max(target, 1), 100)
-        let criticalSuccess = !begabung && safeRoll <= max(1, safeTarget / 10)
-        let criticalFailure = safeRoll >= min(100, 90 + safeTarget / 10)
+        let criticalSuccess = Double(safeRoll) <= Double(safeTarget) * 0.10
+        let criticalFailure = Double(safeRoll) >= 90.0 + Double(safeTarget) * 0.10
         return Result(roll: safeRoll, target: safeTarget, isSuccess: safeRoll <= safeTarget, isCriticalSuccess: criticalSuccess, isCriticalFailure: criticalFailure)
     }
 }

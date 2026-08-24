@@ -51,9 +51,15 @@ final class ContentStoreTests: XCTestCase {
         let fumble = RollEvaluator.evaluate(roll: 97, target: 60)
         XCTAssertTrue(fumble.isCriticalFailure)
 
+        let exactLowerEdge = RollEvaluator.evaluate(roll: 1, target: 5)
+        XCTAssertFalse(exactLowerEdge.isCriticalSuccess)
+
+        let exactUpperEdge = RollEvaluator.evaluate(roll: 97, target: 65)
+        XCTAssertTrue(exactUpperEdge.isCriticalFailure)
+
         let begabung = RollEvaluator.evaluate(roll: 1, target: 100, begabung: true)
         XCTAssertTrue(begabung.isSuccess)
-        XCTAssertFalse(begabung.isCriticalSuccess)
+        XCTAssertTrue(begabung.isCriticalSuccess)
     }
 
     func testSharedGuideDecodesConditionalAndMandatorySteps() throws {
