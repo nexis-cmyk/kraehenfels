@@ -11,13 +11,13 @@
       "bundleIdentifier": "de.kraehenfels.spielleitung",
       "developerName": "Krähenfels",
       "subtitle": "Die letzte Kutsche",
-      "version": "4.1.1",
-      "buildVersion": "7",
-      "versionDate": "2026-08-24",
-      "versionDescription": "Release 4.1.1",
-      "downloadURL": "https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.1.1/Kraehenfels.ipa",
-      "size": 82445965,
-      "sha256": "07081a517851c01755cbee51520c73a5f3f5f72ae011918f658c49c1da23b4df",
+      "version": "4.1.2",
+      "buildVersion": "8",
+      "versionDate": "2026-08-26",
+      "versionDescription": "Release 4.1.2",
+      "downloadURL": "https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.1.2/Kraehenfels.ipa",
+      "size": 82487980,
+      "sha256": "e9da919ecd0d12be18ebfd411fcba9984c9ac870fb5f3e25883af4aa16ed463c",
       "localizedDescription": "Geführter Szenenleitstand mit Vorlesetexten, NPCs, Pflichtspuren, Szenenbildern, papiergebundenen Hinweisen, lokalen Tischnotizen, manuellem Nachtstand und einem getrennten Soundboard für Atmosphäre, Musik und Effekte.",
       "iconURL": "https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/icon.png",
       "tintColor": "#6EAF7A",
@@ -27,13 +27,13 @@
       },
       "versions": [
         {
-          "version": "4.1.1",
-          "buildVersion": "7",
-          "date": "2026-08-24",
-          "localizedDescription": "Release 4.1.1",
-          "downloadURL": "https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.1.1/Kraehenfels.ipa",
-          "size": 82445965,
-          "sha256": "07081a517851c01755cbee51520c73a5f3f5f72ae011918f658c49c1da23b4df"
+          "version": "4.1.2",
+          "buildVersion": "8",
+          "date": "2026-08-26",
+          "localizedDescription": "Release 4.1.2",
+          "downloadURL": "https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.1.2/Kraehenfels.ipa",
+          "size": 82487980,
+          "sha256": "e9da919ecd0d12be18ebfd411fcba9984c9ac870fb5f3e25883af4aa16ed463c"
         }
       ]
     }
