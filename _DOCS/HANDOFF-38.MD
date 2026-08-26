@@ -1,7 +1,7 @@
 # Handoff 38
 
-Datum: 2026-08-26  
-Release: `v4.1.2`, Build `8`  
+Datum: 2026-08-26
+Release: `v4.1.2`, Build `8`
 Release-Commit auf `main`: `78b51f7`
 
 ## Erledigt
