@@ -1,5 +1,5 @@
 import { AudioEngine } from "./audio-engine.js";
-import { evaluateRoll, guideKindLabels } from "./guided-flow.js";
+import { evaluateRoll, guideKindLabels } from "./guided-flow.js?v=4.1.5";
 
 const app = document.querySelector("#app");
 const sceneNav = document.querySelector("#scene-nav");
@@ -18,6 +18,11 @@ function normalizedNightPhase(value) {
   if (!Number.isFinite(index)) return 0;
   const phaseCount = nightPhases.length || 5;
   return Math.min(Math.max(Math.trunc(index), 0), phaseCount - 1);
+}
+
+function normalizedFinaleCount(value) {
+  const count = Number(value);
+  return Number.isFinite(count) ? Math.min(Math.max(Math.trunc(count), 0), 2) : 0;
 }
 
 const stored = (key, fallback) => {
@@ -50,9 +55,15 @@ const state = {
   guideHistory: stored("kraehenfels.guideHistory", []),
   setupChecks: new Set(stored("kraehenfels.setupChecks", [])),
   guidedRolls: stored("kraehenfels.guidedRolls", {}),
+  guidedRollHistory: stored("kraehenfels.guidedRollHistory", []),
+  finaleSuccesses: normalizedFinaleCount(localStorage.getItem("kraehenfels.finaleSuccesses")),
+  finaleFailures: normalizedFinaleCount(localStorage.getItem("kraehenfels.finaleFailures")),
+  finaleOutcome: localStorage.getItem("kraehenfels.finaleOutcome") || "",
   audioRatings: stored("kraehenfels.audioRatings", {}),
   endingID: localStorage.getItem("kraehenfels.endingID") || "",
   rollOpen: false,
+  pendingRoll: null,
+  selectedConsequenceID: "",
   spoilersOpen: false,
   statusTone: "ok",
 };
@@ -74,6 +85,10 @@ function persist() {
   localStorage.setItem("kraehenfels.guideHistory", JSON.stringify(state.guideHistory));
   localStorage.setItem("kraehenfels.setupChecks", JSON.stringify([...state.setupChecks]));
   localStorage.setItem("kraehenfels.guidedRolls", JSON.stringify(state.guidedRolls));
+  localStorage.setItem("kraehenfels.guidedRollHistory", JSON.stringify(state.guidedRollHistory));
+  localStorage.setItem("kraehenfels.finaleSuccesses", String(state.finaleSuccesses));
+  localStorage.setItem("kraehenfels.finaleFailures", String(state.finaleFailures));
+  localStorage.setItem("kraehenfels.finaleOutcome", state.finaleOutcome);
   localStorage.setItem("kraehenfels.audioRatings", JSON.stringify(state.audioRatings));
   localStorage.setItem("kraehenfels.endingID", state.endingID);
 }
@@ -200,6 +215,89 @@ function currentGuideStep(sceneID) {
   return guideStepsFor(sceneID)[currentGuideIndex(sceneID)];
 }
 
+function availableRollConsequences(step) {
+  const all = step?.roll?.failureConsequences || [];
+  const available = all.filter((consequence) => {
+    const endingIDs = consequence.endingIDs || [];
+    return !endingIDs.length || endingIDs.includes(state.endingID);
+  });
+  return available.length ? available : all;
+}
+
+function rollOutcomeText(result, roll) {
+  if (result.criticalFailure) return roll.criticalFailure;
+  if (result.criticalSuccess) return roll.critical;
+  return result.success ? roll.success : roll.failure;
+}
+
+function consequenceEffectText(effect = {}) {
+  if (Number.isFinite(Number(effect.threatDelta))) {
+    const value = Number(effect.threatDelta);
+    return `Dorfspannung ${value >= 0 ? "+" : ""}${value}`;
+  }
+  if (Number.isFinite(Number(effect.minimumThreat))) return `Dorfspannung mindestens ${Number(effect.minimumThreat)}`;
+  return "";
+}
+
+function applyConsequence(consequence) {
+  const effect = consequence?.effect || {};
+  if (Number.isFinite(Number(effect.threatDelta))) {
+    state.threatLevel = Math.min(5, Math.max(0, state.threatLevel + Number(effect.threatDelta)));
+  }
+  if (Number.isFinite(Number(effect.minimumThreat))) {
+    state.threatLevel = Math.min(5, Math.max(state.threatLevel, Number(effect.minimumThreat)));
+  }
+}
+
+function recordGuidedRoll(step, result, consequence) {
+  const entry = {
+    stepID: step.id,
+    roll: result.roll,
+    target: result.target,
+    success: result.success,
+    criticalSuccess: result.criticalSuccess,
+    criticalFailure: result.criticalFailure,
+    label: result.label,
+    consequenceID: consequence?.id || "",
+    consequenceTitle: consequence?.title || "",
+  };
+  state.guidedRolls[step.id] = entry;
+  state.guidedRollHistory.push(entry);
+  if (!result.success) applyConsequence(consequence);
+}
+
+function recordFinaleRoll(result, consequence) {
+  recordGuidedRoll({ id: "S07_DANGER" }, result, consequence);
+  if (result.criticalFailure) {
+    state.finaleFailures = Math.min(2, state.finaleFailures + 2);
+  } else if (result.success) {
+    state.finaleSuccesses = Math.min(2, state.finaleSuccesses + 1);
+  } else {
+    state.finaleFailures = Math.min(2, state.finaleFailures + 1);
+  }
+  if (state.finaleSuccesses >= 2) {
+    state.finaleOutcome = "success";
+    return { resolved: true };
+  }
+  if (state.finaleFailures >= 2) {
+    state.finaleOutcome = "failure";
+    state.threatLevel = Math.min(5, state.threatLevel + 1);
+    return { resolved: true };
+  }
+  return { resolved: false };
+}
+
+function resetFinaleProgress() {
+  state.finaleSuccesses = 0;
+  state.finaleFailures = 0;
+  state.finaleOutcome = "";
+}
+
+function clearFinaleRolls() {
+  delete state.guidedRolls.S07_DANGER;
+  state.guidedRollHistory = state.guidedRollHistory.filter((entry) => entry.stepID !== "S07_DANGER");
+}
+
 function pushGuidePosition() {
   state.guideHistory.push({ sceneID: state.currentSceneId, stepIndex: currentGuideIndex(state.currentSceneId) });
 }
@@ -221,8 +319,12 @@ function resetDependentPath(destination) {
   state.completed = new Set([...state.completed].filter((sceneID) => !dependent.has(sceneID)));
   state.guidedIndexes = Object.fromEntries(Object.entries(state.guidedIndexes).filter(([sceneID]) => !dependent.has(sceneID)));
   state.guidedRolls = Object.fromEntries(Object.entries(state.guidedRolls).filter(([stepID]) => !dependent.has(stepID.slice(0, 3))));
+  state.guidedRollHistory = state.guidedRollHistory.filter((entry) => !dependent.has(String(entry.stepID || "").slice(0, 3)));
   state.guideHistory = state.guideHistory.filter((position) => !dependent.has(position.sceneID));
-  if (index < order.indexOf("S07")) state.endingID = "";
+  if (index < order.indexOf("S07")) {
+    state.endingID = "";
+    resetFinaleProgress();
+  }
 }
 
 function goBackInGuide() {
@@ -235,6 +337,8 @@ function goBackInGuide() {
     state.view = "guided";
   }
   state.rollOpen = false;
+  state.pendingRoll = null;
+  state.selectedConsequenceID = "";
   persist();
   render();
   document.querySelector("#scene-content").focus();
@@ -285,8 +389,38 @@ function renderGMStart() {
 function renderRollPanel(step) {
   const roll = step.roll;
   const previous = state.guidedRolls[step.id];
-  if (!state.rollOpen) return `<button class="button button-primary guide-action" data-guide-action="open-roll" type="button">Probe auswerten</button>`;
-  return `<div class="roll-panel"><div class="roll-panel-heading"><div><span class="eyebrow">W100-Probe</span><strong>${escapeHtml(roll.actor)}</strong></div><button class="text-button" data-guide-action="close-roll" type="button">Schließen</button></div><p><b>Fertigkeit:</b> ${escapeHtml(roll.ability)} · <b>Zielwert:</b> ${escapeHtml(roll.target)}</p><p class="roll-modifier">${escapeHtml(roll.modifier)}</p><div class="roll-inputs"><label class="roll-input"><span>Gewürfeltes Ergebnis</span><input data-roll-value type="number" min="1" max="100" inputmode="numeric" value="${previous?.roll || ""}" placeholder="z. B. 42"></label><label class="roll-input"><span>Zielwert der Fertigkeit</span><input data-roll-target type="number" min="1" max="100" inputmode="numeric" value="${previous?.target || 50}" placeholder="z. B. 65"></label></div><button class="button button-primary guide-action" data-guide-action="resolve-roll" data-step="${step.id}" type="button">Ergebnis auswerten</button>${previous ? `<div class="roll-result ${previous.success ? "is-success" : "is-failure"}"><strong>${escapeHtml(previous.label)}</strong><span>${previous.roll} gegen ${previous.target}</span><p>${escapeHtml(previous.success ? roll.success : roll.failure)}</p></div>` : ""}</div>`;
+  if (!state.rollOpen) {
+    const sessionSummary = previous
+      ? `<div class="roll-session-summary"><strong>Letztes Ergebnis: ${escapeHtml(previous.label)}</strong><span>${previous.roll} gegen ${previous.target}</span>${previous.consequenceTitle ? `<em>Gewählte Folge: ${escapeHtml(previous.consequenceTitle)}</em>` : ""}</div>`
+      : "";
+    return `${sessionSummary}<button class="button button-primary guide-action" data-guide-action="open-roll" type="button">Probe auswerten</button>`;
+  }
+  const pending = state.pendingRoll?.stepID === step.id ? state.pendingRoll : null;
+  const displayed = pending?.result || previous;
+  const consequences = displayed && !displayed.success ? availableRollConsequences(step) : [];
+  const selectedConsequence = consequences.find((consequence) => consequence.id === state.selectedConsequenceID);
+  const hasPendingFailure = Boolean(pending && !pending.result.success);
+  const needsSelection = hasPendingFailure && consequences.length > 0 && !selectedConsequence;
+  const consequenceMarkup = hasPendingFailure && consequences.length
+    ? `<div class="roll-consequences"><span class="eyebrow">${consequences.length === 1 ? "Folge bestätigen" : "Was passiert jetzt?"}</span><p>Wähle die Folge, die du am Tisch ausspielst.</p>${consequences.map((consequence) => {
+      const selected = consequence.id === state.selectedConsequenceID;
+      const effect = consequenceEffectText(consequence.effect);
+      return `<button class="roll-consequence ${selected ? "is-selected" : ""}" data-guide-action="select-consequence" data-consequence="${escapeHtml(consequence.id)}" type="button" aria-pressed="${selected}"><span class="roll-consequence-marker" aria-hidden="true">${selected ? "✓" : "○"}</span><span><strong>${escapeHtml(consequence.title)}</strong><small>${escapeHtml(consequence.detail)}</small>${effect ? `<em>${escapeHtml(effect)}</em>` : ""}</span></button>`;
+    }).join("")}</div>`
+    : "";
+  const resultMarkup = displayed
+    ? `<div class="roll-result ${displayed.success ? "is-success" : "is-failure"}"><strong>${escapeHtml(displayed.label)}</strong><span>${displayed.roll} gegen ${displayed.target}</span><p>${escapeHtml(rollOutcomeText(displayed, roll))}</p>${!pending && displayed.consequenceTitle ? `<em class="roll-result-consequence">Gewählte Folge: ${escapeHtml(displayed.consequenceTitle)}</em>` : ""}${displayed.success ? "" : consequenceMarkup}${pending ? `<button class="button ${displayed.success || !needsSelection ? "button-primary" : "button-quiet"} guide-action roll-confirm" data-guide-action="confirm-roll" data-step="${step.id}" type="button" ${needsSelection ? "disabled" : ""}>${displayed.success || !consequences.length ? "Ergebnis übernehmen" : "Konsequenz übernehmen"}<span aria-hidden="true">›</span></button>` : ""}</div>`
+    : "";
+  return `<div class="roll-panel"><div class="roll-panel-heading"><div><span class="eyebrow">W100-Probe</span><strong>${escapeHtml(roll.actor)}</strong></div><button class="text-button" data-guide-action="close-roll" type="button">Schließen</button></div><p><b>Fertigkeit:</b> ${escapeHtml(roll.ability)} · <b>Zielwert:</b> ${escapeHtml(roll.target)}</p><p class="roll-modifier">${escapeHtml(roll.modifier)}</p><div class="roll-inputs"><label class="roll-input"><span>Gewürfeltes Ergebnis</span><input data-roll-value type="number" min="1" max="100" inputmode="numeric" value="${pending?.result.roll || previous?.roll || ""}" placeholder="z. B. 42"></label><label class="roll-input"><span>Zielwert der Fertigkeit</span><input data-roll-target type="number" min="1" max="100" inputmode="numeric" value="${pending?.result.target || previous?.target || 50}" placeholder="z. B. 65"></label></div><button class="button button-primary guide-action" data-guide-action="resolve-roll" data-step="${step.id}" type="button">${pending ? "Ergebnis neu auswerten" : "Ergebnis auswerten"}<span aria-hidden="true">›</span></button>${resultMarkup}</div>`;
+}
+
+function renderFinaleProgress() {
+  const status = state.finaleOutcome === "success"
+    ? "Die Gefahrenszene ist zugunsten der Gruppe entschieden."
+    : state.finaleOutcome === "failure"
+      ? "Zwei Fehlschläge: Die Gefahrenszene ist zugunsten des Waldes entschieden."
+      : "Zwei Erfolge vor zwei Fehlschlägen. Ein kritischer Misserfolg zählt doppelt.";
+  return `<div class="roll-finale"><div><strong>Geführte Gefahrenszene</strong><b>${state.finaleSuccesses} : ${state.finaleFailures}</b></div><progress max="2" value="${state.finaleSuccesses}"></progress><small>${escapeHtml(status)}</small></div>`;
 }
 
 function renderRulesSection() {
@@ -319,6 +453,7 @@ function renderGuideStep(step) {
       <h2>${escapeHtml(step.title)}</h2>
       <p class="guide-step-body">${escapeHtml(step.body)}</p>
       ${step.roll ? `<div class="roll-brief"><span class="eyebrow">WANN WIRD GEWÜRFELT?</span><strong>${escapeHtml(step.roll.actor)}</strong><p>${escapeHtml(step.roll.ability)} · ${escapeHtml(step.roll.target)}</p><small>${escapeHtml(step.roll.modifier)}</small></div>` : ""}
+      ${step.id === "S07_DANGER" ? renderFinaleProgress() : ""}
       ${clueLine}${guideReferences(step)}
       ${action}
     </section>
@@ -526,6 +661,8 @@ document.addEventListener("click", async (event) => {
     state.currentSceneId = sceneButton.dataset.scene;
     state.view = state.gmMode ? "guided" : "scene";
     state.rollOpen = false;
+    state.pendingRoll = null;
+    state.selectedConsequenceID = "";
     persist();
     render();
     document.querySelector("#scene-content").focus();
@@ -568,6 +705,8 @@ document.addEventListener("click", async (event) => {
     state.guideHistory = [];
     state.view = "guided";
     state.rollOpen = false;
+    state.pendingRoll = null;
+    state.selectedConsequenceID = "";
     persist();
     render();
     document.querySelector("#scene-content").focus();
@@ -593,16 +732,55 @@ document.addEventListener("click", async (event) => {
     render();
     return;
   }
-  if (guideAction === "open-roll") { state.rollOpen = true; render(); return; }
-  if (guideAction === "close-roll") { state.rollOpen = false; render(); return; }
+  if (guideAction === "open-roll") {
+    state.rollOpen = true;
+    state.pendingRoll = null;
+    state.selectedConsequenceID = "";
+    render();
+    return;
+  }
+  if (guideAction === "close-roll") {
+    state.rollOpen = false;
+    state.pendingRoll = null;
+    state.selectedConsequenceID = "";
+    render();
+    return;
+  }
   if (guideAction === "resolve-roll") {
     const step = currentGuideStep(state.currentSceneId);
+    if (!step?.roll) return;
     const value = Number(document.querySelector("[data-roll-value]")?.value || 1);
     const target = Number(document.querySelector("[data-roll-target]")?.value || 50);
     const result = evaluateRoll(value, target);
-    state.guidedRolls[step.id] = result;
-    advanceGuideStep();
-    if (!result.success && state.currentSceneId === "S06") state.threatLevel = Math.max(state.threatLevel, 4);
+    state.pendingRoll = { stepID: step.id, result };
+    state.selectedConsequenceID = "";
+    render();
+    return;
+  }
+  if (guideAction === "select-consequence") {
+    if (!state.pendingRoll) return;
+    state.selectedConsequenceID = event.target.closest("[data-consequence]")?.dataset.consequence || "";
+    render();
+    return;
+  }
+  if (guideAction === "confirm-roll") {
+    const step = currentGuideStep(state.currentSceneId);
+    const pending = state.pendingRoll?.stepID === step?.id ? state.pendingRoll : null;
+    if (!step?.roll || !pending) return;
+    const result = pending.result;
+    const consequences = result.success ? [] : availableRollConsequences(step);
+    const consequence = consequences.find((item) => item.id === state.selectedConsequenceID);
+    if (!result.success && consequences.length && !consequence) return;
+    let resolved = true;
+    if (step.id === "S07_DANGER") {
+      resolved = recordFinaleRoll(result, consequence).resolved;
+    } else {
+      recordGuidedRoll(step, result, consequence);
+    }
+    if (resolved) advanceGuideStep();
+    state.rollOpen = false;
+    state.pendingRoll = null;
+    state.selectedConsequenceID = "";
     persist();
     render();
     return;
@@ -611,7 +789,11 @@ document.addEventListener("click", async (event) => {
   if (guideOption) {
     const destination = guideOption.dataset.destination;
     const ending = guideOption.dataset.ending;
-    if (ending) state.endingID = ending;
+    if (ending) {
+      state.endingID = ending;
+      clearFinaleRolls();
+      resetFinaleProgress();
+    }
     if (destination) {
       const currentScene = state.currentSceneId;
       const needsConfirmation = state.completed.has(destination);
@@ -626,6 +808,8 @@ document.addEventListener("click", async (event) => {
       advanceGuideStep();
     }
     state.rollOpen = false;
+    state.pendingRoll = null;
+    state.selectedConsequenceID = "";
     persist();
     render();
     return;
@@ -638,6 +822,8 @@ document.addEventListener("click", async (event) => {
   if (action === "home") {
     state.view = "home";
     state.rollOpen = false;
+    state.pendingRoll = null;
+    state.selectedConsequenceID = "";
     render();
     document.querySelector("#scene-content").focus();
     return;
@@ -750,7 +936,7 @@ document.querySelector("#stop-all").addEventListener("click", () => audio.stopAl
 document.querySelector("#transport-stop").addEventListener("click", () => audio.stopAll());
 document.querySelector("#audio-test").addEventListener("click", () => audio.testTone());
 document.querySelector("#reset-progress").addEventListener("click", () => {
-  state.completed.clear(); state.clues.clear(); state.checklist.clear(); state.setupChecks.clear(); state.guidedIndexes = {}; state.guideHistory = []; state.guidedRolls = {}; state.gmMode = false; state.endingID = ""; state.currentSceneId = "S01"; state.view = "home"; persist(); render();
+  state.completed.clear(); state.clues.clear(); state.checklist.clear(); state.setupChecks.clear(); state.guidedIndexes = {}; state.guideHistory = []; state.guidedRolls = {}; state.guidedRollHistory = []; state.finaleSuccesses = 0; state.finaleFailures = 0; state.finaleOutcome = ""; state.pendingRoll = null; state.selectedConsequenceID = ""; state.gmMode = false; state.endingID = ""; state.currentSceneId = "S01"; state.view = "home"; persist(); render();
   audioStatus.textContent = "Fortschritt zurückgesetzt.";
 });
 

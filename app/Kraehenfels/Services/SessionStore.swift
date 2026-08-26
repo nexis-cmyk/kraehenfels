@@ -37,6 +37,7 @@ final class SessionStore: ObservableObject {
         var setupChecks: [String]?
         var doorStates: [String: Bool]?
         var rollHistory: [String: String]?
+        var rollResolutions: [RollResolutionRecord]?
         var selectedEndingID: String?
         var finaleMode: String?
         var finaleSuccesses: Int?
@@ -126,6 +127,10 @@ final class SessionStore: ObservableObject {
         didSet { persist() }
     }
 
+    @Published private(set) var rollResolutions: [RollResolutionRecord] {
+        didSet { persist() }
+    }
+
     @Published var selectedEndingID: String? {
         didSet { persist() }
     }
@@ -169,6 +174,7 @@ final class SessionStore: ObservableObject {
             setupChecks = Set(snapshot.setupChecks ?? [])
             doorStates = snapshot.doorStates ?? [:]
             rollHistory = snapshot.rollHistory ?? [:]
+            rollResolutions = snapshot.rollResolutions ?? []
             selectedEndingID = snapshot.selectedEndingID
             finaleMode = snapshot.finaleMode ?? "guided"
             finaleSuccesses = min(max(snapshot.finaleSuccesses ?? 0, 0), 2)
@@ -194,6 +200,7 @@ final class SessionStore: ObservableObject {
             setupChecks = []
             doorStates = [:]
             rollHistory = [:]
+            rollResolutions = []
             selectedEndingID = nil
             finaleMode = "guided"
             finaleSuccesses = 0
@@ -251,6 +258,7 @@ final class SessionStore: ObservableObject {
         setupChecks = []
         doorStates = [:]
         rollHistory = [:]
+        rollResolutions = []
         selectedEndingID = nil
         finaleMode = "guided"
         finaleSuccesses = 0
@@ -273,6 +281,7 @@ final class SessionStore: ObservableObject {
         selectedEndingID = nil
         finaleMode = "guided"
         rollHistory = [:]
+        rollResolutions = []
         finaleSuccesses = 0
         finaleFailures = 0
         finaleOutcome = nil
@@ -328,6 +337,9 @@ final class SessionStore: ObservableObject {
         rollHistory = rollHistory.filter { stepID, _ in
             !dependentScenes.contains(String(stepID.prefix(3)))
         }
+        rollResolutions = rollResolutions.filter { resolution in
+            !dependentScenes.contains(String(resolution.stepID.prefix(3)))
+        }
         guideHistory = guideHistory.filter { !dependentScenes.contains($0.sceneID) }
         if index < (sceneOrder.firstIndex(of: "S07") ?? sceneOrder.count) {
             selectedEndingID = nil
@@ -361,13 +373,21 @@ final class SessionStore: ObservableObject {
         doorStates[id] = isOpen
     }
 
-    func recordRoll(stepID: String, result: RollEvaluator.Result) {
+    func recordRoll(stepID: String, result: RollEvaluator.Result, consequence: RollConsequence? = nil) {
         rollHistory[stepID] = String(result.roll) + " / " + String(result.target) + " · " + result.label
+        rollResolutions.append(RollResolutionRecord(stepID: stepID, result: result, consequence: consequence))
+        if !result.isSuccess {
+            apply(consequence?.effect)
+        }
+    }
+
+    func latestRollResolution(for stepID: String) -> RollResolutionRecord? {
+        rollResolutions.last(where: { $0.stepID == stepID })
     }
 
     @discardableResult
-    func recordFinaleRoll(_ result: RollEvaluator.Result) -> FinaleRollState {
-        recordRoll(stepID: "S07_DANGER", result: result)
+    func recordFinaleRoll(_ result: RollEvaluator.Result, consequence: RollConsequence? = nil) -> FinaleRollState {
+        recordRoll(stepID: "S07_DANGER", result: result, consequence: consequence)
         if result.isCriticalFailure {
             finaleFailures = min(2, finaleFailures + 2)
         } else if result.isSuccess {
@@ -396,12 +416,14 @@ final class SessionStore: ObservableObject {
 
     func setSelectedEnding(_ endingID: String) {
         selectedEndingID = endingID
+        clearFinaleRolls()
         resetFinaleProgress()
         finaleMode = "guided"
     }
 
     func setFinaleMode(_ mode: String) {
         finaleMode = mode == "combat" ? "combat" : "guided"
+        clearFinaleRolls()
         resetFinaleProgress()
     }
 
@@ -442,6 +464,20 @@ final class SessionStore: ObservableObject {
         audioRatings = [:]
     }
 
+    private func apply(_ effect: RollConsequenceEffect?) {
+        if let threatDelta = effect?.threatDelta {
+            setThreatLevel(threatLevel + threatDelta)
+        }
+        if let minimumThreat = effect?.minimumThreat {
+            setThreatLevel(max(threatLevel, minimumThreat))
+        }
+    }
+
+    private func clearFinaleRolls() {
+        rollHistory = rollHistory.filter { stepID, _ in stepID != "S07_DANGER" }
+        rollResolutions.removeAll { $0.stepID == "S07_DANGER" }
+    }
+
     private func persist() {
         let snapshot = Snapshot(
             playerNames: Self.normalizedNames(playerNames),
@@ -461,6 +497,7 @@ final class SessionStore: ObservableObject {
             setupChecks: Array(setupChecks).sorted(),
             doorStates: doorStates,
             rollHistory: rollHistory,
+            rollResolutions: rollResolutions,
             selectedEndingID: selectedEndingID,
             finaleMode: finaleMode,
             finaleSuccesses: finaleSuccesses,

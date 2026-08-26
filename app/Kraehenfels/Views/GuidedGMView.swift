@@ -248,21 +248,15 @@ struct GuidedGMView: View {
             }
         }
         .sheet(item: $rollStep) { step in
-            RollHelperView(step: step) { result in
+            RollHelperView(step: step, selectedEndingID: session.selectedEndingID) { result, consequence in
                 if step.id == "S07_DANGER" {
-                    let state = session.recordFinaleRoll(result)
+                    let state = session.recordFinaleRoll(result, consequence: consequence)
                     if state.isResolved {
                         advance(step)
                     }
                     return
                 }
-                session.recordRoll(stepID: step.id, result: result)
-                if step.id == "S02_ROLL", !result.isSuccess {
-                    session.setThreatLevel(session.threatLevel + 1)
-                }
-                if step.id == "S06_ROLL", !result.isSuccess {
-                    session.setThreatLevel(4)
-                }
+                session.recordRoll(stepID: step.id, result: result, consequence: consequence)
                 advance(step)
             }
         }
@@ -348,7 +342,7 @@ struct GuidedGMView: View {
                 }
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(FrostTheme.quiet)
-                .frame(maxWidth: .infinity, minHeight: 40)
+                .frame(maxWidth: .infinity, minHeight: 44)
             }
         }
         .padding(.horizontal, 16)
@@ -454,7 +448,7 @@ struct GuidedGMView: View {
                                 audio.toggle(cue)
                             } label: {
                                 Image(systemName: audio.isPlaying(cue) && cue.mode == "loop" ? "pause.fill" : "play.fill")
-                                    .frame(width: 34, height: 34)
+                                    .frame(width: 44, height: 44)
                             }
                             .buttonStyle(.bordered)
                             .accessibilityLabel("\(cue.title) abspielen")
@@ -580,6 +574,12 @@ struct GuidedGMView: View {
             if let previous = session.rollHistory[step.id] {
                 Label("Letztes Ergebnis: \(previous)", systemImage: "clock.arrow.circlepath")
                     .foregroundStyle(FrostTheme.accent)
+            }
+            if let previous = session.latestRollResolution(for: step.id),
+               let consequenceTitle = previous.consequenceTitle {
+                Label("Gewählte Folge: \(consequenceTitle)", systemImage: "arrow.triangle.branch")
+                    .foregroundStyle(FrostTheme.warning)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Button {
                 rollStep = step
@@ -868,14 +868,21 @@ struct GuidedGMView: View {
 
 struct RollHelperView: View {
     let step: GuideStep
-    let onResult: (RollEvaluator.Result) -> Void
+    let selectedEndingID: String?
+    let onResult: (RollEvaluator.Result, RollConsequence?) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var targetText = "50"
     @State private var rollText = ""
     @State private var result: RollEvaluator.Result?
+    @State private var selectedConsequenceID: String?
     @State private var validationMessage: String?
 
     private var roll: RollSpec? { step.roll }
+
+    private func consequences(for spec: RollSpec) -> [RollConsequence] {
+        let available = spec.failureConsequences.filter { $0.isAvailable(for: selectedEndingID) }
+        return available.isEmpty ? spec.failureConsequences : available
+    }
 
     var body: some View {
         NavigationStack {
@@ -912,12 +919,14 @@ struct RollHelperView: View {
                         Button("Ergebnis auswerten") { evaluate(roll) }
                             .buttonStyle(.borderedProminent)
                             .tint(FrostTheme.cobalt)
+                            .frame(maxWidth: .infinity, minHeight: 44)
                         if let result {
                             resultCard(result, spec: roll)
                         }
                     }
                 }
                 .padding(20)
+                .safeAreaPadding(.bottom, 24)
             }
             .background(FrostTheme.ink.ignoresSafeArea())
             .navigationTitle("Würfelhelfer")
@@ -937,6 +946,7 @@ struct RollHelperView: View {
             TextField(prompt, text: text)
                 .keyboardType(.numberPad)
                 .textFieldStyle(.roundedBorder)
+                .frame(minHeight: 44)
         }
     }
 
@@ -952,7 +962,10 @@ struct RollHelperView: View {
             return
         }
         validationMessage = nil
-        result = RollEvaluator.evaluate(roll: rolled, target: target, begabung: spec.begabung)
+        let evaluated = RollEvaluator.evaluate(roll: rolled, target: target, begabung: spec.begabung)
+        result = evaluated
+        let availableConsequences = evaluated.isSuccess ? [] : consequences(for: spec)
+        selectedConsequenceID = availableConsequences.count == 1 ? availableConsequences.first?.id : nil
     }
 
     private func resultCard(_ result: RollEvaluator.Result, spec: RollSpec) -> some View {
@@ -967,18 +980,84 @@ struct RollHelperView: View {
                 .font(.subheadline)
                 .foregroundStyle(FrostTheme.quiet)
                 .fixedSize(horizontal: false, vertical: true)
+            if !result.isSuccess {
+                let availableConsequences = consequences(for: spec)
+                if availableConsequences.isEmpty {
+                    Label("Folge: \(spec.failure)", systemImage: "arrow.triangle.branch")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(FrostTheme.warning)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionLabel(title: availableConsequences.count == 1 ? "FOLGE BESTÄTIGEN" : "WAS PASSIERT JETZT?")
+                        Text(availableConsequences.count == 1 ? "Bestätige die Folge für die Runde." : "Wähle die Folge, die du am Tisch ausspielst.")
+                            .font(.caption)
+                            .foregroundStyle(FrostTheme.quiet)
+                            .fixedSize(horizontal: false, vertical: true)
+                        ForEach(availableConsequences) { consequence in
+                            let isSelected = selectedConsequenceID == consequence.id
+                            Button {
+                                selectedConsequenceID = consequence.id
+                            } label: {
+                                HStack(alignment: .top, spacing: 10) {
+                                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(isSelected ? FrostTheme.accent : FrostTheme.quiet)
+                                        .font(.title3)
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(consequence.title)
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(.white)
+                                        Text(consequence.detail)
+                                            .font(.caption)
+                                            .foregroundStyle(FrostTheme.quiet)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                        if let effectText = effectText(for: consequence.effect) {
+                                            Text(effectText)
+                                                .font(.caption2.weight(.semibold))
+                                                .foregroundStyle(FrostTheme.warning)
+                                        }
+                                    }
+                                    Spacer(minLength: 0)
+                                }
+                                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                                .padding(10)
+                                .background(isSelected ? FrostTheme.accent.opacity(0.18) : FrostTheme.ink.opacity(0.42), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(isSelected ? FrostTheme.accent : FrostTheme.line, lineWidth: 1))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityAddTraits(isSelected ? .isSelected : [])
+                        }
+                    }
+                    .padding(.top, 4)
+                }
+            }
             Text(spec.reroll)
                 .font(.caption)
                 .foregroundStyle(FrostTheme.cobalt)
-            Button("Ergebnis übernehmen") {
-                onResult(result)
+            let availableConsequences = result.isSuccess ? [] : consequences(for: spec)
+            let selectedConsequence = availableConsequences.first { $0.id == selectedConsequenceID }
+            Button(result.isSuccess ? "Ergebnis übernehmen" : availableConsequences.isEmpty ? "Ergebnis übernehmen" : "Konsequenz übernehmen") {
+                guard result.isSuccess || availableConsequences.isEmpty || selectedConsequence != nil else { return }
+                onResult(result, selectedConsequence)
                 dismiss()
             }
             .buttonStyle(.borderedProminent)
             .tint(result.isSuccess ? FrostTheme.accent : FrostTheme.warning)
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .disabled(!result.isSuccess && !availableConsequences.isEmpty && selectedConsequence == nil)
         }
         .padding(15)
         .background(FrostTheme.panel, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func effectText(for effect: RollConsequenceEffect?) -> String? {
+        if let threatDelta = effect?.threatDelta {
+            return "Dorfspannung \(threatDelta >= 0 ? "+" : "")\(threatDelta)"
+        }
+        if let minimumThreat = effect?.minimumThreat {
+            return "Dorfspannung mindestens \(minimumThreat)"
+        }
+        return nil
     }
 }
 
