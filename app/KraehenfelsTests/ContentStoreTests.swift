@@ -60,6 +60,29 @@ final class ContentStoreTests: XCTestCase {
         let begabung = RollEvaluator.evaluate(roll: 1, target: 100, begabung: true)
         XCTAssertTrue(begabung.isSuccess)
         XCTAssertTrue(begabung.isCriticalSuccess)
+
+        let targetHundredFumble = RollEvaluator.evaluate(roll: 100, target: 100)
+        XCTAssertTrue(targetHundredFumble.isCriticalFailure)
+        XCTAssertFalse(targetHundredFumble.isSuccess)
+    }
+
+    func testEveryStoryRollSupportsSuccessFailureAndCriticalFailure() {
+        let storyRolls = [
+            "S01_ACT", "S02_ROLL", "S03_ROLL", "S04_ROLL", "S05_ROLL", "S06_ROLL", "S07_DANGER"
+        ]
+
+        for stepID in storyRolls {
+            let success = RollEvaluator.evaluate(roll: 60, target: 60)
+            let failure = RollEvaluator.evaluate(roll: 61, target: 60)
+            let criticalFailure = RollEvaluator.evaluate(roll: 100, target: 60)
+
+            XCTAssertTrue(success.isSuccess, stepID)
+            XCTAssertFalse(success.isCriticalFailure, stepID)
+            XCTAssertFalse(failure.isSuccess, stepID)
+            XCTAssertFalse(failure.isCriticalFailure, stepID)
+            XCTAssertFalse(criticalFailure.isSuccess, stepID)
+            XCTAssertTrue(criticalFailure.isCriticalFailure, stepID)
+        }
     }
 
     func testSharedGuideDecodesConditionalAndMandatorySteps() throws {
@@ -82,6 +105,35 @@ final class ContentStoreTests: XCTestCase {
         let finale = guide.steps(for: "S01").first(where: { $0.id == "S01_DANGER" })?.roll
         XCTAssertFalse(conditional?.required ?? true)
         XCTAssertTrue(finale?.required ?? false)
+    }
+
+    func testRollConsequenceDecodesEndingFilterAndEffects() throws {
+        let payload = #"""
+        {
+          "id":"S02_ROLL",
+          "sceneID":"S02",
+          "kind":"roll",
+          "title":"Tür",
+          "body":"Text",
+          "roll":{
+            "actor":"Figur",
+            "ability":"Handeln",
+            "target":"60",
+            "success":"Erfolg",
+            "failure":"Misserfolg",
+            "failureConsequences":[
+              {"id":"noise","title":"Lärm","detail":"Die Tür bleibt nicht unbemerkt.","effect":{"threatDelta":1}},
+              {"id":"time","title":"Zeit","detail":"Die Gruppe verliert Zeit.","endingIDs":["E01"]}
+            ]
+          }
+        }
+        """#.data(using: .utf8)!
+
+        let step = try JSONDecoder().decode(GuideStep.self, from: payload)
+        XCTAssertEqual(step.roll?.failureConsequences.count, 2)
+        XCTAssertEqual(step.roll?.failureConsequences.first?.effect?.threatDelta, 1)
+        XCTAssertTrue(step.roll?.failureConsequences[1].isAvailable(for: "E01") ?? false)
+        XCTAssertFalse(step.roll?.failureConsequences[1].isAvailable(for: "E02") ?? true)
     }
 
     func testGuidedFlowKeepsAllInvestigationLocationsOpen() {
@@ -125,6 +177,30 @@ final class ContentStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testFinaleSupportsAllEndingsAndMultipleRolls() {
+        let consequences = [
+            RollConsequence(id: "time", title: "Zeit", detail: "", endingIDs: ["E01", "E03"]),
+            RollConsequence(id: "warmth", title: "Wärme", detail: "", endingIDs: ["E02", "E03"]),
+            RollConsequence(id: "trust", title: "Vertrauen", detail: "", endingIDs: ["E01", "E02"])
+        ]
+        for endingID in ["E01", "E02", "E03"] {
+            XCTAssertEqual(consequences.filter { $0.isAvailable(for: endingID) }.count, 2)
+        }
+
+        let suiteName = "kraehenfels.tests.finale-multiple-rolls"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        let session = SessionStore(defaults: defaults)
+        let failure = RollEvaluator.evaluate(roll: 70, target: 60)
+        let success = RollEvaluator.evaluate(roll: 50, target: 60)
+
+        XCTAssertEqual(session.recordFinaleRoll(failure, consequence: consequences[0]), .ongoing(successes: 0, failures: 1))
+        XCTAssertEqual(session.recordFinaleRoll(success), .ongoing(successes: 1, failures: 1))
+        XCTAssertEqual(session.recordFinaleRoll(success), .resolved(success: true))
+        XCTAssertEqual(session.rollResolutions.filter { $0.stepID == "S07_DANGER" }.count, 3)
+    }
+
+    @MainActor
     func testV5SessionStartsFreshAndPersistsResumeState() {
         let suiteName = "kraehenfels.tests.v5-session"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -140,6 +216,90 @@ final class ContentStoreTests: XCTestCase {
         let resumed = SessionStore(defaults: defaults)
         XCTAssertTrue(resumed.hasStartedSession)
         XCTAssertEqual(resumed.currentSceneID, "S01")
+    }
+
+    @MainActor
+    func testV5SnapshotWithoutRollResolutionsRemainsReadable() throws {
+        let suiteName = "kraehenfels.tests.v5-legacy-snapshot"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        let payload: [String: Any] = [
+            "playerNames": ["Clara", "", ""],
+            "sessionNote": "Alte Notiz",
+            "sceneNotes": ["S01": "Spur"],
+            "currentSceneID": "S02",
+            "completedSceneIDs": ["S01"],
+            "checkedClueIDs": ["C01"],
+            "completedChecklistIDs": [],
+            "npcStates": [:],
+            "threatLevel": 2,
+            "selectedHooks": [:]
+        ]
+        defaults.set(try JSONSerialization.data(withJSONObject: payload), forKey: "kraehenfels.sessionJournal.v5")
+
+        let session = SessionStore(defaults: defaults)
+
+        XCTAssertEqual(session.currentSceneID, "S02")
+        XCTAssertEqual(session.threatLevel, 2)
+        XCTAssertTrue(session.rollResolutions.isEmpty)
+    }
+
+    @MainActor
+    func testRollConsequenceIsAppliedAndPersistedAfterConfirmation() {
+        let suiteName = "kraehenfels.tests.roll-consequence"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        let session = SessionStore(defaults: defaults)
+        let failure = RollEvaluator.evaluate(roll: 70, target: 60)
+        let consequence = RollConsequence(
+            id: "noise",
+            title: "Lärm",
+            detail: "Die Tür bleibt nicht unbemerkt.",
+            effect: RollConsequenceEffect(threatDelta: 1)
+        )
+
+        session.recordRoll(stepID: "S02_ROLL", result: failure, consequence: consequence)
+
+        XCTAssertEqual(session.threatLevel, 1)
+        XCTAssertEqual(session.latestRollResolution(for: "S02_ROLL")?.consequenceTitle, "Lärm")
+        let resumed = SessionStore(defaults: defaults)
+        XCTAssertEqual(resumed.latestRollResolution(for: "S02_ROLL")?.consequenceID, "noise")
+    }
+
+    @MainActor
+    func testMinimumThreatConsequenceDoesNotLowerExistingThreat() {
+        let suiteName = "kraehenfels.tests.roll-minimum-threat"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        let session = SessionStore(defaults: defaults)
+        session.setThreatLevel(5)
+        let failure = RollEvaluator.evaluate(roll: 70, target: 60)
+        let consequence = RollConsequence(
+            id: "procession-visible",
+            title: "Prozession",
+            detail: "Die Schritte sind vor dem Fenster.",
+            effect: RollConsequenceEffect(minimumThreat: 4)
+        )
+
+        session.recordRoll(stepID: "S06_ROLL", result: failure, consequence: consequence)
+
+        XCTAssertEqual(session.threatLevel, 5)
+    }
+
+    @MainActor
+    func testChangingEndingRemovesDependentFinaleRolls() {
+        let suiteName = "kraehenfels.tests.ending-change"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        let session = SessionStore(defaults: defaults)
+        let failure = RollEvaluator.evaluate(roll: 70, target: 60)
+        session.recordFinaleRoll(failure)
+
+        XCTAssertNotNil(session.latestRollResolution(for: "S07_DANGER"))
+        session.setSelectedEnding("E02")
+
+        XCTAssertNil(session.latestRollResolution(for: "S07_DANGER"))
+        XCTAssertEqual(session.finaleFailures, 0)
     }
 
     @MainActor
@@ -173,6 +333,7 @@ final class ContentStoreTests: XCTestCase {
         session.completedSceneIDs = ["S03", "S04"]
         session.completedGuideStepIDs = ["S04_CLUE"]
         session.rollHistory = ["S04_ROLL": "50 / 60 · Erfolg"]
+        session.recordRoll(stepID: "S04_ROLL", result: RollEvaluator.evaluate(roll: 50, target: 60))
 
         session.advanceToScene("S03", from: "S04")
         session.resetDependentPath(from: "S03")
@@ -181,6 +342,7 @@ final class ContentStoreTests: XCTestCase {
         XCTAssertFalse(session.completedSceneIDs.contains("S04"))
         XCTAssertFalse(session.completedGuideStepIDs.contains("S04_CLUE"))
         XCTAssertTrue(session.rollHistory["S04_ROLL"] == nil)
+        XCTAssertTrue(session.latestRollResolution(for: "S04_ROLL") == nil)
         XCTAssertTrue(session.checkedClueIDs.contains("C01"))
     }
 }

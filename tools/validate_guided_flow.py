@@ -51,6 +51,45 @@ def main() -> None:
                 ending_id = option.get("endingID")
                 if ending_id and ending_id not in ending_ids:
                     fail(f"guided flow references missing ending {ending_id}")
+            roll = step.get("roll")
+            if roll:
+                consequences = roll.get("failureConsequences", [])
+                if not isinstance(consequences, list):
+                    fail(f"roll {step['id']} has invalid failure consequences")
+                if any(not isinstance(consequence, dict) for consequence in consequences):
+                    fail(f"roll {step['id']} has a non-object consequence")
+                consequence_ids = [consequence.get("id") for consequence in consequences]
+                if not consequences:
+                    fail(f"roll {step['id']} has no failure consequence")
+                if len(set(consequence_ids)) != len(consequence_ids) or any(not consequence_id for consequence_id in consequence_ids):
+                    fail(f"roll {step['id']} has duplicate or empty consequence ids")
+                for consequence in consequences:
+                    for required_key in ("title", "detail"):
+                        if not consequence.get(required_key):
+                            fail(f"consequence {consequence.get('id')} in {step['id']} has no {required_key}")
+                    ending_ids_value = consequence.get("endingIDs", [])
+                    if not isinstance(ending_ids_value, list) or any(not isinstance(ending_id, str) for ending_id in ending_ids_value):
+                        fail(f"consequence {consequence.get('id')} has invalid ending ids")
+                    invalid_endings = set(ending_ids_value) - ending_ids
+                    if invalid_endings:
+                        fail(f"consequence {consequence['id']} references missing endings: {sorted(invalid_endings)}")
+                    effect = consequence.get("effect", {})
+                    if not isinstance(effect, dict):
+                        fail(f"consequence {consequence.get('id')} has an invalid effect")
+                    if set(effect) - {"threatDelta", "minimumThreat"}:
+                        fail(f"consequence {consequence['id']} in {step['id']} has an unsupported effect")
+                    for effect_key in effect:
+                        if not isinstance(effect[effect_key], int) or isinstance(effect[effect_key], bool):
+                            fail(f"consequence {consequence['id']} has a non-integer {effect_key}")
+                if step["id"] == "S07_DANGER":
+                    for ending_id in sorted(ending_ids):
+                        available = [
+                            consequence
+                            for consequence in consequences
+                            if not consequence.get("endingIDs") or ending_id in consequence["endingIDs"]
+                        ]
+                        if len(available) != 2:
+                            fail(f"S07_DANGER must expose exactly two consequences for {ending_id}")
 
     if not destinations <= scene_ids:
         fail(f"guided flow references missing destination scenes: {sorted(destinations - scene_ids)}")

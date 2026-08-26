@@ -2,7 +2,7 @@
 
 Die App ist ein offline-first SwiftUI-Begleiter für die Spielleitung. Szenen, Hinweise, Regeln und Audio-Cues liegen im Bundle. Es gibt keine Anmeldung und keine Netzwerkabhängigkeit während der Runde.
 
-Der Guided Flow kommt aus `adventure/guide.json` und wird über `tools/build_content_v5.py` in das Bundle geschrieben. Der Spielstand nutzt den V5-Schlüssel und übernimmt ältere V4-Journale. Zurückgehen stellt die vorherige Position wieder her, ohne gefundene Hinweise oder Tischnotizen zu löschen.
+Der Guided Flow kommt aus `adventure/guide.json` und wird über `tools/build_content_v5.py` in das Bundle geschrieben. Der Spielstand nutzt den V5-Schlüssel und übernimmt ältere V4-Journale. Zurückgehen stellt die vorherige Position wieder her, ohne gefundene Hinweise oder Tischnotizen zu löschen. Misslungene Würfe bleiben bis zur Auswahl einer storygerechten Folge offen; Ergebnis und übernommene Folge werden als strukturierte V5-Sitzungsdaten gespeichert.
 
 ## Build auf macOS
 

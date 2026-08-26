@@ -1780,6 +1780,18 @@
             "modifier": "Bei eisigem Boden −10, wenn die Beschreibung das rechtfertigt.",
             "success": "Die Figur verliert keine zusätzliche Wärme oder Zeit.",
             "failure": "Die Hilfe gelingt trotzdem, kostet aber Zeit oder eine kleine Verletzung.",
+            "failureConsequences": [
+              {
+                "id": "time-loss",
+                "title": "Zeit verlieren",
+                "detail": "Die Hilfe gelingt, aber die Gruppe braucht länger für den Aufbruch."
+              },
+              {
+                "id": "minor-injury",
+                "title": "Kleine Verletzung",
+                "detail": "Die Hilfe gelingt, aber eine Figur zieht sich dabei eine kleine Verletzung zu."
+              }
+            ],
             "critical": "Die Gruppe findet sofort einen sicheren Weg zum Auftrag."
           },
           "sceneID": "S01"
@@ -1871,6 +1883,24 @@
             "modifier": "−10 bei Eile; kein Malus bei einem ruhigen Werkzeugversuch.",
             "success": "Die Tür öffnet sich leise. Die Gruppe behält die Initiative.",
             "failure": "Die Tür öffnet sich mit Lärm oder Zeitverlust. Der Hinweis bleibt erhalten und die Bedrohung steigt um 1.",
+            "failureConsequences": [
+              {
+                "id": "door-noise",
+                "title": "Lärm verursachen",
+                "detail": "Die Tür geht auf, aber der Lärm bleibt im Gasthaus nicht unbemerkt.",
+                "effect": {
+                  "threatDelta": 1
+                }
+              },
+              {
+                "id": "door-delay",
+                "title": "Zeit verlieren",
+                "detail": "Die Tür geht erst nach einer Verzögerung auf; die Bedrohung steigt.",
+                "effect": {
+                  "threatDelta": 1
+                }
+              }
+            ],
             "critical": "Die Gruppe entdeckt zusätzlich, wer den Riegel angebracht hat."
           },
           "sceneID": "S02"
@@ -1948,6 +1978,13 @@
             "modifier": "+10, wenn die Gruppe H03 oder den versiegelten Auftrag zeigt.",
             "success": "Falk nennt Grubers Vater und den entfernten Buchabschnitt.",
             "failure": "Falk bleibt vage; die Gruppe kann die fehlende Verbindung später im Archiv schließen.",
+            "failureConsequences": [
+              {
+                "id": "archive-link",
+                "title": "Verbindung später im Archiv schließen",
+                "detail": "Falk sagt nicht mehr. Die fehlende Verbindung bleibt für das Archiv offen."
+              }
+            ],
             "critical": "Falk übergibt freiwillig den zweiten Schlüssel."
           },
           "sceneID": "S03"
@@ -2025,6 +2062,18 @@
             "modifier": "+10, wenn die Gruppe das Gastrecht aus der Kirche kennt.",
             "success": "Marta gibt das Eisen und nennt den Preis der Zerstörung.",
             "failure": "Marta verlangt eine Gegenleistung oder folgt später selbst.",
+            "failureConsequences": [
+              {
+                "id": "smithy-favor",
+                "title": "Gegenleistung versprechen",
+                "detail": "Marta verlangt eine Gegenleistung, bevor sie das Eisen herausgibt."
+              },
+              {
+                "id": "marta-follows",
+                "title": "Marta folgt später selbst",
+                "detail": "Marta gibt das Eisen nicht sofort heraus und folgt der Gruppe später selbst."
+              }
+            ],
             "critical": "Marta schärft das Eisen ohne Gegenleistung."
           },
           "sceneID": "S04"
@@ -2109,6 +2158,18 @@
             "modifier": "−10 bei Sturm; kein Malus auf dem eingezeichneten Forstweg.",
             "success": "Die Gruppe erreicht die Rückseite der Eiche ohne Zeitverlust.",
             "failure": "Die Gruppe erreicht sie trotzdem, verliert aber Wärme oder die Prozession gewinnt Zeit.",
+            "failureConsequences": [
+              {
+                "id": "forest-cold",
+                "title": "Wärme verlieren",
+                "detail": "Die Gruppe erreicht die Eiche, aber die Kälte setzt ihr zu."
+              },
+              {
+                "id": "procession-gains-time",
+                "title": "Prozession gewinnt Zeit",
+                "detail": "Die Gruppe erreicht die Eiche, doch die Prozession kommt näher."
+              }
+            ],
             "critical": "Die Gruppe entdeckt einen sicheren Zugang und einen zusätzlichen Rückzugsweg."
           },
           "sceneID": "S05"
@@ -2190,6 +2251,16 @@
             "modifier": "+10, wenn bereits zwei Ermittlungsorte besucht wurden.",
             "success": "Die Gruppe erkennt Grubers verdrehten Pakt vor dem Glockenschlag.",
             "failure": "Die Erkenntnis kommt erst mit den Schritten vor dem Fenster; erhöhe die Bedrohung auf 4.",
+            "failureConsequences": [
+              {
+                "id": "procession-visible",
+                "title": "Prozession steht vor dem Fenster",
+                "detail": "Die Erkenntnis kommt erst mit den Schritten vor dem Fenster.",
+                "effect": {
+                  "minimumThreat": 4
+                }
+              }
+            ],
             "critical": "Die Gruppe erkennt auch, welche Person Gruber als Nächstes opfern will."
           },
           "sceneID": "S06"
@@ -2280,6 +2351,35 @@
             "modifier": "Ein zuvor passender Hinweis gibt +10; ein kritischer Misserfolg zählt als zwei Fehlschläge.",
             "success": "Die Szene kippt zugunsten der Gruppe.",
             "failure": "Zeit, Wärme oder Vertrauen gehen verloren; der nächste Versuch bleibt möglich.",
+            "failureConsequences": [
+              {
+                "id": "finale-time",
+                "title": "Zeit verlieren",
+                "detail": "Der nächste Versuch beginnt zu spät; der Wald gewinnt Raum.",
+                "endingIDs": [
+                  "E01",
+                  "E03"
+                ]
+              },
+              {
+                "id": "finale-warmth",
+                "title": "Wärme verlieren",
+                "detail": "Die Kälte nimmt der Gruppe Kraft; der nächste Versuch bleibt möglich.",
+                "endingIDs": [
+                  "E02",
+                  "E03"
+                ]
+              },
+              {
+                "id": "finale-trust",
+                "title": "Vertrauen verlieren",
+                "detail": "Die Gruppe verliert Vertrauen in ihren gemeinsamen Plan; der nächste Versuch bleibt möglich.",
+                "endingIDs": [
+                  "E01",
+                  "E02"
+                ]
+              }
+            ],
             "critical": "Ein NPC schließt sich sichtbar an.",
             "criticalFailure": "Zwei Fehlschläge sind erreicht. Die Gefahrenszene ist zugunsten des Waldes entschieden.",
             "required": true

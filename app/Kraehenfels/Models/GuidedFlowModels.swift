@@ -48,6 +48,7 @@ struct RollSpec: Codable, Hashable {
     let critical: String
     let criticalFailure: String
     let reroll: String
+    let failureConsequences: [RollConsequence]
     let guaranteedClue: Bool
     let begabung: Bool
     let required: Bool
@@ -62,6 +63,7 @@ struct RollSpec: Codable, Hashable {
         critical: String = "Besonders schnell und ohne Zusatzkosten.",
         criticalFailure: String = "Der Misserfolg tritt mit einer zusätzlichen Komplikation ein.",
         reroll: String = "Ein Geistesblitz darf eine nicht kritisch misslungene Probe wiederholen.",
+        failureConsequences: [RollConsequence] = [],
         guaranteedClue: Bool = false,
         begabung: Bool = false,
         required: Bool = false
@@ -76,6 +78,7 @@ struct RollSpec: Codable, Hashable {
         self.critical = critical
         self.criticalFailure = criticalFailure
         self.reroll = reroll
+        self.failureConsequences = failureConsequences
         self.guaranteedClue = guaranteedClue
         self.begabung = begabung
         self.required = required
@@ -83,7 +86,7 @@ struct RollSpec: Codable, Hashable {
 
     private enum CodingKeys: String, CodingKey {
         case actor, ability, die, target, modifier, success, failure, critical, criticalFailure
-        case reroll, guaranteedClue, begabung, required
+        case reroll, failureConsequences, guaranteedClue, begabung, required
     }
 
     init(from decoder: Decoder) throws {
@@ -98,9 +101,59 @@ struct RollSpec: Codable, Hashable {
         critical = try container.decodeIfPresent(String.self, forKey: .critical) ?? "Besonders schnell und ohne Zusatzkosten."
         criticalFailure = try container.decodeIfPresent(String.self, forKey: .criticalFailure) ?? "Der Misserfolg tritt mit einer zusätzlichen Komplikation ein."
         reroll = try container.decodeIfPresent(String.self, forKey: .reroll) ?? "Ein Geistesblitz darf eine nicht kritisch misslungene Probe wiederholen."
+        failureConsequences = try container.decodeIfPresent([RollConsequence].self, forKey: .failureConsequences) ?? []
         guaranteedClue = try container.decodeIfPresent(Bool.self, forKey: .guaranteedClue) ?? false
         begabung = try container.decodeIfPresent(Bool.self, forKey: .begabung) ?? false
         required = try container.decodeIfPresent(Bool.self, forKey: .required) ?? false
+    }
+}
+
+struct RollConsequenceEffect: Codable, Hashable {
+    let threatDelta: Int?
+    let minimumThreat: Int?
+
+    init(threatDelta: Int? = nil, minimumThreat: Int? = nil) {
+        self.threatDelta = threatDelta
+        self.minimumThreat = minimumThreat
+    }
+}
+
+struct RollConsequence: Codable, Identifiable, Hashable {
+    let id: String
+    let title: String
+    let detail: String
+    let endingIDs: [String]
+    let effect: RollConsequenceEffect?
+
+    init(
+        id: String,
+        title: String,
+        detail: String,
+        endingIDs: [String] = [],
+        effect: RollConsequenceEffect? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.detail = detail
+        self.endingIDs = endingIDs
+        self.effect = effect
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, title, detail, endingIDs, effect
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        detail = try container.decode(String.self, forKey: .detail)
+        endingIDs = try container.decodeIfPresent([String].self, forKey: .endingIDs) ?? []
+        effect = try container.decodeIfPresent(RollConsequenceEffect.self, forKey: .effect)
+    }
+
+    func isAvailable(for endingID: String?) -> Bool {
+        endingIDs.isEmpty || (endingID.map(endingIDs.contains) ?? false)
     }
 }
 
@@ -228,6 +281,30 @@ struct RuleEntry: Codable, Identifiable, Hashable {
     let body: String
 }
 
+struct RollResolutionRecord: Codable, Identifiable, Hashable {
+    let id: UUID
+    let stepID: String
+    let roll: Int
+    let target: Int
+    let label: String
+    let isSuccess: Bool
+    let isCriticalFailure: Bool
+    let consequenceID: String?
+    let consequenceTitle: String?
+
+    init(stepID: String, result: RollEvaluator.Result, consequence: RollConsequence?) {
+        id = UUID()
+        self.stepID = stepID
+        roll = result.roll
+        target = result.target
+        label = result.label
+        isSuccess = result.isSuccess
+        isCriticalFailure = result.isCriticalFailure
+        consequenceID = consequence?.id
+        consequenceTitle = consequence?.title
+    }
+}
+
 enum RollEvaluator {
     struct Result: Hashable {
         let roll: Int
@@ -248,6 +325,7 @@ enum RollEvaluator {
         let safeTarget = min(max(target, 1), 100)
         let criticalSuccess = Double(safeRoll) <= Double(safeTarget) * 0.10
         let criticalFailure = Double(safeRoll) >= 90.0 + Double(safeTarget) * 0.10
-        return Result(roll: safeRoll, target: safeTarget, isSuccess: safeRoll <= safeTarget, isCriticalSuccess: criticalSuccess, isCriticalFailure: criticalFailure)
+        let isSuccess = safeRoll <= safeTarget && !criticalFailure
+        return Result(roll: safeRoll, target: safeTarget, isSuccess: isSuccess, isCriticalSuccess: criticalSuccess, isCriticalFailure: criticalFailure)
     }
 }
