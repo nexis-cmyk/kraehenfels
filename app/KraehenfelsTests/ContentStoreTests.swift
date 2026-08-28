@@ -145,7 +145,7 @@ final class ContentStoreTests: XCTestCase {
           "consequenceID":"door-noise",
           "consequenceTitle":"Lärm"
         }
-        """.replacingOccurrences(of: "PLACEHOLDER", with: id).data(using: .utf8)!
+        """#.replacingOccurrences(of: "PLACEHOLDER", with: id).data(using: .utf8)!
 
         let record = try JSONDecoder().decode(RollResolutionRecord.self, from: payload)
         XCTAssertEqual(record.stepID, "S02_ROLL")
