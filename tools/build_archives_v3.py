@@ -29,6 +29,7 @@ def main() -> None:
             "01_Karten_Detail.pdf",
             "02_Handouts.pdf",
             "03_Figurenbau.pdf",
+            "04_Gegenstandskarten.pdf",
             "10_SL_Abenteuer.pdf",
             "11_SL_Schnellreferenz.pdf",
             "12_SL_Am_Tisch.pdf",

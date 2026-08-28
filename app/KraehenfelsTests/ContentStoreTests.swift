@@ -107,6 +107,51 @@ final class ContentStoreTests: XCTestCase {
         XCTAssertTrue(finale?.required ?? false)
     }
 
+    func testGuideContentDecodesCoachFindsAndOldGuidesDefaultSafely() throws {
+        let payload = #"""
+        {
+          "setupItems": [],
+          "playerBriefing": "Eigene Figuren",
+          "hiddenFromPlayers": "Spoiler",
+          "itemFindLocations": [{"id":"seat","title":"Sitzbank","detail":"Unter der Bank","itemIDs":["blanket"]}],
+          "items": [{"id":"blanket","title":"Wolldecke","locationID":"seat","detail":"Warm","initialUses":1,"effects":[]}],
+          "steps": {"S01":[{"id":"S01_ITEMS","sceneID":"S01","kind":"itemSearch","title":"Funde","body":"Text"}]}
+        }
+        """#.data(using: .utf8)!
+
+        let guide = try JSONDecoder().decode(GuideContent.self, from: payload)
+        XCTAssertTrue(guide.characters.isEmpty)
+        XCTAssertEqual(guide.itemFindLocations.first?.itemIDs, ["blanket"])
+        XCTAssertEqual(guide.item(for: "blanket")?.initialUses, 1)
+        XCTAssertEqual(guide.steps(for: "S01").first?.kind, .itemSearch)
+
+        let legacyPayload = #"{"setupItems":[],"playerBriefing":"Alt","hiddenFromPlayers":"Alt","steps":{}}"#.data(using: .utf8)!
+        let legacyGuide = try JSONDecoder().decode(GuideContent.self, from: legacyPayload)
+        XCTAssertTrue(legacyGuide.itemFindLocations.isEmpty)
+        XCTAssertTrue(legacyGuide.items.isEmpty)
+    }
+
+    func testLegacyRollResolutionWithoutItemUseIDsRemainsReadable() throws {
+        let id = UUID().uuidString
+        let payload = #"""
+        {
+          "id":"PLACEHOLDER",
+          "stepID":"S02_ROLL",
+          "roll":70,
+          "target":60,
+          "label":"Misserfolg",
+          "isSuccess":false,
+          "isCriticalFailure":false,
+          "consequenceID":"door-noise",
+          "consequenceTitle":"Lärm"
+        }
+        """.replacingOccurrences(of: "PLACEHOLDER", with: id).data(using: .utf8)!
+
+        let record = try JSONDecoder().decode(RollResolutionRecord.self, from: payload)
+        XCTAssertEqual(record.stepID, "S02_ROLL")
+        XCTAssertTrue(record.itemUseIDs.isEmpty)
+    }
+
     func testRollConsequenceDecodesEndingFilterAndEffects() throws {
         let payload = #"""
         {
@@ -216,6 +261,25 @@ final class ContentStoreTests: XCTestCase {
         let resumed = SessionStore(defaults: defaults)
         XCTAssertTrue(resumed.hasStartedSession)
         XCTAssertEqual(resumed.currentSceneID, "S01")
+    }
+
+    @MainActor
+    func testFinishingGuidedSessionMarksEpilogueAndStopsResumeState() {
+        let suiteName = "kraehenfels.tests.finish-session"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let session = SessionStore(defaults: defaults)
+        session.beginGuidedSession()
+        session.currentSceneID = "S08"
+        session.finishGuidedSession()
+
+        XCTAssertFalse(session.hasStartedSession)
+        XCTAssertTrue(session.completedSceneIDs.contains("S08"))
+
+        let resumed = SessionStore(defaults: defaults)
+        XCTAssertFalse(resumed.hasStartedSession)
+        XCTAssertTrue(resumed.completedSceneIDs.contains("S08"))
     }
 
     @MainActor
@@ -344,5 +408,65 @@ final class ContentStoreTests: XCTestCase {
         XCTAssertTrue(session.rollHistory["S04_ROLL"] == nil)
         XCTAssertTrue(session.latestRollResolution(for: "S04_ROLL") == nil)
         XCTAssertTrue(session.checkedClueIDs.contains("C01"))
+    }
+
+    @MainActor
+    func testCoachItemsRequireAllSixAssignmentsAndAllThreeFigures() {
+        let suiteName = "kraehenfels.tests.coach-items"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let session = SessionStore(defaults: defaults)
+        session.beginGuidedSession()
+        let itemIDs = ["blanket", "bandage", "rope", "lantern", "tools", "revolver"]
+        session.discoverItems(itemIDs)
+        itemIDs.dropLast().enumerated().forEach { index, itemID in
+            session.assignItem(itemID, toPlayerAt: index % 2)
+        }
+
+        XCTAssertFalse(session.isItemDistributionComplete(for: itemIDs))
+        session.assignItem(itemIDs.last!, toPlayerAt: 2)
+        XCTAssertTrue(session.isItemDistributionComplete(for: itemIDs))
+
+        let resumed = SessionStore(defaults: defaults)
+        XCTAssertEqual(resumed.discoveredItemIDs, Set(itemIDs))
+        XCTAssertEqual(resumed.itemOwners[itemIDs.last!], 2)
+    }
+
+    @MainActor
+    func testItemUseCanBeRolledBackBeforeConfirmedRecord() {
+        let suiteName = "kraehenfels.tests.coach-item-rollback"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let session = SessionStore(defaults: defaults)
+        session.beginGuidedSession()
+        session.discoverItems(["bandage"])
+        session.assignItem("bandage", toPlayerAt: 0)
+
+        let draft = session.useItem(itemID: "bandage", effectID: "bandage-first-aid", sceneID: "S01", stepID: "S01_ACT", maximumUses: 2)
+        XCTAssertNotNil(draft)
+        session.undoItemUse(draft!.id)
+        XCTAssertTrue(session.itemUseRecords.isEmpty)
+        XCTAssertEqual(session.remainingUses(for: AdventureItem(id: "bandage", title: "Verband", locationID: "seat", detail: "", initialUses: 2)), 2)
+    }
+
+    @MainActor
+    func testDependentPathResetRemovesOnlyLaterItemUses() {
+        let suiteName = "kraehenfels.tests.coach-item-path-reset"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let session = SessionStore(defaults: defaults)
+        session.beginGuidedSession()
+        session.discoverItems(["rope", "tools"])
+        session.assignItem("rope", toPlayerAt: 0)
+        session.assignItem("tools", toPlayerAt: 1)
+        _ = session.useItem(itemID: "rope", effectID: "rope-rescue", sceneID: "S02", stepID: "S02_ROLL", maximumUses: 1)
+        _ = session.useItem(itemID: "tools", effectID: "tools-door", sceneID: "S04", stepID: "S04_ROLL", maximumUses: 1)
+
+        session.resetDependentPath(from: "S03")
+
+        XCTAssertEqual(session.itemUseRecords.map(\.sceneID), ["S02"])
     }
 }

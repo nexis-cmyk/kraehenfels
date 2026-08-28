@@ -46,12 +46,13 @@ def sync_selected(source: Path, target: Path, names: set[str]) -> int:
 def main() -> None:
     manifest = json.loads((ROOT / "content" / "manifest.json").read_text(encoding="utf-8"))
     version = manifest.get("meta", {}).get("version", "dev")
+    shell_version = f"{version}-r7"
     sync_file(ROOT / "content" / "manifest.json", WEB / "data" / "manifest.json")
     index = WEB / "index.html"
     index_source = index.read_text(encoding="utf-8")
     index_source, index_replacements = re.subn(
         r'\./js/app\.js(?:\?v=[^"\']+)?',
-        f'./js/app.js?v={version}-r3',
+        f'./js/app.js?v={shell_version}',
         index_source,
         count=1,
     )
@@ -59,13 +60,23 @@ def main() -> None:
         raise RuntimeError(f"Could not update app shell version in {index}")
     index_source, css_replacements = re.subn(
         r'\./styles\.css(?:\?v=[^"\']+)?',
-        f'./styles.css?v={version}-r3',
+        f'./styles.css?v={shell_version}',
         index_source,
         count=1,
     )
     if css_replacements != 1:
         raise RuntimeError(f"Could not update stylesheet version in {index}")
     index.write_text(index_source, encoding="utf-8")
+    app_source = (WEB / "js" / "app.js").read_text(encoding="utf-8")
+    app_source, guided_flow_replacements = re.subn(
+        r'\./guided-flow\.js(?:\?v=[^"\']+)?',
+        f'./guided-flow.js?v={shell_version}',
+        app_source,
+        count=1,
+    )
+    if guided_flow_replacements != 1:
+        raise RuntimeError(f"Could not update guided-flow version in {WEB / 'js' / 'app.js'}")
+    (WEB / "js" / "app.js").write_text(app_source, encoding="utf-8")
     art_names = {scene["art"] for scene in manifest["scenes"] if scene.get("art")}
     audio_names = {cue["file"] for cue in manifest["audioCues"]}
     art_count = sync_selected(APP / "Art", WEB / "assets" / "art", art_names)
@@ -75,7 +86,7 @@ def main() -> None:
     service_worker_source = service_worker.read_text(encoding="utf-8")
     # Bump the shell suffix when the web layout changes so an installed service
     # worker cannot keep serving a previous HTML/CSS/JS shell.
-    cache_name = f"kraehenfels-web-v{version}-shell7"
+    cache_name = f"kraehenfels-web-v{version}-shell13"
     service_worker_source, replacements = re.subn(
         r'const CACHE = "[^"]+";',
         f'const CACHE = "{cache_name}";',
@@ -84,6 +95,15 @@ def main() -> None:
     )
     if replacements != 1:
         raise RuntimeError(f"Could not update service-worker cache name in {service_worker}")
+    for resource in ("styles.css", "js/app.js", "js/guided-flow.js"):
+        service_worker_source, resource_replacements = re.subn(
+            rf'(\./{re.escape(resource)})\?v=[^"\']+',
+            rf'\1?v={shell_version}',
+            service_worker_source,
+            count=1,
+        )
+        if resource_replacements != 1:
+            raise RuntimeError(f"Could not update {resource} version in {service_worker}")
     service_worker.write_text(service_worker_source, encoding="utf-8")
     print(f"Synced browser preview v{version}: {art_count} artwork files and {audio_count} audio files")
 

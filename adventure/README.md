@@ -1,6 +1,6 @@
 # Krähenfels authoring layer
 
-`canon.json` is the narrative source for the active adventure. `guide.json` contains the guided GM flow, preparation checklist and ready-to-play characters. `rules.json` contains the short HTBAH reference. The build step combines all three into the runtime manifest consumed by SwiftUI and the offline web app.
+`canon.json` is the narrative source for the active adventure. `guide.json` contains the guided GM flow, preparation checklist, player-supplied character names and the six coach-found equipment items. `rules.json` contains the short HTBAH reference. The build step combines all three into the runtime manifest consumed by SwiftUI and the offline web app.
 
 The folders below are the readable GM layer. They intentionally keep location notes, evidence text and the run sheet close to the data without copying the unlicensed DM Asset Forge repository.
 

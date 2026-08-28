@@ -41,34 +41,6 @@
       "symbol": "sunrise.fill"
     }
   ],
-  "travelHooks": [
-    {
-      "id": "T01",
-      "title": "Die verschwundene Person",
-      "prompt": "Eine Person aus deinem Umfeld verschwand auf derselben Strecke.",
-      "linkedClueIds": [
-        "C03"
-      ]
-    },
-    {
-      "id": "T02",
-      "title": "Der versiegelte Auftrag",
-      "prompt": "Du sollst einen verschlossenen Brief an Bürgermeister Gruber übergeben.",
-      "linkedClueIds": [
-        "C02",
-        "C06"
-      ]
-    },
-    {
-      "id": "T03",
-      "title": "Der bekannte Name",
-      "prompt": "Du erkennst später einen Namen im Gästebuch, den du aus einem früheren Fall kennst.",
-      "linkedClueIds": [
-        "C03",
-        "C04"
-      ]
-    }
-  ],
   "threatLevels": [
     {
       "level": 0,

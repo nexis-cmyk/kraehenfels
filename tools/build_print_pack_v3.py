@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
@@ -121,8 +122,8 @@ def build_start(path: Path, data: dict) -> None:
     page_title(c, "Spielstart", "Für die Spielleitung · 20 Minuten Vorbereitung")
     y = height - 55 * mm
     steps = [
-        ("Tisch", "Lege die Spielerkarte, drei vorbereitete Schnellstart-Figuren sowie H01 bis H08 und H10 verdeckt bereit. H09 bleibt bei dir."),
-        ("Figuren", "Verteile Clara, Otto und Jakob. Die leeren Alternativbögen sind nur für Figuren, die vorab selbst gebaut wurden."),
+        ("Tisch", "Lege die Spielerkarte, drei eigene Figurenbögen, die sechs Gegenstandskarten sowie H01 bis H08 und H10 verdeckt bereit. H09 bleibt bei dir."),
+        ("Figuren", "Jede Person bringt einen eigenen Charakter mit. Tragt die drei Namen ein und verteilt die sechs Gegenstände nach der Kutschenpanne untereinander."),
         ("Einstieg", "Starte M01 leise. Lies S01 vor. Frage nur: Was tut ihr? Gib H01 unabhängig vom Würfelwurf. A01 beginnt erst beim Aufbruch."),
         ("Leitung", "Setze die Dorfspannung manuell. Die App zeigt Empfehlungen, entscheidet aber nie an deiner Stelle."),
         ("Grenzen", "Kinder bleiben sicher. Gewalt bleibt unheimlich und dosiert. Sprich vor Beginn kurz über Stoppsignale."),
@@ -133,7 +134,7 @@ def build_start(path: Path, data: dict) -> None:
         c.setFillColor(FROST)
         c.setFont("Helvetica-Bold", 11)
         c.drawString(33 * mm, y, title)
-        paragraph(c, body, 33 * mm, y - 15 * mm, width - 52 * mm, 18 * mm, text_style("step" + title, 9.5, 12, colors.white))
+        paragraph(c, body, 33 * mm, y - 16 * mm, width - 52 * mm, 14 * mm, text_style("step" + title, 9.5, 12, colors.white))
         y -= 28 * mm
     c.showPage()
     c.save()
@@ -142,16 +143,19 @@ def build_start(path: Path, data: dict) -> None:
 def build_characters(path: Path) -> None:
     c = canvas.Canvas(str(path), pagesize=A4)
     width, height = A4
-    for page in range(2):
-        page_title(c, "Alternative Figuren", "Optional · eigene Figuren vorab bauen")
+    for page in range(3):
+        page_title(c, "Eigener Charakter", f"Figurenbogen {page + 1} · für eine Person")
         c.setFillColor(INK)
         c.roundRect(18 * mm, height - 85 * mm, width - 36 * mm, 32 * mm, 5 * mm, fill=1, stroke=0)
         c.setFillColor(FROST)
         c.setFont("Helvetica-Bold", 12)
         c.drawString(25 * mm, height - 67 * mm, "Name der Figur:")
         c.line(62 * mm, height - 68 * mm, 125 * mm, height - 68 * mm)
-        c.drawString(135 * mm, height - 67 * mm, "Figuren-Verbindung:")
-        c.line(170 * mm, height - 68 * mm, 190 * mm, height - 68 * mm)
+        c.drawString(135 * mm, height - 67 * mm, "Spieler/in:")
+        c.line(161 * mm, height - 68 * mm, 190 * mm, height - 68 * mm)
+        c.setFont("Helvetica", 8)
+        c.drawString(25 * mm, height - 77 * mm, "Beruf / Idee / Grund für die Reise:")
+        c.line(76 * mm, height - 78 * mm, 190 * mm, height - 78 * mm)
         y = height - 105 * mm
         headings = ["Handeln · Körper und Kampf", "Wissen · Gehirn und Planung", "Soziales · Reden und Macht"]
         for heading in headings:
@@ -175,8 +179,57 @@ def build_characters(path: Path) -> None:
         paragraph(c, "Würfle W100. Gleich oder kleiner als dein Wert ist ein Erfolg. Eine sehr niedrige Zahl ist kritisch, eine sehr hohe Zahl ein Patzer. Ein Fehlschlag verschärft die Lage, blockiert aber keine Pflichtspur.", 25 * mm, 63 * mm, width - 50 * mm, 30 * mm, SMALL)
         c.setFillColor(QUIET)
         c.setFont("Helvetica", 8)
-        c.drawString(18 * mm, 15 * mm, f"Seite {page + 1} · Krähenfels: Die letzte Kutsche")
+        c.drawString(18 * mm, 15 * mm, f"Figurenbogen {page + 1} · Krähenfels: Die letzte Kutsche")
         c.showPage()
+    c.save()
+
+
+def build_item_cards(path: Path, data: dict) -> None:
+    """Build six cut-out equipment cards from the shared guided-flow source."""
+    c = canvas.Canvas(str(path), pagesize=A4)
+    width, height = A4
+    locations = {location["id"]: location["title"] for location in data.get("guide", {}).get("itemFindLocations", [])}
+    items = data.get("guide", {}).get("items", [])
+    margin_x, margin_y = 12 * mm, 12 * mm
+    gap_x, gap_y = 5 * mm, 5 * mm
+    card_width = (width - 2 * margin_x - gap_x) / 2
+    card_height = (height - 2 * margin_y - 2 * gap_y) / 3
+    for index, item in enumerate(items):
+        column = index % 2
+        row = index // 2
+        x = margin_x + column * (card_width + gap_x)
+        y = height - margin_y - (row + 1) * card_height - row * gap_y
+        c.setFillColor(PAPER)
+        c.setStrokeColor(RUST if item.get("weapon") else COBALT)
+        c.setLineWidth(1.2)
+        c.roundRect(x, y, card_width, card_height, 3 * mm, fill=1, stroke=1)
+        c.setFillColor(RUST if item.get("weapon") else COBALT)
+        c.setFont("Helvetica-Bold", 7)
+        c.drawString(x + 7 * mm, y + card_height - 10 * mm, "GEGENSTAND · KUTSCHE")
+        c.setFillColor(CHARCOAL)
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(x + 7 * mm, y + card_height - 20 * mm, item["title"])
+        c.setFillColor(RUST if item.get("weapon") else COBALT)
+        c.setFont("Helvetica-Bold", 7.5)
+        c.drawString(x + 7 * mm, y + card_height - 27 * mm, f"Fundort · {locations.get(item.get('locationID'), item.get('locationID', 'Kutsche'))}")
+        c.setStrokeColor(PAPER_DARK)
+        c.setLineWidth(0.6)
+        c.line(x + 7 * mm, y + card_height - 31 * mm, x + card_width - 7 * mm, y + card_height - 31 * mm)
+        body_y = y + 9 * mm
+        body_height = card_height - 43 * mm
+        detail = f"<b>Beschreibung:</b> {escape(item.get('detail', ''))}<br/><br/><b>Anwendungen:</b> {int(item.get('initialUses', 1))}"
+        for effect in item.get("effects", []):
+            timing = "Vor der Probe" if effect.get("timing") == "beforeRoll" else "Nach einem Fehlschlag"
+            modifier = f" · Zielwert +{effect['modifier']}" if effect.get("modifier") else ""
+            detail += f"<br/><br/><b>{escape(timing)} · {escape(effect.get('title', ''))}{escape(modifier)}:</b> {escape(effect.get('detail', ''))}"
+        weapon = item.get("weapon")
+        if weapon:
+            detail += f"<br/><br/><b>Waffe:</b> {escape(weapon.get('skill', 'Schusswaffen'))} · {escape(weapon.get('damageDice', '7W10'))} Schaden · {int(weapon.get('ammunition', 0))} Patronen · nicht parierbar"
+        paragraph(c, detail, x + 7 * mm, body_y, card_width - 14 * mm, body_height, text_style(f"item-card-{index}", 7.2, 8.8, CHARCOAL))
+        c.setFillColor(QUIET)
+        c.setFont("Helvetica-Oblique", 6.5)
+        c.drawString(x + 7 * mm, y + 4 * mm, "Ausschneiden an der Kartenkante · Weitergeben erlaubt")
+    c.showPage()
     c.save()
 
 
@@ -617,6 +670,7 @@ def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     build_start(OUTPUT / "00_Spielstart.pdf", data)
     build_characters(OUTPUT / "03_Figurenbau.pdf")
+    build_item_cards(OUTPUT / "04_Gegenstandskarten.pdf", data)
     build_maps(data)
     build_detail_maps(data)
     build_handouts(OUTPUT / "02_Handouts.pdf", ["H01", "H02", "H03", "H04", "H05", "H06", "H07", "H08", "H10"], data)

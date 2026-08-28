@@ -35,4 +35,4 @@ Am PC zeigt die Vorschau automatisch den breiten Leitstand mit Szenenleiste link
 - sichtbare Zurück-Taste, Verlauf und Bestätigung beim Wechsel eines bereits begonnenen Pfads
 - drei Reisende, allgemeine Sessionnotiz und eine eigene Notiz pro Szene
 
-Die Browser-Version ist ein Testleitstand. Die Installation auf dem iPad erfolgt über die signierte IPA in AltStore. Bei einer misslungenen Probe zeigt der Würfelhelfer dieselben storygerechten Folgen wie die native App; die Folge wird erst nach Auswahl übernommen.
+Die Browser-Version ist ein Testleitstand. Die Installation auf dem iPad erfolgt über die signierte IPA in AltStore. Zu Beginn werden drei eigene Figurennamen eingetragen, danach sechs Gegenstände aus der Kutsche gefunden und verteilt. Bei einer misslungenen Probe zeigt der Würfelhelfer dieselben storygerechten Folgen und möglichen Gegenstandseinsätze wie die native App; Folge und Einsatz werden erst nach der Bestätigung übernommen.

@@ -1,5 +1,15 @@
 # Handoff 38
 
+## Folgeänderung: eigene Figuren und Kutschenfunde
+
+Stand dieses Entwicklungszweigs: `v4.2.0`, Build `9`.
+
+Die frühere Annahme von drei festen Schnellstartfiguren ist entfernt. Vor dem Start trägt die Spielleitung drei eigene Figurennamen ein; Werte, Rollen und persönliche Hintergründe bleiben auf den mitgebrachten Bögen. In der Kutschenszene werden die sechs gemeinsamen Gegenstände an drei sichtbaren Fundorten ohne Würfelprobe aufgedeckt und anschließend so verteilt, dass jede Figur mindestens einen erhält. Besitzwechsel bleibt während der Runde möglich.
+
+Die Gegenstände haben nur konkrete, storygerechte Anwendungen: Vor einer passenden Probe können sie einen situativen Bonus geben, nach einem Fehlschlag können passende Folgen geschützt werden. Einsätze werden erst bei der bestätigten Übernahme des Ergebnisses verbraucht. Abbrechen, neu auswerten, zurückgehen und Pfadwechsel lassen unbestätigte Einsätze unangetastet; gespeicherte Nutzungen werden mit Szene und Schritt zurückgesetzt.
+
+Das gemeinsame Manifest enthält nun 43 Guided-Schritte, drei Fundorte und sechs Gegenstände. Native App, Web-Vorschau und `04_Gegenstandskarten.pdf` werden aus denselben Quellen gebaut.
+
 Datum: 2026-08-26
 Release: `v4.1.2`, Build `8`
 Release-Commit auf `main`: `78b51f7`

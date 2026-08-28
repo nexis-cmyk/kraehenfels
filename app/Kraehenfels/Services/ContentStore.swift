@@ -53,6 +53,18 @@ final class ContentStore: ObservableObject {
         manifest.guide.characters
     }
 
+    var guideItems: [AdventureItem] {
+        manifest.guide.items
+    }
+
+    var itemFindLocations: [ItemFindLocation] {
+        manifest.guide.itemFindLocations
+    }
+
+    func item(for id: String) -> AdventureItem? {
+        manifest.guide.item(for: id)
+    }
+
     var setupItems: [SetupItem] {
         manifest.guide.setupItems
     }

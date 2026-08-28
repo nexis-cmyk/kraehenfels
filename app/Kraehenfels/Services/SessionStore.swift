@@ -45,11 +45,16 @@ final class SessionStore: ObservableObject {
         var finaleOutcome: String?
         var hasStartedSession: Bool?
         var guideHistory: [GuidePosition]?
+        var discoveredItemIDs: [String]?
+        var itemOwners: [String: Int]?
+        var itemUseRecords: [ItemUseRecord]?
     }
 
-    private let storageKey = "kraehenfels.sessionJournal.v5"
-    private let legacyStorageKey = "kraehenfels.sessionJournal.v4"
+    private let storageKey = "kraehenfels.sessionJournal.v6"
+    private let legacyStorageKey = "kraehenfels.sessionJournal.v5"
+    private let legacyV4StorageKey = "kraehenfels.sessionJournal.v4"
     private let defaults: UserDefaults
+    private var shouldMigrateLegacyInventory = false
 
     @Published var playerNames: [String] {
         didSet { persist() }
@@ -131,6 +136,18 @@ final class SessionStore: ObservableObject {
         didSet { persist() }
     }
 
+    @Published private(set) var discoveredItemIDs: Set<String> {
+        didSet { persist() }
+    }
+
+    @Published var itemOwners: [String: Int] {
+        didSet { persist() }
+    }
+
+    @Published private(set) var itemUseRecords: [ItemUseRecord] {
+        didSet { persist() }
+    }
+
     @Published var selectedEndingID: String? {
         didSet { persist() }
     }
@@ -153,7 +170,9 @@ final class SessionStore: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        let loadedData = defaults.data(forKey: storageKey) ?? defaults.data(forKey: legacyStorageKey)
+        let loadedData = defaults.data(forKey: storageKey)
+            ?? defaults.data(forKey: legacyStorageKey)
+            ?? defaults.data(forKey: legacyV4StorageKey)
         if let data = loadedData,
            let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) {
             playerNames = Self.normalizedNames(snapshot.playerNames)
@@ -181,6 +200,13 @@ final class SessionStore: ObservableObject {
             finaleFailures = min(max(snapshot.finaleFailures ?? 0, 0), 2)
             finaleOutcome = snapshot.finaleOutcome
             guideHistory = snapshot.guideHistory ?? []
+            discoveredItemIDs = Set(snapshot.discoveredItemIDs ?? [])
+            itemOwners = snapshot.itemOwners ?? [:]
+            itemUseRecords = snapshot.itemUseRecords ?? []
+            shouldMigrateLegacyInventory = snapshot.hasStartedSession == true
+                && snapshot.discoveredItemIDs == nil
+                && snapshot.itemOwners == nil
+                && snapshot.itemUseRecords == nil
         } else {
             playerNames = ["", "", ""]
             sessionNote = ""
@@ -207,6 +233,9 @@ final class SessionStore: ObservableObject {
             finaleFailures = 0
             finaleOutcome = nil
             guideHistory = []
+            discoveredItemIDs = []
+            itemOwners = [:]
+            itemUseRecords = []
         }
 
         if defaults.data(forKey: storageKey) == nil, loadedData != nil {
@@ -259,6 +288,9 @@ final class SessionStore: ObservableObject {
         doorStates = [:]
         rollHistory = [:]
         rollResolutions = []
+        discoveredItemIDs = []
+        itemOwners = [:]
+        itemUseRecords = []
         selectedEndingID = nil
         finaleMode = "guided"
         finaleSuccesses = 0
@@ -282,6 +314,9 @@ final class SessionStore: ObservableObject {
         finaleMode = "guided"
         rollHistory = [:]
         rollResolutions = []
+        discoveredItemIDs = []
+        itemOwners = [:]
+        itemUseRecords = []
         finaleSuccesses = 0
         finaleFailures = 0
         finaleOutcome = nil
@@ -289,6 +324,11 @@ final class SessionStore: ObservableObject {
         completedGuideStepIDs = []
         guideHistory = []
         nightPhaseIndex = 0
+    }
+
+    func finishGuidedSession() {
+        completedSceneIDs.insert(currentSceneID)
+        hasStartedSession = false
     }
 
     func advanceGuideStep(in sceneID: String, stepID: String, stepCount: Int) {
@@ -340,6 +380,7 @@ final class SessionStore: ObservableObject {
         rollResolutions = rollResolutions.filter { resolution in
             !dependentScenes.contains(String(resolution.stepID.prefix(3)))
         }
+        itemUseRecords = itemUseRecords.filter { !dependentScenes.contains($0.sceneID) }
         guideHistory = guideHistory.filter { !dependentScenes.contains($0.sceneID) }
         if index < (sceneOrder.firstIndex(of: "S07") ?? sceneOrder.count) {
             selectedEndingID = nil
@@ -373,9 +414,65 @@ final class SessionStore: ObservableObject {
         doorStates[id] = isOpen
     }
 
-    func recordRoll(stepID: String, result: RollEvaluator.Result, consequence: RollConsequence? = nil) {
+    func migrateLegacyInventoryIfNeeded(itemIDs: [String]) {
+        guard shouldMigrateLegacyInventory else { return }
+        discoveredItemIDs = Set(itemIDs)
+        shouldMigrateLegacyInventory = false
+    }
+
+    func discoverItems(_ itemIDs: [String]) {
+        discoveredItemIDs.formUnion(itemIDs)
+    }
+
+    func assignItem(_ itemID: String, toPlayerAt index: Int) {
+        guard discoveredItemIDs.contains(itemID), (0..<3).contains(index) else { return }
+        itemOwners[itemID] = index
+    }
+
+    func transferItem(_ itemID: String, toPlayerAt index: Int) {
+        assignItem(itemID, toPlayerAt: index)
+    }
+
+    func unassignItem(_ itemID: String) {
+        itemOwners.removeValue(forKey: itemID)
+    }
+
+    func isItemDistributionComplete(for itemIDs: [String]) -> Bool {
+        let expected = Set(itemIDs)
+        guard expected.count == itemIDs.count,
+              Set(itemOwners.keys) == expected,
+              expected.isSubset(of: discoveredItemIDs) else { return false }
+        return Set(itemOwners.values) == Set(0..<3)
+    }
+
+    func items(forPlayerAt index: Int, from items: [AdventureItem]) -> [AdventureItem] {
+        items.filter { itemOwners[$0.id] == index }
+    }
+
+    func ownerIndex(for itemID: String) -> Int? {
+        itemOwners[itemID]
+    }
+
+    func remainingUses(for item: AdventureItem) -> Int {
+        max(0, item.initialUses - itemUseRecords.filter { $0.itemID == item.id }.count)
+    }
+
+    @discardableResult
+    func useItem(itemID: String, effectID: String, sceneID: String, stepID: String, maximumUses: Int) -> ItemUseRecord? {
+        guard discoveredItemIDs.contains(itemID), itemOwners[itemID] != nil,
+              itemUseRecords.filter({ $0.itemID == itemID }).count < max(0, maximumUses) else { return nil }
+        let record = ItemUseRecord(itemID: itemID, effectID: effectID, sceneID: sceneID, stepID: stepID)
+        itemUseRecords.append(record)
+        return record
+    }
+
+    func undoItemUse(_ recordID: UUID) {
+        itemUseRecords.removeAll { $0.id == recordID }
+    }
+
+    func recordRoll(stepID: String, result: RollEvaluator.Result, consequence: RollConsequence? = nil, itemUseIDs: [String] = []) {
         rollHistory[stepID] = String(result.roll) + " / " + String(result.target) + " · " + result.label
-        rollResolutions.append(RollResolutionRecord(stepID: stepID, result: result, consequence: consequence))
+        rollResolutions.append(RollResolutionRecord(stepID: stepID, result: result, consequence: consequence, itemUseIDs: itemUseIDs))
         if !result.isSuccess {
             apply(consequence?.effect)
         }
@@ -386,8 +483,8 @@ final class SessionStore: ObservableObject {
     }
 
     @discardableResult
-    func recordFinaleRoll(_ result: RollEvaluator.Result, consequence: RollConsequence? = nil) -> FinaleRollState {
-        recordRoll(stepID: "S07_DANGER", result: result, consequence: consequence)
+    func recordFinaleRoll(_ result: RollEvaluator.Result, consequence: RollConsequence? = nil, itemUseIDs: [String] = []) -> FinaleRollState {
+        recordRoll(stepID: "S07_DANGER", result: result, consequence: consequence, itemUseIDs: itemUseIDs)
         if result.isCriticalFailure {
             finaleFailures = min(2, finaleFailures + 2)
         } else if result.isSuccess {
@@ -476,6 +573,7 @@ final class SessionStore: ObservableObject {
     private func clearFinaleRolls() {
         rollHistory = rollHistory.filter { stepID, _ in stepID != "S07_DANGER" }
         rollResolutions.removeAll { $0.stepID == "S07_DANGER" }
+        itemUseRecords.removeAll { $0.stepID == "S07_DANGER" }
     }
 
     private func persist() {
@@ -504,7 +602,10 @@ final class SessionStore: ObservableObject {
             finaleFailures: finaleFailures,
             finaleOutcome: finaleOutcome,
             hasStartedSession: hasStartedSession,
-            guideHistory: guideHistory
+            guideHistory: guideHistory,
+            discoveredItemIDs: Array(discoveredItemIDs).sorted(),
+            itemOwners: itemOwners,
+            itemUseRecords: itemUseRecords
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: storageKey)

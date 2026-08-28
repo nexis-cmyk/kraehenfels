@@ -1,5 +1,5 @@
 import { AudioEngine } from "./audio-engine.js";
-import { evaluateRoll, guideKindLabels } from "./guided-flow.js?v=4.1.5";
+import { evaluateRoll, guideKindLabels } from "./guided-flow.js?v=3.3.0-r7";
 
 const app = document.querySelector("#app");
 const sceneNav = document.querySelector("#scene-nav");
@@ -54,6 +54,15 @@ const state = {
   guidedIndexes: stored("kraehenfels.guidedIndexes", {}),
   guideHistory: stored("kraehenfels.guideHistory", []),
   setupChecks: new Set(stored("kraehenfels.setupChecks", [])),
+  discoveredItemIDs: new Set(stored("kraehenfels.discoveredItemIDs", [])),
+  itemOwners: (() => {
+    const value = stored("kraehenfels.itemOwners", {});
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  })(),
+  itemUseRecords: (() => {
+    const value = stored("kraehenfels.itemUseRecords", []);
+    return Array.isArray(value) ? value : [];
+  })(),
   guidedRolls: stored("kraehenfels.guidedRolls", {}),
   guidedRollHistory: stored("kraehenfels.guidedRollHistory", []),
   finaleSuccesses: normalizedFinaleCount(localStorage.getItem("kraehenfels.finaleSuccesses")),
@@ -64,6 +73,7 @@ const state = {
   rollOpen: false,
   pendingRoll: null,
   selectedConsequenceID: "",
+  selectedItemEffectIDs: {},
   spoilersOpen: false,
   statusTone: "ok",
 };
@@ -84,6 +94,9 @@ function persist() {
   localStorage.setItem("kraehenfels.guidedIndexes", JSON.stringify(state.guidedIndexes));
   localStorage.setItem("kraehenfels.guideHistory", JSON.stringify(state.guideHistory));
   localStorage.setItem("kraehenfels.setupChecks", JSON.stringify([...state.setupChecks]));
+  localStorage.setItem("kraehenfels.discoveredItemIDs", JSON.stringify([...state.discoveredItemIDs]));
+  localStorage.setItem("kraehenfels.itemOwners", JSON.stringify(state.itemOwners));
+  localStorage.setItem("kraehenfels.itemUseRecords", JSON.stringify(state.itemUseRecords));
   localStorage.setItem("kraehenfels.guidedRolls", JSON.stringify(state.guidedRolls));
   localStorage.setItem("kraehenfels.guidedRollHistory", JSON.stringify(state.guidedRollHistory));
   localStorage.setItem("kraehenfels.finaleSuccesses", String(state.finaleSuccesses));
@@ -206,6 +219,71 @@ function guideStepsFor(sceneID) {
   return state.manifest?.guide?.steps?.[sceneID] || [];
 }
 
+function guideItems() {
+  return state.manifest?.guide?.items || [];
+}
+
+function itemLocations() {
+  return state.manifest?.guide?.itemFindLocations || [];
+}
+
+function itemById(id) {
+  return guideItems().find((item) => item.id === id);
+}
+
+function itemOwnerName(itemID) {
+  const owner = state.itemOwners[itemID];
+  if (owner === undefined || owner === null || owner === "") return "Gemeinsamer Vorrat";
+  return state.playerNames[Number(owner)]?.trim() || `Figur ${Number(owner) + 1}`;
+}
+
+function itemRemainingUses(item) {
+  return Math.max(0, Number(item.initialUses || 1) - state.itemUseRecords.filter((record) => record.itemID === item.id).length);
+}
+
+function discoverItems() {
+  guideItems().forEach((item) => state.discoveredItemIDs.add(item.id));
+}
+
+function distributionComplete() {
+  const items = guideItems();
+  if (!items.length || items.some((item) => state.itemOwners[item.id] === undefined || state.itemOwners[item.id] === "")) return false;
+  return new Set(items.map((item) => String(state.itemOwners[item.id]))).size === 3;
+}
+
+function itemEffectsFor(step, timing, consequenceID = "") {
+  return guideItems().flatMap((item) => {
+    if (state.itemOwners[item.id] === undefined || itemRemainingUses(item) < 1) return [];
+    return (item.effects || []).filter((effect) => {
+      const endingIDs = effect.endingIDs || [];
+      const consequenceIDs = effect.consequenceIDs || [];
+      return effect.timing === timing
+        && (!effect.stepIDs?.length || effect.stepIDs.includes(step.id))
+        && (!effect.sceneIDs?.length || effect.sceneIDs.includes(step.sceneID))
+        && (!endingIDs.length || endingIDs.includes(state.endingID))
+        && (!consequenceIDs.length || consequenceIDs.includes(consequenceID));
+    }).map((effect) => ({ item, effect }));
+  });
+}
+
+function activeItemModifier(step) {
+  return itemEffectsFor(step, "beforeRoll").reduce((total, option) => state.selectedItemEffectIDs[option.item.id] === option.effect.id ? total + Number(option.effect.modifier || 0) : total, 0);
+}
+
+function selectedItemSelections(step, consequenceID = "") {
+  return itemEffectsFor(step, "beforeRoll")
+    .concat(itemEffectsFor(step, "afterFailure", consequenceID))
+    .filter((option) => state.selectedItemEffectIDs[option.item.id] === option.effect.id)
+    .map((option) => ({ itemID: option.item.id, effectID: option.effect.id }));
+}
+
+function resetItemState() {
+  state.discoveredItemIDs = new Set();
+  state.itemOwners = {};
+  state.itemUseRecords = [];
+  state.selectedItemEffectIDs = {};
+}
+
 function currentGuideIndex(sceneID) {
   const steps = guideStepsFor(sceneID);
   return Math.min(Math.max(Number(state.guidedIndexes[sceneID] || 0), 0), Math.max(0, steps.length - 1));
@@ -249,25 +327,54 @@ function applyConsequence(consequence) {
   }
 }
 
-function recordGuidedRoll(step, result, consequence) {
+function consumeItemSelections(step, selections) {
+  const created = [];
+  for (const selection of selections) {
+    const item = itemById(selection.itemID);
+    const validEffect = itemEffectsFor(step, "beforeRoll").concat(itemEffectsFor(step, "afterFailure", state.selectedConsequenceID)).some(({ item: candidate, effect }) => candidate.id === selection.itemID && effect.id === selection.effectID);
+    if (!item || !validEffect || state.itemOwners[item.id] === undefined || itemRemainingUses(item) < 1) {
+      created.forEach((record) => {
+        state.itemUseRecords = state.itemUseRecords.filter((itemRecord) => itemRecord.id !== record.id);
+      });
+      return [];
+    }
+    const record = {
+      id: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+      itemID: item.id,
+      effectID: selection.effectID,
+      sceneID: step.sceneID || state.currentSceneId,
+      stepID: step.id,
+    };
+    state.itemUseRecords.push(record);
+    created.push(record);
+  }
+  return created;
+}
+
+function recordGuidedRoll(step, result, consequence, itemSelections = [], baseTarget = result.target) {
+  const itemUseRecords = consumeItemSelections(step, itemSelections);
+  if (itemSelections.length && itemUseRecords.length !== itemSelections.length) return false;
   const entry = {
     stepID: step.id,
     roll: result.roll,
     target: result.target,
+    baseTarget,
     success: result.success,
     criticalSuccess: result.criticalSuccess,
     criticalFailure: result.criticalFailure,
     label: result.label,
     consequenceID: consequence?.id || "",
     consequenceTitle: consequence?.title || "",
+    itemUseIDs: itemUseRecords.map((record) => record.id),
   };
   state.guidedRolls[step.id] = entry;
   state.guidedRollHistory.push(entry);
   if (!result.success) applyConsequence(consequence);
+  return true;
 }
 
-function recordFinaleRoll(result, consequence) {
-  recordGuidedRoll({ id: "S07_DANGER" }, result, consequence);
+function recordFinaleRoll(result, consequence, itemSelections = [], baseTarget = result.target) {
+  if (!recordGuidedRoll({ id: "S07_DANGER", sceneID: "S07" }, result, consequence, itemSelections, baseTarget)) return { resolved: false, rejected: true };
   if (result.criticalFailure) {
     state.finaleFailures = Math.min(2, state.finaleFailures + 2);
   } else if (result.success) {
@@ -296,6 +403,7 @@ function resetFinaleProgress() {
 function clearFinaleRolls() {
   delete state.guidedRolls.S07_DANGER;
   state.guidedRollHistory = state.guidedRollHistory.filter((entry) => entry.stepID !== "S07_DANGER");
+  state.itemUseRecords = state.itemUseRecords.filter((record) => record.stepID !== "S07_DANGER");
 }
 
 function pushGuidePosition() {
@@ -305,10 +413,16 @@ function pushGuidePosition() {
 function advanceGuideStep() {
   const steps = guideStepsFor(state.currentSceneId);
   const step = currentGuideStep(state.currentSceneId);
+  if (step?.id === "S01_DISTRIBUTE" && !distributionComplete()) return false;
+  if (step?.id === "S01_ITEMS") discoverItems();
   if (step?.clueID) state.clues.add(step.clueID);
   pushGuidePosition();
   state.guidedIndexes[state.currentSceneId] = Math.min(currentGuideIndex(state.currentSceneId) + 1, Math.max(0, steps.length - 1));
   state.rollOpen = false;
+  state.pendingRoll = null;
+  state.selectedConsequenceID = "";
+  state.selectedItemEffectIDs = {};
+  return true;
 }
 
 function resetDependentPath(destination) {
@@ -320,6 +434,7 @@ function resetDependentPath(destination) {
   state.guidedIndexes = Object.fromEntries(Object.entries(state.guidedIndexes).filter(([sceneID]) => !dependent.has(sceneID)));
   state.guidedRolls = Object.fromEntries(Object.entries(state.guidedRolls).filter(([stepID]) => !dependent.has(stepID.slice(0, 3))));
   state.guidedRollHistory = state.guidedRollHistory.filter((entry) => !dependent.has(String(entry.stepID || "").slice(0, 3)));
+  state.itemUseRecords = state.itemUseRecords.filter((record) => !dependent.has(String(record.sceneID || "").slice(0, 3)));
   state.guideHistory = state.guideHistory.filter((position) => !dependent.has(position.sceneID));
   if (index < order.indexOf("S07")) {
     state.endingID = "";
@@ -339,6 +454,7 @@ function goBackInGuide() {
   state.rollOpen = false;
   state.pendingRoll = null;
   state.selectedConsequenceID = "";
+  state.selectedItemEffectIDs = {};
   persist();
   render();
   document.querySelector("#scene-content").focus();
@@ -361,6 +477,27 @@ function guideReferences(step) {
   return `<div class="guide-references"><span class="eyebrow">Direkt griffbereit</span><div>${ids.map((id) => `<span class="guide-reference">${escapeHtml(guideReference(id))}</span>`).join("")}</div></div>`;
 }
 
+function itemOwnerSelect(item, label = "Besitz") {
+  const owner = state.itemOwners[item.id];
+  return `<label class="item-owner-select"><span>${label}</span><select data-item-owner="${escapeHtml(item.id)}" aria-label="Besitz von ${escapeHtml(item.title)}"><option value="" ${owner === undefined || owner === "" ? "selected" : ""}>Gemeinsamer Vorrat</option>${state.playerNames.map((name, index) => `<option value="${index}" ${Number(owner) === index ? "selected" : ""}>${escapeHtml(name.trim() || `Figur ${index + 1}`)}</option>`).join("")}</select></label>`;
+}
+
+function renderItemFindings() {
+  return `<div class="item-findings"><span class="eyebrow">Drei Fundorte · keine Probe</span><strong>Alle sechs Gegenstände werden gefunden.</strong>${itemLocations().map((location) => `<article class="item-location"><h3>${escapeHtml(location.title)}</h3><p>${escapeHtml(location.detail)}</p><ul>${(location.itemIDs || []).map((itemID) => `<li><span>□</span>${escapeHtml(itemById(itemID)?.title || itemID)}</li>`).join("")}</ul></article>`).join("")}</div>`;
+}
+
+function renderItemDistribution() {
+  const items = guideItems();
+  const complete = distributionComplete();
+  return `<div class="item-distribution"><div class="item-distribution-heading"><span class="eyebrow">Sechs Gegenstände</span><b>${Object.values(state.itemOwners).filter((value) => value !== "").length}/${items.length} verteilt</b></div><p>Verteile alle Funde. Jede der drei Figuren braucht mindestens einen, die übrigen dürfen frei aufgeteilt werden.</p>${items.map((item) => `<article class="item-distribution-row"><div><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.detail)}</small></div>${itemOwnerSelect(item)}</article>`).join("")}<div class="item-distribution-status ${complete ? "is-complete" : ""}">${complete ? "✓ Alle Figuren haben mindestens einen Gegenstand." : "Noch nicht bereit: alle Gegenstände verteilen und jede Figur berücksichtigen."}</div></div>`;
+}
+
+function renderInventorySection() {
+  const items = guideItems();
+  if (!items.length) return `<section class="content-section inventory-section"><div class="section-heading"><h2>Ausrüstung</h2><span>Keine Gegenstände geladen</span></div></section>`;
+  return `<section class="content-section inventory-section" aria-labelledby="inventory-title"><div class="section-heading"><div><h2 id="inventory-title">Gemeinsame Ausrüstung</h2><p>Die sechs Gegenstände aus der Kutsche. Ihr könnt sie jederzeit weitergeben.</p></div><span>${distributionComplete() ? "vollständig verteilt" : "Verteilung offen"}</span></div><div class="inventory-list">${items.map((item) => `<article class="inventory-card"><div class="inventory-card-heading"><h3>${escapeHtml(item.title)}</h3><b>${itemRemainingUses(item)}/${Number(item.initialUses || 1)}</b></div><p>${escapeHtml(item.detail)}</p><small class="inventory-location">Fundort: ${escapeHtml(itemLocations().find((location) => location.id === item.locationID)?.title || item.locationID)}</small>${item.weapon ? `<small class="inventory-weapon">${escapeHtml(item.weapon.skill)} · Schaden ${escapeHtml(item.weapon.damageDice)} · nicht parierbar</small>` : ""}${(item.effects || []).map((effect) => `<small class="inventory-effect">${escapeHtml(effect.title)}: ${escapeHtml(effect.detail)}</small>`).join("")}${itemOwnerSelect(item)}</article>`).join("")}</div></section>`;
+}
+
 function renderGMStart() {
   const checked = state.setupChecks.size;
   return `<div class="gm-start-view">
@@ -374,26 +511,45 @@ function renderGMStart() {
       <div class="setup-list">${state.manifest.guide.setupItems.map((item) => `<button class="setup-row" data-setup="${item.id}" type="button" aria-pressed="${state.setupChecks.has(item.id)}"><span class="setup-check">${state.setupChecks.has(item.id) ? "✓" : ""}</span><span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.detail)}</small></span></button>`).join("")}</div>
     </section>
     <section class="guide-panel characters-panel" aria-labelledby="characters-title">
-      <div class="guide-panel-heading"><div><span class="eyebrow">Die drei Reisenden</span><h2 id="characters-title">Fertige Figuren für den Tisch</h2></div><span class="guide-muted">Namen kannst du später eintragen</span></div>
-      <div class="character-grid">${state.manifest.guide.characters.map((character) => `<article class="character-card"><div class="character-avatar">${escapeHtml(character.name.slice(0, 1))}</div><div><h3>${escapeHtml(character.name)}</h3><p class="character-role">${escapeHtml(character.role)}</p><p>${escapeHtml(character.hook)}</p><div class="character-skills">${character.skills.map((skill) => `<span>${escapeHtml(skill)}</span>`).join("")}</div><small>${escapeHtml(character.tablePrompt)}</small></div></article>`).join("")}</div>
+      <div class="guide-panel-heading"><div><span class="eyebrow">Drei eigene Figuren</span><h2 id="characters-title">Namen für den Spieltisch</h2></div><span class="guide-muted">Werte bleiben auf euren Bögen</span></div>
+      <p class="guide-muted character-intro">Jede Person bringt ihren eigenen Charakter mit. Die App speichert nur die Namen und verwendet keine vorgegebenen Rollen oder Verbindungen.</p>
+      <div class="character-input-grid">${state.playerNames.map((name, index) => `<label class="character-input"><span>${index + 1}. Figur</span><input data-player-index="${index}" type="text" autocomplete="off" autocapitalize="words" placeholder="Name der Figur" value="${escapeHtml(name)}"></label>`).join("")}</div>
     </section>
     <section class="guide-panel briefing-panel" aria-labelledby="briefing-title">
       <div class="guide-panel-heading"><div><span class="eyebrow">Vor dem ersten Satz</span><h2 id="briefing-title">Das sagst du den Spielern</h2></div></div>
       <blockquote>${escapeHtml(state.manifest.guide.playerBriefing)}</blockquote>
       <p class="spoiler-line"><span>NICHT VERRATEN</span> ${escapeHtml(state.manifest.guide.hiddenFromPlayers)}</p>
     </section>
-    <button class="button button-primary guide-start-button" data-guide-action="begin" type="button">${checked === state.manifest.guide.setupItems.length ? "Spielleiter-Modus starten" : "Trotzdem starten"}<span aria-hidden="true">›</span></button>
+    <button class="button button-primary guide-start-button" data-guide-action="begin" type="button" ${state.playerNames.every((name) => name.trim()) ? "" : "disabled"}>${checked === state.manifest.guide.setupItems.length ? "Spielleiter-Modus starten" : "Trotzdem starten"}<span aria-hidden="true">›</span></button>
+    ${state.playerNames.every((name) => name.trim()) ? "" : "<p class=\"guide-start-hint\">Bitte alle drei eigenen Figuren benennen, bevor die Runde startet.</p>"}
   </div>`;
+}
+
+function itemUseTitles(entry) {
+  return (entry?.itemUseIDs || []).map((recordID) => itemById(state.itemUseRecords.find((record) => record.id === recordID)?.itemID)?.title).filter(Boolean);
+}
+
+function renderItemEffectOptions(step, timing, consequenceID = "") {
+  const options = itemEffectsFor(step, timing, consequenceID);
+  if (!options.length) return "";
+  const title = timing === "beforeRoll" ? "Ausrüstung vor der Probe" : "Ausrüstung für die gewählte Folge";
+  return `<div class="item-effect-options"><span class="eyebrow">${title}</span><p>Die Anwendung wird erst beim Übernehmen verbraucht.</p>${options.map(({ item, effect }) => {
+    const selected = state.selectedItemEffectIDs[item.id] === effect.id;
+    const modifier = effect.modifier ? ` · Zielwert +${effect.modifier}` : "";
+    return `<button class="item-effect-option ${selected ? "is-selected" : ""}" data-guide-action="select-item-effect" data-item-id="${escapeHtml(item.id)}" data-effect-id="${escapeHtml(effect.id)}" type="button" aria-pressed="${selected}"><span class="roll-consequence-marker" aria-hidden="true">${selected ? "✓" : "○"}</span><span><strong>${escapeHtml(item.title)} · ${escapeHtml(effect.title)}</strong><small>Besitz: ${escapeHtml(itemOwnerName(item.id))} · noch ${itemRemainingUses(item)} Anwendung(en)${modifier}</small><em>${escapeHtml(effect.detail)}</em></span></button>`;
+  }).join("")}</div>`;
 }
 
 function renderRollPanel(step) {
   const roll = step.roll;
   const previous = state.guidedRolls[step.id];
   if (!state.rollOpen) {
+    const previousItems = itemUseTitles(previous);
     const sessionSummary = previous
-      ? `<div class="roll-session-summary"><strong>Letztes Ergebnis: ${escapeHtml(previous.label)}</strong><span>${previous.roll} gegen ${previous.target}</span>${previous.consequenceTitle ? `<em>Gewählte Folge: ${escapeHtml(previous.consequenceTitle)}</em>` : ""}</div>`
+      ? `<div class="roll-session-summary"><strong>Letztes Ergebnis: ${escapeHtml(previous.label)}</strong><span>${previous.roll} gegen ${previous.target}</span>${previous.consequenceTitle ? `<em>Gewählte Folge: ${escapeHtml(previous.consequenceTitle)}</em>` : ""}${previousItems.length ? `<em>Eingesetzte Ausrüstung: ${escapeHtml(previousItems.join(", "))}</em>` : ""}</div>`
       : "";
-    return `${sessionSummary}<button class="button button-primary guide-action" data-guide-action="open-roll" type="button">Probe auswerten</button>`;
+    const optionalSkip = roll.required ? "" : `<button class="button button-quiet guide-action" data-guide-action="advance" type="button">Ohne Probe weiter<span aria-hidden="true">›</span></button>`;
+    return `${sessionSummary}<button class="button button-primary guide-action" data-guide-action="open-roll" type="button">Probe auswerten</button>${optionalSkip}`;
   }
   const pending = state.pendingRoll?.stepID === step.id ? state.pendingRoll : null;
   const displayed = pending?.result || previous;
@@ -406,12 +562,15 @@ function renderRollPanel(step) {
       const selected = consequence.id === state.selectedConsequenceID;
       const effect = consequenceEffectText(consequence.effect);
       return `<button class="roll-consequence ${selected ? "is-selected" : ""}" data-guide-action="select-consequence" data-consequence="${escapeHtml(consequence.id)}" type="button" aria-pressed="${selected}"><span class="roll-consequence-marker" aria-hidden="true">${selected ? "✓" : "○"}</span><span><strong>${escapeHtml(consequence.title)}</strong><small>${escapeHtml(consequence.detail)}</small>${effect ? `<em>${escapeHtml(effect)}</em>` : ""}</span></button>`;
-    }).join("")}</div>`
+    }).join("")}${selectedConsequence ? renderItemEffectOptions(step, "afterFailure", selectedConsequence.id) : ""}</div>`
     : "";
   const resultMarkup = displayed
     ? `<div class="roll-result ${displayed.success ? "is-success" : "is-failure"}"><strong>${escapeHtml(displayed.label)}</strong><span>${displayed.roll} gegen ${displayed.target}</span><p>${escapeHtml(rollOutcomeText(displayed, roll))}</p>${!pending && displayed.consequenceTitle ? `<em class="roll-result-consequence">Gewählte Folge: ${escapeHtml(displayed.consequenceTitle)}</em>` : ""}${displayed.success ? "" : consequenceMarkup}${pending ? `<button class="button ${displayed.success || !needsSelection ? "button-primary" : "button-quiet"} guide-action roll-confirm" data-guide-action="confirm-roll" data-step="${step.id}" type="button" ${needsSelection ? "disabled" : ""}>${displayed.success || !consequences.length ? "Ergebnis übernehmen" : "Konsequenz übernehmen"}<span aria-hidden="true">›</span></button>` : ""}</div>`
     : "";
-  return `<div class="roll-panel"><div class="roll-panel-heading"><div><span class="eyebrow">W100-Probe</span><strong>${escapeHtml(roll.actor)}</strong></div><button class="text-button" data-guide-action="close-roll" type="button">Schließen</button></div><p><b>Fertigkeit:</b> ${escapeHtml(roll.ability)} · <b>Zielwert:</b> ${escapeHtml(roll.target)}</p><p class="roll-modifier">${escapeHtml(roll.modifier)}</p><div class="roll-inputs"><label class="roll-input"><span>Gewürfeltes Ergebnis</span><input data-roll-value type="number" min="1" max="100" inputmode="numeric" value="${pending?.result.roll || previous?.roll || ""}" placeholder="z. B. 42"></label><label class="roll-input"><span>Zielwert der Fertigkeit</span><input data-roll-target type="number" min="1" max="100" inputmode="numeric" value="${pending?.result.target || previous?.target || 50}" placeholder="z. B. 65"></label></div><button class="button button-primary guide-action" data-guide-action="resolve-roll" data-step="${step.id}" type="button">${pending ? "Ergebnis neu auswerten" : "Ergebnis auswerten"}<span aria-hidden="true">›</span></button>${resultMarkup}</div>`;
+  const itemMarkup = renderItemEffectOptions(step, "beforeRoll");
+  const baseTarget = pending?.baseTarget || previous?.baseTarget || previous?.target || 50;
+  const activeModifier = activeItemModifier(step);
+  return `<div class="roll-panel"><div class="roll-panel-heading"><div><span class="eyebrow">W100-Probe</span><strong>${escapeHtml(roll.actor)}</strong></div><button class="text-button" data-guide-action="close-roll" type="button">Schließen</button></div><p><b>Fertigkeit:</b> ${escapeHtml(roll.ability)} · <b>Zielwert:</b> ${escapeHtml(roll.target)}</p><p class="roll-modifier">${escapeHtml(roll.modifier)}</p><div class="roll-inputs"><label class="roll-input"><span>Gewürfeltes Ergebnis</span><input data-roll-value type="number" min="1" max="100" inputmode="numeric" value="${pending?.result.roll || previous?.roll || ""}" placeholder="z. B. 42"></label><label class="roll-input"><span>Basis-Zielwert</span><input data-roll-target type="number" min="1" max="100" inputmode="numeric" value="${baseTarget}" placeholder="z. B. 65"></label></div>${itemMarkup}${activeModifier ? `<p class="roll-item-modifier">Effektiver Zielwert: Basis +${activeModifier}, maximal 100.</p>` : ""}<button class="button button-primary guide-action" data-guide-action="resolve-roll" data-step="${step.id}" type="button">${pending ? "Ergebnis neu auswerten" : "Ergebnis auswerten"}<span aria-hidden="true">›</span></button>${resultMarkup}</div>`;
 }
 
 function renderFinaleProgress() {
@@ -442,8 +601,10 @@ function renderGuideStep(step) {
   if (step.roll) action = renderRollPanel(step);
   else if (options.length) action = `<div class="guide-options">${options.map((option) => `<button class="guide-option" data-guide-option="${option.id}" data-destination="${option.destinationSceneID || ""}" data-ending="${option.endingID || ""}" type="button"><strong>${escapeHtml(option.title)}</strong><small>${escapeHtml(option.detail)}</small><span aria-hidden="true">›</span></button>`).join("")}</div>`;
   else if (step.kind === "readAloud") action = `<button class="button button-primary guide-action" data-guide-action="read" data-cue="${cue?.id || ""}" type="button">${cue ? "Sound vorbereiten und vorlesen" : "Vorgelesen – weiter"}<span aria-hidden="true">›</span></button>`;
+  else if (step.kind === "itemDistribution") action = `<button class="button button-primary guide-action" data-guide-action="advance" type="button" ${distributionComplete() ? "" : "disabled"}>${escapeHtml(step.actionLabel || "Verteilung abschließen")}<span aria-hidden="true">›</span></button>`;
   else action = `<button class="button button-primary guide-action" data-guide-action="advance" type="button">${escapeHtml(step.actionLabel || "Weiter")}<span aria-hidden="true">›</span></button>`;
   const clueLine = step.clueID ? `<div class="guide-clue-note"><span>HINWEIS</span> Dieser Hinweis ist garantiert und darf nicht an einem Würfelwurf scheitern.</div>` : "";
+  const itemPanel = step.kind === "itemSearch" ? renderItemFindings() : step.kind === "itemDistribution" ? renderItemDistribution() : "";
   return `<div class="guided-scene-view">
     <div class="guide-progress-row"><span>SCHRITT ${index + 1} VON ${steps.length}</span><b>${escapeHtml(scene.shortTitle)}</b></div>
     <div class="guide-progress-track"><i style="width:${((index + 1) / Math.max(1, steps.length)) * 100}%"></i></div>
@@ -454,14 +615,14 @@ function renderGuideStep(step) {
       <p class="guide-step-body">${escapeHtml(step.body)}</p>
       ${step.roll ? `<div class="roll-brief"><span class="eyebrow">WANN WIRD GEWÜRFELT?</span><strong>${escapeHtml(step.roll.actor)}</strong><p>${escapeHtml(step.roll.ability)} · ${escapeHtml(step.roll.target)}</p><small>${escapeHtml(step.roll.modifier)}</small></div>` : ""}
       ${step.id === "S07_DANGER" ? renderFinaleProgress() : ""}
-      ${clueLine}${guideReferences(step)}
+      ${clueLine}${itemPanel}${guideReferences(step)}
       ${action}
     </section>
     <div class="guide-footer">
       <button class="button button-quiet" data-guide-action="back" type="button"><span aria-hidden="true">←</span> ${state.guideHistory.length ? "Zurück" : "Übersicht"}</button>
       <span>${options.length ? "Wähle oben den nächsten Schritt." : "Der nächste Schritt bleibt unten sichtbar."}</span>
     </div>
-    <div class="guide-quick-actions"><button class="quick-action" data-action="materials" type="button">▱ Materialien</button><button class="quick-action" data-action="rules" type="button">▧ Regeln</button><button class="quick-action" data-action="audio-check" type="button">≋ Soundplan</button><button class="quick-action" data-action="dossier" type="button">⌕ Fakten</button></div>
+    <div class="guide-quick-actions"><button class="quick-action" data-action="materials" type="button">▱ Materialien</button><button class="quick-action" data-action="inventory" type="button">□ Ausrüstung</button><button class="quick-action" data-action="rules" type="button">▧ Regeln</button><button class="quick-action" data-action="audio-check" type="button">≋ Soundplan</button><button class="quick-action" data-action="dossier" type="button">⌕ Fakten</button></div>
     <section class="guide-table-note"><div><span class="eyebrow">TISCHNOTIZ</span><p>Was ist gerade passiert? Was bleibt offen?</p></div><textarea data-scene-note="${scene.id}" rows="3" placeholder="Kurz notieren …">${escapeHtml(state.sceneNotes[scene.id] || "")}</textarea></section>
   </div>`;
 }
@@ -472,13 +633,14 @@ function renderGuidedScene(scene) {
 
 function renderHome(scene) {
   const scenes = state.manifest.scenes;
-  const totalSteps = scene.id === "S01" ? 5 : Math.max(1, scene.checklist.length);
+  const totalSteps = state.gmMode ? Math.max(1, guideStepsFor(scene.id).length) : Math.max(1, scene.checklist.length);
   const doneSteps = scene.checklist.filter((_, index) => state.checklist.has(`${scene.id}-${index}`)).length;
   const currentStep = Math.min(doneSteps + 1, totalSteps);
   const assignedPlayers = state.playerNames.filter((name) => name.trim()).length;
   const sceneProgress = Math.round((state.completed.size / Math.max(1, scenes.length)) * 100);
   const nightSegments = Array.from({ length: nightPhases.length + 1 }, (_, index) => `<i class="night-segment ${index <= state.nightPhase ? "is-active" : ""}"></i>`).join("");
   const stageLabel = state.completed.size ? `${state.completed.size}/${scenes.length}` : `0/${scenes.length}`;
+  const sessionFinished = !state.gmMode && state.completed.has("S08");
   const unassigned = 3 - assignedPlayers;
   const tableLabel = assignedPlayers === 3 ? "Alle drei Reisenden sind zugewiesen" : unassigned === 3 ? "Drei Reisende sind noch nicht zugewiesen" : unassigned === 2 ? "Zwei Reisende sind noch nicht zugewiesen" : "Ein Reisender ist noch nicht zugewiesen";
   return `<div class="home-view">
@@ -490,15 +652,13 @@ function renderHome(scene) {
 
     <button class="home-start-card" data-action="start" type="button">
       <span class="home-icon home-icon-play" aria-hidden="true">▶</span>
-      <span class="home-card-copy"><strong>Spielleiter-Modus starten</strong><small>Vorbereitung, fertige Figuren und Schritt-für-Schritt-Führung</small></span>
+      <span class="home-card-copy"><strong>Spielleiter-Modus starten</strong><small>Eigene Figuren, Kutschenfunde und Schritt-für-Schritt-Führung</small></span>
       <span class="home-chevron" aria-hidden="true">›</span>
     </button>
 
-    <button class="home-card continue-card" data-action="continue" type="button">
-      <span class="home-icon home-icon-route" aria-hidden="true">⌁</span>
-      <span class="home-card-copy"><span class="home-card-label">Jetzt weiterspielen <b>${stageLabel}</b></span><strong>${escapeHtml(scene.shortTitle)}</strong><small>Schritt ${currentStep} von ${totalSteps}</small><span class="home-progress"><i style="width:${sceneProgress}%"></i></span></span>
-      <span class="home-chevron" aria-hidden="true">↗</span>
-    </button>
+    ${sessionFinished
+      ? `<section class="home-card continue-card" aria-label="Abenteuer abgeschlossen"><span class="home-icon home-icon-route" aria-hidden="true">✓</span><span class="home-card-copy"><span class="home-card-label">Abenteuer abgeschlossen</span><strong>Danke für euren Abend in Krähenfels.</strong><small>Starte oben eine neue Runde mit drei eigenen Figuren.</small></span></section>`
+      : `<button class="home-card continue-card" data-action="continue" type="button"><span class="home-icon home-icon-route" aria-hidden="true">⌁</span><span class="home-card-copy"><span class="home-card-label">Jetzt weiterspielen <b>${stageLabel}</b></span><strong>${escapeHtml(scene.shortTitle)}</strong><small>Schritt ${currentStep} von ${totalSteps}</small><span class="home-progress"><i style="width:${sceneProgress}%"></i></span></span><span class="home-chevron" aria-hidden="true">↗</span></button>`}
 
     <section class="home-card table-summary" aria-labelledby="table-summary-title">
       <div class="home-card-copy"><span class="home-card-label" id="table-summary-title">Am Tisch</span><strong>${escapeHtml(tableLabel)}</strong></div>
@@ -523,6 +683,7 @@ function renderHome(scene) {
 
     <section class="home-quick-grid" aria-label="Spielleiter-Materialien">
       <button class="quick-action" data-action="materials" type="button"><span aria-hidden="true">▱</span>Materialien</button>
+      <button class="quick-action" data-action="inventory" type="button"><span aria-hidden="true">□</span>Ausrüstung</button>
       <button class="quick-action" data-action="rules" type="button"><span aria-hidden="true">▧</span>Regeln</button>
       <button class="quick-action" data-action="audio-check" type="button"><span aria-hidden="true">≋</span>Audio-Check</button>
       <button class="quick-action" data-action="dossier" type="button"><span aria-hidden="true">⌕</span>Akte</button>
@@ -622,8 +783,9 @@ function render() {
     <section class="content-section dossier-section">
       <div class="section-heading"><h2>Akte</h2><span>${state.manifest.facts.filter((fact) => fact.clueIds.every((id) => state.clues.has(id))).length} / ${state.manifest.facts.length} Schlussfolgerungen</span></div>
       <div class="fact-list">${state.manifest.facts.map((fact) => { const found = fact.clueIds.every((id) => state.clues.has(id)); return `<div class="fact-row ${found ? "is-found" : ""}"><span>${found ? "✓" : "·"}</span><div><strong>${escapeHtml(fact.title)}</strong><small>${escapeHtml(found ? fact.details : "Noch nicht bestätigt")}</small></div></div>`; }).join("")}</div>
-      <div class="hook-list"><h3>Figuren-Verbindungen</h3><p class="muted">Wählt je eine persönliche Verbindung zum Fall – sie ist ein Aufhänger, kein zusätzlicher Plot.</p>${state.manifest.travelHooks.map((hook) => `<button class="check-row ${Object.values(state.selectedHooks).includes(hook.id) ? "is-found" : ""}" data-hook="${hook.id}" type="button" aria-pressed="${Object.values(state.selectedHooks).includes(hook.id)}"><span class="checkmark">${Object.values(state.selectedHooks).includes(hook.id) ? "✓" : ""}</span><span><strong>${escapeHtml(hook.title)}</strong><small>${escapeHtml(hook.prompt)}</small></span></button>`).join("")}</div>
     </section>
+
+    ${renderInventorySection()}
 
     ${soundboard}
 
@@ -663,6 +825,7 @@ document.addEventListener("click", async (event) => {
     state.rollOpen = false;
     state.pendingRoll = null;
     state.selectedConsequenceID = "";
+    state.selectedItemEffectIDs = {};
     persist();
     render();
     document.querySelector("#scene-content").focus();
@@ -699,14 +862,36 @@ document.addEventListener("click", async (event) => {
   const action = event.target.closest("[data-action]")?.dataset.action;
   const guideAction = event.target.closest("[data-guide-action]")?.dataset.guideAction;
   if (guideAction === "begin") {
+    if (!state.playerNames.every((name) => name.trim())) {
+      audioStatus.textContent = "Bitte zuerst alle drei eigenen Figuren benennen.";
+      audioStatus.dataset.tone = "warning";
+      return;
+    }
     state.gmMode = true;
+    state.completed.clear();
+    state.clues.clear();
+    state.checklist.clear();
+    state.sceneNotes = {};
+    state.sessionNote = "";
+    state.nightPhase = 0;
+    state.threatLevel = 0;
+    state.npcStates = {};
+    state.selectedHooks = {};
     state.currentSceneId = "S01";
-    state.guidedIndexes.S01 = 0;
+    state.guidedIndexes = { S01: 0 };
     state.guideHistory = [];
+    state.guidedRolls = {};
+    state.guidedRollHistory = [];
+    state.finaleSuccesses = 0;
+    state.finaleFailures = 0;
+    state.finaleOutcome = "";
+    state.endingID = "";
+    resetItemState();
     state.view = "guided";
     state.rollOpen = false;
     state.pendingRoll = null;
     state.selectedConsequenceID = "";
+    state.selectedItemEffectIDs = {};
     persist();
     render();
     document.querySelector("#scene-content").focus();
@@ -717,6 +902,15 @@ document.addEventListener("click", async (event) => {
     return;
   }
   if (guideAction === "advance") {
+    if (currentGuideStep(state.currentSceneId)?.id === "S08_NEXT") {
+      state.completed.add("S08");
+      state.gmMode = false;
+      state.view = "home";
+      persist();
+      render();
+      document.querySelector("#scene-content")?.focus();
+      return;
+    }
     advanceGuideStep();
     persist();
     render();
@@ -736,6 +930,7 @@ document.addEventListener("click", async (event) => {
     state.rollOpen = true;
     state.pendingRoll = null;
     state.selectedConsequenceID = "";
+    state.selectedItemEffectIDs = {};
     render();
     return;
   }
@@ -743,6 +938,7 @@ document.addEventListener("click", async (event) => {
     state.rollOpen = false;
     state.pendingRoll = null;
     state.selectedConsequenceID = "";
+    state.selectedItemEffectIDs = {};
     render();
     return;
   }
@@ -750,9 +946,15 @@ document.addEventListener("click", async (event) => {
     const step = currentGuideStep(state.currentSceneId);
     if (!step?.roll) return;
     const value = Number(document.querySelector("[data-roll-value]")?.value || 1);
-    const target = Number(document.querySelector("[data-roll-target]")?.value || 50);
+    const baseTarget = Number(document.querySelector("[data-roll-target]")?.value || 50);
+    if (![value, baseTarget].every((number) => Number.isInteger(number) && number >= 1 && number <= 100)) {
+      audioStatus.textContent = "Wurf und Zielwert müssen ganze Zahlen zwischen 1 und 100 sein.";
+      audioStatus.dataset.tone = "warning";
+      return;
+    }
+    const target = Math.min(100, baseTarget + activeItemModifier(step));
     const result = evaluateRoll(value, target);
-    state.pendingRoll = { stepID: step.id, result };
+    state.pendingRoll = { stepID: step.id, result, baseTarget };
     state.selectedConsequenceID = "";
     render();
     return;
@@ -760,6 +962,15 @@ document.addEventListener("click", async (event) => {
   if (guideAction === "select-consequence") {
     if (!state.pendingRoll) return;
     state.selectedConsequenceID = event.target.closest("[data-consequence]")?.dataset.consequence || "";
+    render();
+    return;
+  }
+  if (guideAction === "select-item-effect") {
+    const itemID = event.target.closest("[data-item-id]")?.dataset.itemId;
+    const effectID = event.target.closest("[data-effect-id]")?.dataset.effectId;
+    if (!itemID || !effectID) return;
+    if (state.selectedItemEffectIDs[itemID] === effectID) delete state.selectedItemEffectIDs[itemID];
+    else state.selectedItemEffectIDs[itemID] = effectID;
     render();
     return;
   }
@@ -771,16 +982,20 @@ document.addEventListener("click", async (event) => {
     const consequences = result.success ? [] : availableRollConsequences(step);
     const consequence = consequences.find((item) => item.id === state.selectedConsequenceID);
     if (!result.success && consequences.length && !consequence) return;
+    const itemSelections = selectedItemSelections(step, consequence?.id || "");
     let resolved = true;
     if (step.id === "S07_DANGER") {
-      resolved = recordFinaleRoll(result, consequence).resolved;
+      const finale = recordFinaleRoll(result, consequence, itemSelections, pending.baseTarget);
+      if (finale.rejected) return;
+      resolved = finale.resolved;
     } else {
-      recordGuidedRoll(step, result, consequence);
+      if (!recordGuidedRoll(step, result, consequence, itemSelections, pending.baseTarget)) return;
     }
     if (resolved) advanceGuideStep();
     state.rollOpen = false;
     state.pendingRoll = null;
     state.selectedConsequenceID = "";
+    state.selectedItemEffectIDs = {};
     persist();
     render();
     return;
@@ -810,6 +1025,7 @@ document.addEventListener("click", async (event) => {
     state.rollOpen = false;
     state.pendingRoll = null;
     state.selectedConsequenceID = "";
+    state.selectedItemEffectIDs = {};
     persist();
     render();
     return;
@@ -824,6 +1040,7 @@ document.addEventListener("click", async (event) => {
     state.rollOpen = false;
     state.pendingRoll = null;
     state.selectedConsequenceID = "";
+    state.selectedItemEffectIDs = {};
     render();
     document.querySelector("#scene-content").focus();
     return;
@@ -841,6 +1058,9 @@ document.addEventListener("click", async (event) => {
   if (action === "start" || action === "continue") {
     state.view = action === "start" ? "gm-start" : state.gmMode ? "guided" : "scene";
     state.rollOpen = false;
+    state.pendingRoll = null;
+    state.selectedConsequenceID = "";
+    state.selectedItemEffectIDs = {};
     render();
     document.querySelector("#scene-content").focus();
     return;
@@ -851,10 +1071,14 @@ document.addEventListener("click", async (event) => {
     requestAnimationFrame(() => document.querySelector(".table-section")?.scrollIntoView({ behavior: "smooth", block: "start" }));
     return;
   }
-  if (action === "materials" || action === "rules" || action === "audio-check" || action === "dossier") {
+  if (action === "materials" || action === "inventory" || action === "rules" || action === "audio-check" || action === "dossier") {
     state.view = "scene";
+    state.rollOpen = false;
+    state.pendingRoll = null;
+    state.selectedConsequenceID = "";
+    state.selectedItemEffectIDs = {};
     render();
-    const target = { materials: ".handout-section", rules: ".rules-section", "audio-check": ".soundboard", dossier: ".dossier-section" }[action];
+    const target = { materials: ".handout-section", inventory: ".inventory-section", rules: ".rules-section", "audio-check": ".soundboard", dossier: ".dossier-section" }[action];
     requestAnimationFrame(() => document.querySelector(target)?.scrollIntoView({ behavior: "smooth", block: "start" }));
     return;
   }
@@ -865,6 +1089,10 @@ document.addEventListener("click", async (event) => {
   }
   if (action === "read-aloud") {
     state.view = "scene";
+    state.rollOpen = false;
+    state.pendingRoll = null;
+    state.selectedConsequenceID = "";
+    state.selectedItemEffectIDs = {};
     render();
     requestAnimationFrame(() => document.querySelector(".reading-block")?.scrollIntoView({ behavior: "smooth", block: "start" }));
     return;
@@ -902,11 +1130,25 @@ document.addEventListener("click", async (event) => {
   }
 });
 
+document.addEventListener("change", (event) => {
+  if (event.target.matches("[data-item-owner]")) {
+    const itemID = event.target.dataset.itemOwner;
+    if (event.target.value === "") delete state.itemOwners[itemID];
+    else state.itemOwners[itemID] = Number(event.target.value);
+    persist();
+    render();
+  }
+});
+
 document.addEventListener("input", (event) => {
   if (event.target.matches("[data-volume]")) audio.setVolume(event.target.dataset.volume, event.target.value);
   if (event.target.matches("[data-player-index]")) {
     state.playerNames[Number(event.target.dataset.playerIndex)] = event.target.value;
     persist();
+    const startButton = document.querySelector("[data-guide-action=begin]");
+    if (startButton) startButton.disabled = !state.playerNames.every((name) => name.trim());
+    const startHint = document.querySelector(".guide-start-hint");
+    if (startHint) startHint.hidden = state.playerNames.every((name) => name.trim());
   }
   if (event.target.matches("[data-session-note]")) {
     state.sessionNote = event.target.value;
@@ -936,7 +1178,7 @@ document.querySelector("#stop-all").addEventListener("click", () => audio.stopAl
 document.querySelector("#transport-stop").addEventListener("click", () => audio.stopAll());
 document.querySelector("#audio-test").addEventListener("click", () => audio.testTone());
 document.querySelector("#reset-progress").addEventListener("click", () => {
-  state.completed.clear(); state.clues.clear(); state.checklist.clear(); state.setupChecks.clear(); state.guidedIndexes = {}; state.guideHistory = []; state.guidedRolls = {}; state.guidedRollHistory = []; state.finaleSuccesses = 0; state.finaleFailures = 0; state.finaleOutcome = ""; state.pendingRoll = null; state.selectedConsequenceID = ""; state.gmMode = false; state.endingID = ""; state.currentSceneId = "S01"; state.view = "home"; persist(); render();
+  state.completed.clear(); state.clues.clear(); state.checklist.clear(); state.setupChecks.clear(); state.guidedIndexes = {}; state.guideHistory = []; state.guidedRolls = {}; state.guidedRollHistory = []; state.finaleSuccesses = 0; state.finaleFailures = 0; state.finaleOutcome = ""; state.pendingRoll = null; state.selectedConsequenceID = ""; resetItemState(); state.gmMode = false; state.endingID = ""; state.currentSceneId = "S01"; state.view = "home"; persist(); render();
   audioStatus.textContent = "Fortschritt zurückgesetzt.";
 });
 
@@ -946,10 +1188,14 @@ async function boot() {
     const response = await fetch("./data/manifest.json", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     state.manifest = await response.json();
+    const hasInventoryData = ["kraehenfels.discoveredItemIDs", "kraehenfels.itemOwners", "kraehenfels.itemUseRecords"].some((key) => localStorage.getItem(key) !== null);
+    if (state.gmMode && !hasInventoryData) {
+      discoverItems();
+      persist();
+    }
     nightPhases = (state.manifest.phases || []).map((phase, index) => ({ ...phase, symbol: phaseSymbols[index] || "•" }));
     state.nightPhase = normalizedNightPhase(state.nightPhase);
     if (!sceneById(state.currentSceneId)) state.currentSceneId = state.manifest.scenes[0].id;
-    render();
     render();
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("./service-worker.js").catch(() => undefined);
   } catch (error) {

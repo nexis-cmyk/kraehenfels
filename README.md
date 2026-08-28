@@ -6,7 +6,7 @@ Das Repository enthält:
 
 - das vollständige Abenteuer mit SL-Schnellreferenz
 - eine spoilerfreie Dorfkarte, eine markierte SL-Karte und drei Detailkarten
-- Handouts, drei sofort spielbare Schnellstartfiguren und optionale Bögen für eigene Figuren
+- Handouts, drei eigene Figurenbögen und sechs storygerechte Gegenstandskarten aus der Kutsche
 - 20 technisch geprüfte Atmosphären, Musik-Layer und Soundeffekte. Zwölf problematische Cues liegen als V6-Ersatzfassungen vor
 - eine native iPad-Begleitapp ab iOS 17 mit geführtem Spielleiter-Modus, Nachtstand, NPCs, Pflichtspuren, Vorlesetexten, Würfelhelfer, Tischnotizen und Audio-Selbsttest
 - GitHub Actions für Tests, IPA-Build und AltStore-Feed
@@ -15,11 +15,11 @@ Das Repository enthält:
 
 ## iPad-Build und AltStore
 
-Der aktuelle native Release ist `v4.1.2` (Build `8`). Die App ist für iPad ausgelegt. Den IPA-Build erzeugt macOS oder GitHub Actions; die IPA bleibt unsigniert und wird erst durch AltStore mit deinem Apple-Account signiert.
+Der aktuelle native Release ist `v4.2.0` (Build `9`). Die App ist für iPad ausgelegt. Den IPA-Build erzeugt macOS oder GitHub Actions; die IPA bleibt unsigniert und wird erst durch AltStore mit deinem Apple-Account signiert.
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
 - [Release-Übersicht](https://github.com/nexis-cmyk/kraehenfels/releases)
-- [AltStore-Feed für v4.1.2](https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.1.2/source.generated.json)
+- [AltStore-Feed für v4.2.0](https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.2.0/source.generated.json)
 - [Dauerhafter AltStore-Feed](https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json)
 
 Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-Account signiert. Eine kurze Windows-Anleitung steht in [`altstore/README.md`](altstore/README.md).
@@ -73,7 +73,8 @@ Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: kaltes Nachtblau,
 - `01_Karte_SL.pdf`: geheime Karte mit Routen, Eichenplatz und Prozessionsspur
 - `01_Karten_Detail.pdf`: Gasthaus, Kirche, Schmiede, Rathausarchiv und Alte Eiche als separate Tischkarten
 - `02_Handouts.pdf`: nur spielersichere, ausschneidbare Hinweise mit Kennung, Schnittlinie und Ausgabezeitpunkt
-- `03_Figurenbau.pdf`: optionale ausfüllbare Reiseakte für eigene Figuren; für den direkten Einstieg nutzt du Clara, Otto und Jakob aus dem Spielleiter-Modus
+- `03_Figurenbau.pdf`: drei ausfüllbare Bögen für die eigenen Figuren der Spieler
+- `04_Gegenstandskarten.pdf`: sechs Gegenstände aus drei Fundorten in der Kutsche, mit ihren storygerechten Anwendungen
 - `10_SL_Abenteuer.pdf`: vorlesbare Szenen, NPCs und Enden
 - `11_SL_Schnellreferenz.pdf`: Wahrheit, Pflichtspuren und Improvisationshilfe
 - `12_SL_Am_Tisch.pdf`: einseitiger Ablaufzettel mit Hinweisen, Sounds und Eskalation pro Szene
@@ -86,7 +87,7 @@ Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.z
 
 Die Browser-Version wird aus dem aktuellen Inhaltsmanifest und den nativen Audio-/Art-Ressourcen synchronisiert. Szenen, Handouts, Cues und Service-Worker-Cache bleiben dadurch auf demselben Release-Stand. Die lokale Startanleitung steht in [`web/README.md`](web/README.md).
 
-Der geführte Spielleiter-Ablauf stammt aus `adventure/guide.json`. Native App und Web-Teststand verwenden dieselben 41 Schritte, Vorbereitungspunkte und Verzweigungen.
+Der geführte Spielleiter-Ablauf stammt aus `adventure/guide.json`. Native App und Web-Teststand verwenden dieselben 43 Schritte, Vorbereitungspunkte und Verzweigungen.
 
 Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `https://nexis-cmyk.github.io/kraehenfels/`. Dafür muss Pages einmal im Repository freigeschaltet werden: **Settings → Pages → Build and deployment → Source: GitHub Actions → Save**. Danach kannst du sie unterwegs als Web-App ausprobieren.
 

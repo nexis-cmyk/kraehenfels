@@ -4,7 +4,7 @@
 
 Ihr seid drei zufällige Reisende in einer Postkutsche nach Freiburg. Ihr kennt euch nicht gut. Jede Figur bekommt einen eigenen Grund, warum sie in dieser Nacht weiter nach Krähenfels will oder muss.
 
-Wählt einen Namen, Alter, Beruf und einen persönlichen Gegenstand. Der Gegenstand darf später eine Spur aufnehmen, aber er ist kein magischer Schlüssel.
+Wählt einen Namen, Alter und Beruf. Persönliche Gegenstände bringt ihr selbst mit. Die sechs storyrelevanten Gegenstände findet die Gruppe nach dem Unfall gemeinsam in der Kutsche und verteilt sie anschließend untereinander.
 
 ## 400 Fähigkeitspunkte
 

@@ -33,6 +33,77 @@ def main() -> None:
     cue_ids = {cue["id"] for cue in manifest["audioCues"]}
     handout_ids = {handout["id"] for handout in manifest["handouts"]}
     ending_ids = {ending["id"] for ending in manifest["endings"]}
+    item_locations = guide.get("itemFindLocations", [])
+    items = guide.get("items", [])
+    if len(item_locations) != 3:
+        fail(f"expected exactly three item find locations, got {len(item_locations)}")
+    if len(items) != 6:
+        fail(f"expected exactly six adventure items, got {len(items)}")
+    location_ids = [location.get("id") for location in item_locations]
+    if any(not location_id for location_id in location_ids) or len(set(location_ids)) != len(location_ids):
+        fail("item find locations have duplicate or empty ids")
+    item_ids = [item.get("id") for item in items]
+    if any(not item_id for item_id in item_ids) or len(set(item_ids)) != len(item_ids):
+        fail("adventure items have duplicate or empty ids")
+    item_id_set = set(item_ids)
+    mapped_item_ids = []
+    for location in item_locations:
+        if not location.get("title") or not location.get("detail"):
+            fail(f"item find location {location.get('id')} has no title or detail")
+        listed = location.get("itemIDs", [])
+        if not isinstance(listed, list):
+            fail(f"item find location {location.get('id')} has invalid itemIDs")
+        mapped_item_ids.extend(listed)
+    if set(mapped_item_ids) != item_id_set or len(mapped_item_ids) != len(item_ids):
+        fail("each adventure item must be mapped to exactly one find location")
+    all_consequence_ids = {
+        consequence.get("id")
+        for steps in steps_by_scene.values()
+        for step in steps
+        for consequence in step.get("roll", {}).get("failureConsequences", [])
+    }
+    for item in items:
+        item_id = item.get("id")
+        for required_key in ("title", "locationID", "detail", "effects"):
+            if not item.get(required_key):
+                fail(f"item {item_id} has no {required_key}")
+        if item.get("locationID") not in set(location_ids):
+            fail(f"item {item_id} references missing find location {item.get('locationID')}")
+        uses = item.get("initialUses")
+        if not isinstance(uses, int) or isinstance(uses, bool) or uses < 1:
+            fail(f"item {item_id} has invalid initialUses")
+        effects = item.get("effects", [])
+        effect_ids = [effect.get("id") for effect in effects]
+        if any(not effect_id for effect_id in effect_ids) or len(set(effect_ids)) != len(effect_ids):
+            fail(f"item {item_id} has duplicate or empty effect ids")
+        for effect in effects:
+            if not effect.get("title") or not effect.get("detail"):
+                fail(f"effect {effect.get('id')} in {item_id} has no title or detail")
+            if effect.get("timing") not in {"beforeRoll", "afterFailure"}:
+                fail(f"effect {effect.get('id')} in {item_id} has invalid timing")
+            modifier = effect.get("modifier")
+            if modifier is not None and (not isinstance(modifier, int) or isinstance(modifier, bool)):
+                fail(f"effect {effect.get('id')} in {item_id} has a non-integer modifier")
+            invalid_steps = set(effect.get("stepIDs", [])) - step_ids
+            if invalid_steps:
+                fail(f"effect {effect.get('id')} references missing steps: {sorted(invalid_steps)}")
+            invalid_scenes = set(effect.get("sceneIDs", [])) - scene_ids
+            if invalid_scenes:
+                fail(f"effect {effect.get('id')} references missing scenes: {sorted(invalid_scenes)}")
+            invalid_consequences = set(effect.get("consequenceIDs", [])) - all_consequence_ids
+            if invalid_consequences:
+                fail(f"effect {effect.get('id')} references missing consequences: {sorted(invalid_consequences)}")
+            invalid_endings = set(effect.get("endingIDs", [])) - ending_ids
+            if invalid_endings:
+                fail(f"effect {effect.get('id')} references missing endings: {sorted(invalid_endings)}")
+        weapon = item.get("weapon")
+        if weapon is not None:
+            if not isinstance(weapon, dict) or not weapon.get("skill") or not weapon.get("damageDice"):
+                fail(f"item {item_id} has an invalid weapon")
+            if not isinstance(weapon.get("ammunition"), int) or weapon["ammunition"] < 1:
+                fail(f"item {item_id} has invalid weapon ammunition")
+    if guide.get("characters"):
+        fail("guide must use player-supplied characters, not fixed story characters")
     destinations: set[str] = set()
     for scene_id, steps in steps_by_scene.items():
         for step in steps:
@@ -94,7 +165,7 @@ def main() -> None:
     if not destinations <= scene_ids:
         fail(f"guided flow references missing destination scenes: {sorted(destinations - scene_ids)}")
 
-    required_steps = {"S01_READ", "S01_CLUE", "S02_CHOICE", "S06_TRIGGER", "S07_DANGER", "S08_NEXT"}
+    required_steps = {"S01_READ", "S01_ITEMS", "S01_DISTRIBUTE", "S01_CLUE", "S02_CHOICE", "S06_TRIGGER", "S07_DANGER", "S08_NEXT"}
     if not required_steps <= step_ids:
         fail(f"required guide steps missing: {sorted(required_steps - step_ids)}")
 

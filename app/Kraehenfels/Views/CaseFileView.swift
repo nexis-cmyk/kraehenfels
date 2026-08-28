@@ -9,7 +9,7 @@ struct CaseFileView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 intro
-                hooks
+                players
                 facts
                 maps
                 endings
@@ -35,36 +35,33 @@ struct CaseFileView: View {
         }
     }
 
-    private var hooks: some View {
+    private var players: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(title: "Figuren-Verbindungen")
-            ForEach(content.manifest.travelHooks) { hook in
-                Button {
-                    if session.selectedHooks.values.contains(hook.id) {
-                        session.selectedHooks = session.selectedHooks.filter { $0.value != hook.id }
-                    } else if let emptyIndex = (0..<3).map(String.init).first(where: { session.selectedHooks[$0] == nil }) {
-                        session.selectedHooks[emptyIndex] = hook.id
-                    }
-                } label: {
-                    HStack(alignment: .top, spacing: 11) {
-                        Image(systemName: session.selectedHooks.values.contains(hook.id) ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(session.selectedHooks.values.contains(hook.id) ? FrostTheme.cobalt : FrostTheme.quiet)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(hook.title)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.white)
-                            Text(hook.prompt)
-                                .font(.caption)
-                                .foregroundStyle(FrostTheme.quiet)
-                        }
-                        Spacer()
-                    }
-                    .padding(13)
-                    .background(FrostTheme.panel, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+            SectionLabel(title: "Eigene Figuren")
+            Text("Die drei Figuren bringen ihre eigenen Werte, Berufe und Geschichten mit. Die Akte speichert hier nur die Namen.")
+                .font(.caption)
+                .foregroundStyle(FrostTheme.quiet)
+                .fixedSize(horizontal: false, vertical: true)
+            ForEach(0..<3, id: \.self) { index in
+                HStack(spacing: 10) {
+                    Image(systemName: "person.fill")
+                        .foregroundStyle(FrostTheme.cobalt)
+                    Text(playerName(at: index))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                    Spacer()
                 }
-                .buttonStyle(.plain)
+                .frame(minHeight: 44)
             }
         }
+        .padding(13)
+        .background(FrostTheme.panel, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+    }
+
+    private func playerName(at index: Int) -> String {
+        guard session.playerNames.indices.contains(index) else { return "Figur \(index + 1)" }
+        let name = session.playerNames[index].trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty ? "Figur \(index + 1)" : name
     }
 
     private var facts: some View {

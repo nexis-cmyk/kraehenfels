@@ -91,39 +91,27 @@ struct GMStartView: View {
 
     private var characterTable: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(title: "Die drei Reisenden")
-            Text("Diese Figuren sind sofort spielbereit. Lies nur den kurzen Hook vor; die übrigen Informationen bleiben bei dir.")
+            SectionLabel(title: "Drei eigene Figuren")
+            Text("Jede Person bringt ihren eigenen Charakter mit. Trage nur die Namen ein; Werte, Beruf und Geschichte bleiben auf euren eigenen Figurenbögen.")
                 .font(.subheadline)
                 .foregroundStyle(FrostTheme.quiet)
-            ForEach(content.guideCharacters) { character in
-                FrostCard {
-                    HStack(alignment: .top, spacing: 12) {
-                        Text(String(character.name.prefix(1)))
-                            .font(.title2.weight(.bold))
-                            .foregroundStyle(FrostTheme.ink)
-                            .frame(width: 42, height: 42)
-                            .background(FrostTheme.frost, in: Circle())
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(character.name)
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                            Text(character.role)
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(FrostTheme.cobalt)
-                            Text(character.hook)
-                                .font(.caption)
-                                .foregroundStyle(FrostTheme.quiet)
-                                .fixedSize(horizontal: false, vertical: true)
-                            Text(character.skills.joined(separator: " · "))
-                                .font(.caption2.monospaced())
-                                .foregroundStyle(FrostTheme.frost.opacity(0.82))
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        Spacer()
-                    }
+            ForEach(0..<3, id: \.self) { index in
+                HStack(spacing: 12) {
+                    Text("\(index + 1)")
+                        .font(.headline.monospaced().weight(.bold))
+                        .foregroundStyle(FrostTheme.ink)
+                        .frame(width: 34, height: 34)
+                        .background(FrostTheme.frost, in: Circle())
+                    TextField("Name der Figur", text: session.playerNameBinding(at: index))
+                        .textInputAutocapitalization(.words)
+                        .autocorrectionDisabled()
+                        .textFieldStyle(.roundedBorder)
+                        .frame(minHeight: 44)
                 }
             }
         }
+        .padding(16)
+        .background(FrostTheme.panel, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     private var tableBriefing: some View {
@@ -147,7 +135,6 @@ struct GMStartView: View {
     private var startButton: some View {
         VStack(spacing: 9) {
             Button {
-                session.playerNames = content.guideCharacters.map(\.name)
                 session.beginGuidedSession()
                 if let music = content.musicBed, !audio.isPlaying(music) {
                     audio.play(music)
@@ -165,10 +152,23 @@ struct GMStartView: View {
                     .padding(.vertical, 15)
                     .background(FrostTheme.frost, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
+            .disabled(!hasThreePlayerNames)
+            .opacity(hasThreePlayerNames ? 1 : 0.45)
             Text("Du kannst die Vorbereitung auch später nachholen.")
                 .font(.caption)
                 .foregroundStyle(FrostTheme.quiet)
+            if !hasThreePlayerNames {
+                Text("Bitte alle drei eigenen Figuren benennen, bevor die Runde startet.")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(FrostTheme.warning)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
+    }
+
+    private var hasThreePlayerNames: Bool {
+        session.playerNames.count == 3
+            && session.playerNames.allSatisfy { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 }
 
@@ -185,6 +185,7 @@ struct GuidedGMView: View {
     @State private var showCombat = false
     @State private var showAudioPlan = false
     @State private var showContext = false
+    @State private var showInventory = false
     @State private var pendingDestination: String?
     @State private var showBranchChangeConfirmation = false
 
@@ -234,10 +235,14 @@ struct GuidedGMView: View {
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle(content.scene(for: session.currentSceneID)?.shortTitle ?? "Spielleitung")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            session.migrateLegacyInventoryIfNeeded(itemIDs: content.guideItems.map(\.id))
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button("Materialien öffnen", systemImage: "folder") { showMaterials = true }
+                    Button("Ausrüstung öffnen", systemImage: "shippingbox") { showInventory = true }
                     Button("Regeln öffnen", systemImage: "dice") { showRules = true }
                     Button("Kontext anzeigen", systemImage: "sidebar.right") { showContext = true }
                 } label: {
@@ -248,15 +253,30 @@ struct GuidedGMView: View {
             }
         }
         .sheet(item: $rollStep) { step in
-            RollHelperView(step: step, selectedEndingID: session.selectedEndingID) { result, consequence in
+            RollHelperView(step: step, selectedEndingID: session.selectedEndingID) { result, consequence, itemSelections in
+                let itemUseRecords = itemSelections.compactMap { selection -> ItemUseRecord? in
+                    guard let item = content.item(for: selection.itemID) else { return nil }
+                    return session.useItem(
+                        itemID: selection.itemID,
+                        effectID: selection.effectID,
+                        sceneID: step.sceneID,
+                        stepID: step.id,
+                        maximumUses: item.initialUses
+                    )
+                }
+                guard itemUseRecords.count == itemSelections.count else {
+                    itemUseRecords.forEach { session.undoItemUse($0.id) }
+                    return
+                }
+                let itemUseIDs = itemUseRecords.map { $0.id.uuidString }
                 if step.id == "S07_DANGER" {
-                    let state = session.recordFinaleRoll(result, consequence: consequence)
+                    let state = session.recordFinaleRoll(result, consequence: consequence, itemUseIDs: itemUseIDs)
                     if state.isResolved {
                         advance(step)
                     }
                     return
                 }
-                session.recordRoll(stepID: step.id, result: result, consequence: consequence)
+                session.recordRoll(stepID: step.id, result: result, consequence: consequence, itemUseIDs: itemUseIDs)
                 advance(step)
             }
         }
@@ -294,6 +314,7 @@ struct GuidedGMView: View {
             Text("Gefundene Hinweise und Tischnotizen bleiben erhalten. Spätere Szenen werden ab dem neuen Ziel zurückgesetzt.")
         }
         .navigationDestination(isPresented: $showMaterials) { MaterialsView() }
+        .navigationDestination(isPresented: $showInventory) { InventoryView() }
         .navigationDestination(isPresented: $showRules) { RulesView() }
     }
 
@@ -328,6 +349,8 @@ struct GuidedGMView: View {
                             .background(FrostTheme.frost, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
                     }
                     .buttonStyle(.plain)
+                    .disabled(!canAdvance(step))
+                    .opacity(canAdvance(step) ? 1 : 0.45)
                 } else {
                     Text("Wähle den nächsten Schritt oben")
                         .font(.caption)
@@ -371,9 +394,16 @@ struct GuidedGMView: View {
             rollStep = step
         } else if step.kind == .readAloud {
             readAloudStep = step
-        } else {
+        } else if canAdvance(step) {
             advance(step)
         }
+    }
+
+    private func canAdvance(_ step: GuideStep) -> Bool {
+        if step.id == "S01_DISTRIBUTE" {
+            return session.isItemDistributionComplete(for: content.guideItems.map(\.id))
+        }
+        return true
     }
 
     private var progressHeader: some View {
@@ -498,6 +528,12 @@ struct GuidedGMView: View {
             } else {
                 noRollSummary(step)
             }
+            if step.kind == .itemSearch {
+                ItemFindingsPanel(locations: content.itemFindLocations, items: content.guideItems)
+            }
+            if step.kind == .itemDistribution {
+                ItemDistributionPanel()
+            }
             if step.id == "S07_GM" {
                 finaleModePicker
             }
@@ -581,6 +617,16 @@ struct GuidedGMView: View {
                     .foregroundStyle(FrostTheme.warning)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            if let previous = session.latestRollResolution(for: step.id), !previous.itemUseIDs.isEmpty {
+                let usedItems = previous.itemUseIDs.compactMap { UUID(uuidString: $0) }.compactMap { recordID in
+                    session.itemUseRecords.first(where: { $0.id == recordID }).flatMap { content.item(for: $0.itemID)?.title }
+                }
+                if !usedItems.isEmpty {
+                    Label("Eingesetzte Ausrüstung: \(usedItems.joined(separator: ", "))", systemImage: "shippingbox.fill")
+                        .foregroundStyle(FrostTheme.accent)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
             Button {
                 rollStep = step
             } label: {
@@ -614,6 +660,10 @@ struct GuidedGMView: View {
             message = "Keine Probe. Die Gruppe entscheidet. Wähle danach den passenden nächsten Schritt."
         case .roll:
             message = "Würfelprobe ist im Schritt angegeben."
+        case .itemSearch:
+            message = "Keine Probe. Alle sechs Gegenstände aus der Kutsche werden automatisch sichtbar."
+        case .itemDistribution:
+            message = "Keine Probe. Verteile die Gegenstände und gib jeder Figur mindestens einen."
         }
         return FrostCard {
             Label("WÜRFELSTATUS", systemImage: "dice")
@@ -751,19 +801,25 @@ struct GuidedGMView: View {
     }
 
     private var quickAccess: some View {
-        HStack(spacing: 10) {
-            NavigationLink(destination: MaterialsView()) {
-                Label("Materialien", systemImage: "folder")
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 10) {
+                NavigationLink(destination: MaterialsView()) {
+                    Label("Materialien", systemImage: "folder")
+                }
+                .buttonStyle(.bordered)
+                NavigationLink(destination: InventoryView()) {
+                    Label("Ausrüstung", systemImage: "shippingbox")
+                }
+                .buttonStyle(.bordered)
+                NavigationLink(destination: CaseFileView()) {
+                    Label("Fakten", systemImage: "magnifyingglass")
+                }
+                .buttonStyle(.bordered)
+                NavigationLink(destination: RulesView()) {
+                    Label("Regeln", systemImage: "dice")
+                }
+                .buttonStyle(.bordered)
             }
-            .buttonStyle(.bordered)
-            NavigationLink(destination: CaseFileView()) {
-                Label("Fakten", systemImage: "magnifyingglass")
-            }
-            .buttonStyle(.bordered)
-            NavigationLink(destination: RulesView()) {
-                Label("Regeln", systemImage: "dice")
-            }
-            .buttonStyle(.bordered)
         }
         .tint(FrostTheme.cobalt)
     }
@@ -830,6 +886,19 @@ struct GuidedGMView: View {
     }
 
     private func advance(_ step: GuideStep) {
+        guard canAdvance(step) else { return }
+        if step.id == "S08_NEXT" {
+            session.finishGuidedSession()
+            if let onExit {
+                onExit()
+            } else {
+                dismiss()
+            }
+            return
+        }
+        if step.id == "S01_ITEMS" {
+            session.discoverItems(content.guideItems.map(\.id))
+        }
         let guaranteedClues: [String: Set<String>] = [
             "S01_CLUE": ["C01", "C02"],
             "S02_CLUE": ["C03", "C04"],
@@ -852,7 +921,7 @@ struct GuidedGMView: View {
         case .readAloud: return FrostTheme.frost
         case .gmInfo: return FrostTheme.warning
         case .playerAction: return FrostTheme.cobalt
-        case .trigger, .roll, .clue, .choice, .next: return FrostTheme.accent
+        case .trigger, .roll, .clue, .choice, .next, .itemSearch, .itemDistribution: return FrostTheme.accent
         }
     }
 
@@ -867,14 +936,24 @@ struct GuidedGMView: View {
 }
 
 struct RollHelperView: View {
+    private struct ItemEffectOption: Identifiable {
+        let item: AdventureItem
+        let effect: ItemEffect
+
+        var id: String { "\(item.id):\(effect.id)" }
+    }
+
     let step: GuideStep
     let selectedEndingID: String?
-    let onResult: (RollEvaluator.Result, RollConsequence?) -> Void
+    let onResult: (RollEvaluator.Result, RollConsequence?, [ItemUseSelection]) -> Void
+    @EnvironmentObject private var content: ContentStore
+    @EnvironmentObject private var session: SessionStore
     @Environment(\.dismiss) private var dismiss
     @State private var targetText = "50"
     @State private var rollText = ""
     @State private var result: RollEvaluator.Result?
     @State private var selectedConsequenceID: String?
+    @State private var selectedItemEffectIDs: [String: String] = [:]
     @State private var validationMessage: String?
 
     private var roll: RollSpec? { step.roll }
@@ -882,6 +961,55 @@ struct RollHelperView: View {
     private func consequences(for spec: RollSpec) -> [RollConsequence] {
         let available = spec.failureConsequences.filter { $0.isAvailable(for: selectedEndingID) }
         return available.isEmpty ? spec.failureConsequences : available
+    }
+
+    private func itemEffects(timing: ItemEffectTiming, consequenceID: String? = nil) -> [ItemEffectOption] {
+        content.guideItems.flatMap { item in
+            guard session.ownerIndex(for: item.id) != nil, session.remainingUses(for: item) > 0 else { return [] }
+            return item.effects.compactMap { effect in
+                guard effect.timing == timing,
+                      effect.isAvailable(for: step.id, endingID: selectedEndingID),
+                      effect.consequenceIDs.isEmpty || (consequenceID.map(effect.consequenceIDs.contains) ?? false) else { return nil }
+                return ItemEffectOption(item: item, effect: effect)
+            }
+        }
+    }
+
+    private var beforeRollEffects: [ItemEffectOption] {
+        itemEffects(timing: .beforeRoll)
+    }
+
+    private var activeModifier: Int {
+        beforeRollEffects.reduce(0) { total, option in
+            selectedItemEffectIDs[option.item.id] == option.effect.id ? total + (option.effect.modifier ?? 0) : total
+        }
+    }
+
+    private func toggleItemEffect(_ option: ItemEffectOption) {
+        if selectedItemEffectIDs[option.item.id] == option.effect.id {
+            selectedItemEffectIDs.removeValue(forKey: option.item.id)
+        } else {
+            selectedItemEffectIDs[option.item.id] = option.effect.id
+        }
+        if option.effect.timing == .beforeRoll {
+            result = nil
+            selectedConsequenceID = nil
+        }
+        validationMessage = nil
+    }
+
+    private func selectedItemUses(for consequence: RollConsequence?) -> [ItemUseSelection] {
+        let options = itemEffects(timing: .beforeRoll) + itemEffects(timing: .afterFailure, consequenceID: consequence?.id)
+        return options.compactMap { option in
+            guard selectedItemEffectIDs[option.item.id] == option.effect.id else { return nil }
+            return ItemUseSelection(itemID: option.item.id, effectID: option.effect.id)
+        }
+    }
+
+    private func ownerName(for item: AdventureItem) -> String {
+        guard let index = session.ownerIndex(for: item.id), session.playerNames.indices.contains(index) else { return "Gruppe" }
+        let name = session.playerNames[index].trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty ? "Figur \(index + 1)" : name
     }
 
     var body: some View {
@@ -904,12 +1032,21 @@ struct RollHelperView: View {
                                     .foregroundStyle(FrostTheme.warning)
                             }
                         }
-                        input("Zielwert", text: $targetText, prompt: "z. B. 60")
+                        input("Basis-Zielwert", text: $targetText, prompt: "z. B. 60")
                         input("Gewürfeltes Ergebnis", text: $rollText, prompt: "1 bis 100")
-                        Text("Trage den Wert bereits inklusive eines passenden Modifikators ein. Die App würfelt nicht selbst.")
+                        Text("Trage den normalen Fähigkeitswert ein. Die App würfelt nicht selbst.")
                             .font(.caption)
                             .foregroundStyle(FrostTheme.quiet)
                             .fixedSize(horizontal: false, vertical: true)
+                        if !beforeRollEffects.isEmpty {
+                            itemEffectSelection(title: "AUSRÜSTUNG VOR DER PROBE", options: beforeRollEffects)
+                        }
+                        if activeModifier > 0 {
+                            Label("Effektiver Zielwert: Basis +\(activeModifier) = maximal 100", systemImage: "plus.circle.fill")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(FrostTheme.accent)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                         if let validationMessage {
                             Label(validationMessage, systemImage: "exclamationmark.triangle.fill")
                                 .font(.caption)
@@ -950,18 +1087,62 @@ struct RollHelperView: View {
         }
     }
 
+    private func itemEffectSelection(title: String, options: [ItemEffectOption]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            SectionLabel(title: title)
+            Text("Nur der besitzende Spieler kann den Einsatz ansagen. Die Anwendung wird erst beim Übernehmen verbraucht.")
+                .font(.caption)
+                .foregroundStyle(FrostTheme.quiet)
+                .fixedSize(horizontal: false, vertical: true)
+            ForEach(options) { option in
+                let selected = selectedItemEffectIDs[option.item.id] == option.effect.id
+                Button {
+                    toggleItemEffect(option)
+                } label: {
+                    HStack(alignment: .top, spacing: 9) {
+                        Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(selected ? FrostTheme.accent : FrostTheme.quiet)
+                            .font(.title3)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("\(option.item.title) · \(option.effect.title)")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.white)
+                            Text("Besitz: \(ownerName(for: option.item)) · noch \(session.remainingUses(for: option.item)) Anwendung(en)")
+                                .font(.caption2)
+                                .foregroundStyle(FrostTheme.cobalt)
+                            Text(option.effect.detail)
+                                .font(.caption)
+                                .foregroundStyle(FrostTheme.quiet)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .padding(10)
+                    .background(selected ? FrostTheme.accent.opacity(0.18) : FrostTheme.ink.opacity(0.42), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).stroke(selected ? FrostTheme.accent : FrostTheme.line, lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+            }
+        }
+        .padding(10)
+        .background(FrostTheme.ink.opacity(0.32), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
     private func evaluate(_ spec: RollSpec) {
-        guard let target = Int(targetText), let rolled = Int(rollText) else {
+        guard let baseTarget = Int(targetText), let rolled = Int(rollText) else {
             validationMessage = "Bitte Zielwert und Würfelergebnis als ganze Zahlen eintragen."
             result = nil
             return
         }
-        guard (1...100).contains(target), (1...100).contains(rolled) else {
+        guard (1...100).contains(baseTarget), (1...100).contains(rolled) else {
             validationMessage = "Beide Werte müssen zwischen 1 und 100 liegen."
             result = nil
             return
         }
         validationMessage = nil
+        let target = min(100, baseTarget + activeModifier)
         let evaluated = RollEvaluator.evaluate(roll: rolled, target: target, begabung: spec.begabung)
         result = evaluated
         let availableConsequences = evaluated.isSuccess ? [] : consequences(for: spec)
@@ -1027,6 +1208,12 @@ struct RollHelperView: View {
                             .buttonStyle(.plain)
                             .accessibilityAddTraits(isSelected ? .isSelected : [])
                         }
+                        if let selectedConsequence = availableConsequences.first(where: { $0.id == selectedConsequenceID }) {
+                            let protectionOptions = itemEffects(timing: .afterFailure, consequenceID: selectedConsequence.id)
+                            if !protectionOptions.isEmpty {
+                                itemEffectSelection(title: "AUSRÜSTUNG FÜR DIE FOLGE", options: protectionOptions)
+                            }
+                        }
                     }
                     .padding(.top, 4)
                 }
@@ -1038,7 +1225,7 @@ struct RollHelperView: View {
             let selectedConsequence = availableConsequences.first { $0.id == selectedConsequenceID }
             Button(result.isSuccess ? "Ergebnis übernehmen" : availableConsequences.isEmpty ? "Ergebnis übernehmen" : "Konsequenz übernehmen") {
                 guard result.isSuccess || availableConsequences.isEmpty || selectedConsequence != nil else { return }
-                onResult(result, selectedConsequence)
+                onResult(result, selectedConsequence, selectedItemUses(for: selectedConsequence))
                 dismiss()
             }
             .buttonStyle(.borderedProminent)

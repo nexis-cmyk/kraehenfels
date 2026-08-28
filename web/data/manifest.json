@@ -41,34 +41,6 @@
       "symbol": "sunrise.fill"
     }
   ],
-  "travelHooks": [
-    {
-      "id": "T01",
-      "title": "Die verschwundene Person",
-      "prompt": "Eine Person aus deinem Umfeld verschwand auf derselben Strecke.",
-      "linkedClueIds": [
-        "C03"
-      ]
-    },
-    {
-      "id": "T02",
-      "title": "Der versiegelte Auftrag",
-      "prompt": "Du sollst einen verschlossenen Brief an Bürgermeister Gruber übergeben.",
-      "linkedClueIds": [
-        "C02",
-        "C06"
-      ]
-    },
-    {
-      "id": "T03",
-      "title": "Der bekannte Name",
-      "prompt": "Du erkennst später einen Namen im Gästebuch, den du aus einem früheren Fall kennst.",
-      "linkedClueIds": [
-        "C03",
-        "C04"
-      ]
-    }
-  ],
   "threatLevels": [
     {
       "level": 0,
@@ -1663,67 +1635,11 @@
     }
   ],
   "guide": {
-    "characters": [
-      {
-        "id": "CHAR_CLARA",
-        "name": "Clara Neumann",
-        "role": "Journalistin",
-        "hook": "Eine Person aus Claras Umfeld verschwand auf derselben Strecke.",
-        "strengths": [
-          "Wissen",
-          "Soziales",
-          "Menschen einschätzen"
-        ],
-        "skills": [
-          "Wissen 65",
-          "Soziales 60",
-          "Menschen einschätzen 70",
-          "Handeln 35"
-        ],
-        "tablePrompt": "Clara fragt nach Namen, Widersprüchen und Dingen, die andere lieber verschweigen."
-      },
-      {
-        "id": "CHAR_OTTO",
-        "name": "Otto Weiss",
-        "role": "Ehemaliger Gendarm",
-        "hook": "Otto erkennt später einen Namen im Gästebuch aus einem alten Fall.",
-        "strengths": [
-          "Handeln",
-          "Wahrnehmung",
-          "Spuren sichern"
-        ],
-        "skills": [
-          "Handeln 65",
-          "Wahrnehmung 70",
-          "Spuren sichern 65",
-          "Soziales 40"
-        ],
-        "tablePrompt": "Otto achtet auf Türen, Wege, Werkzeuge und darauf, wer wann wo gewesen ist."
-      },
-      {
-        "id": "CHAR_JAKOB",
-        "name": "Dr. Jakob Adler",
-        "role": "Landarzt",
-        "hook": "Jakob soll Bürgermeister Gruber einen versiegelten Auftrag übergeben.",
-        "strengths": [
-          "Erste Hilfe",
-          "Wissen",
-          "Ruhig bleiben"
-        ],
-        "skills": [
-          "Erste Hilfe 75",
-          "Wissen 60",
-          "Ruhig bleiben 65",
-          "Handeln 35"
-        ],
-        "tablePrompt": "Jakob hilft Verletzten zuerst und stellt dann die Fragen, die niemand hören will."
-      }
-    ],
     "setupItems": [
       {
         "id": "print",
         "title": "Drucksachen",
-        "detail": "Spielerkarte, Detailkarten, Handouts H01–H10 und drei Figurenblätter."
+        "detail": "Spielerkarte, Detailkarten, Handouts H01–H10, drei eigene Figurenbögen und die sechs Gegenstandskarten."
       },
       {
         "id": "dice",
@@ -1744,6 +1660,181 @@
         "id": "safety",
         "title": "Sicherheitscheck",
         "detail": "Kurz klären, welche Horror-Motive heute okay sind und wann ihr pausiert."
+      }
+    ],
+    "itemFindLocations": [
+      {
+        "id": "coach-seat",
+        "title": "Sitzbank",
+        "detail": "Unter den verrutschten Sitzpolstern und dem nassen Reisezeug.",
+        "itemIDs": [
+          "item-wool-blanket",
+          "item-bandage-pouch"
+        ]
+      },
+      {
+        "id": "luggage-net",
+        "title": "Gepäcknetz",
+        "detail": "Im Netz über den Köpfen, zwischen Taschen und einer losen Decke.",
+        "itemIDs": [
+          "item-hemp-rope",
+          "item-storm-lantern"
+        ]
+      },
+      {
+        "id": "driver-box",
+        "title": "Fahrerfach am Kutschbock",
+        "detail": "Ein schmales Fach neben dem Sitz des Kutschers, das beim Unfall aufgesprungen ist.",
+        "itemIDs": [
+          "item-tool-roll",
+          "item-revolver"
+        ]
+      }
+    ],
+    "items": [
+      {
+        "id": "item-wool-blanket",
+        "title": "Wolldecke",
+        "locationID": "coach-seat",
+        "detail": "Dicke, feuchte Wolle. Sie hält eine Figur im Wald oder am Schrein noch einmal warm.",
+        "initialUses": 1,
+        "effects": [
+          {
+            "id": "blanket-warmth",
+            "title": "Wärme halten",
+            "detail": "Nach einem Fehlschlag mit Wärmeverlust kann die Decke diese erzählte Folge einmal auffangen.",
+            "stepIDs": [
+              "S05_ROLL",
+              "S07_DANGER"
+            ],
+            "consequenceIDs": [
+              "forest-cold",
+              "finale-warmth"
+            ],
+            "timing": "afterFailure"
+          }
+        ]
+      },
+      {
+        "id": "item-bandage-pouch",
+        "title": "Verbandtasche",
+        "locationID": "coach-seat",
+        "detail": "Leinen, saubere Binden und eine kleine Flasche Branntwein.",
+        "initialUses": 2,
+        "effects": [
+          {
+            "id": "bandage-first-aid",
+            "title": "+10 auf Erste Hilfe",
+            "detail": "Vor einer passenden Erste-Hilfe-Probe einsetzen. Die Tasche hat zwei Anwendungen.",
+            "stepIDs": [
+              "S01_ACT"
+            ],
+            "timing": "beforeRoll",
+            "modifier": 10
+          }
+        ]
+      },
+      {
+        "id": "item-hemp-rope",
+        "title": "Hanfseil",
+        "locationID": "luggage-net",
+        "detail": "Ein kräftiges Seil, lang genug für eine Rettung an der Böschung oder eine riskante Waldaktion.",
+        "initialUses": 1,
+        "effects": [
+          {
+            "id": "rope-rescue",
+            "title": "+10 für eine Rettung",
+            "detail": "Bei der ersten Rettung am Unfallort oder einer passenden riskanten Waldaktion einsetzen.",
+            "stepIDs": [
+              "S01_ACT",
+              "S05_ROLL"
+            ],
+            "timing": "beforeRoll",
+            "modifier": 10
+          }
+        ]
+      },
+      {
+        "id": "item-storm-lantern",
+        "title": "Sturmlaterne mit Öl",
+        "locationID": "luggage-net",
+        "detail": "Eine windgeschützte Laterne mit genug Öl für zwei Einsätze. Sie macht Schnee, Spuren und Feuer sichtbar.",
+        "initialUses": 2,
+        "effects": [
+          {
+            "id": "lantern-light",
+            "title": "+10 für Licht und Spuren",
+            "detail": "Bei einer passenden Probe im Wald oder Archiv einsetzen.",
+            "stepIDs": [
+              "S05_ROLL",
+              "S06_ROLL"
+            ],
+            "timing": "beforeRoll",
+            "modifier": 10
+          },
+          {
+            "id": "lantern-fire",
+            "title": "+10 für das Feuer",
+            "detail": "Im Ende Bindung zerstören liefert ein verbleibender Einsatz Öl und hilft bei der Zerstörungsprobe. Das alte Eisen von Marta bleibt trotzdem nötig.",
+            "stepIDs": [
+              "S07_DANGER"
+            ],
+            "endingIDs": [
+              "E03"
+            ],
+            "timing": "beforeRoll",
+            "modifier": 10
+          }
+        ]
+      },
+      {
+        "id": "item-tool-roll",
+        "title": "Werkzeugrolle",
+        "locationID": "driver-box",
+        "detail": "Zange, Schraubendreher und ein kleiner Schlüsselbund aus der Fahrerkiste.",
+        "initialUses": 1,
+        "effects": [
+          {
+            "id": "tools-door",
+            "title": "+10 für die Tür",
+            "detail": "Bei dem ruhigen Versuch, die verriegelte Tür zu öffnen, einmal einsetzen.",
+            "stepIDs": [
+              "S02_ROLL"
+            ],
+            "timing": "beforeRoll",
+            "modifier": 10
+          }
+        ]
+      },
+      {
+        "id": "item-revolver",
+        "title": "Alter Revolver",
+        "locationID": "driver-box",
+        "detail": "Ein abgenutzter Revolver mit drei Patronen. Er schafft Raum, löst aber weder den Pakt noch ersetzt er Eisen und Feuer.",
+        "initialUses": 3,
+        "effects": [
+          {
+            "id": "revolver-cover",
+            "title": "+10, um Raum zu schaffen",
+            "detail": "Im geführten Finale vor einer passenden Gefahrenszene-Probe einsetzen, wenn der Revolver den Knochenhirsch kurz auf Abstand hält.",
+            "stepIDs": [
+              "S07_DANGER"
+            ],
+            "endingIDs": [
+              "E01",
+              "E02",
+              "E03"
+            ],
+            "timing": "beforeRoll",
+            "modifier": 10
+          }
+        ],
+        "weapon": {
+          "skill": "Schusswaffen",
+          "damageDice": "7W10",
+          "ammunition": 3,
+          "unparryable": true
+        }
       }
     ],
     "playerBriefing": "Ihr seid Reisende im Schwarzwald des Jahres 1890. Eine manipulierte Kutschenpanne zwingt euch nach Krähenfels. Ihr wisst noch nichts von einem Pakt. Ihr dürft jederzeit Fragen stellen, Orte wählen und eigene Lösungen versuchen.",
@@ -1794,6 +1885,22 @@
             ],
             "critical": "Die Gruppe findet sofort einen sicheren Weg zum Auftrag."
           },
+          "sceneID": "S01"
+        },
+        {
+          "id": "S01_ITEMS",
+          "kind": "itemSearch",
+          "title": "Die Kutsche gibt etwas zurück",
+          "body": "Wenn die erste Aufregung nachlässt, lass die Gruppe die Kutsche durchsuchen. Die drei Fundorte sind die Sitzbank, das Gepäcknetz und das Fahrerfach am Kutschbock. Alle sechs Gegenstände werden gefunden; dafür ist keine Probe nötig und nichts kann dauerhaft übersehen werden.",
+          "actionLabel": "Gegenstände aufdecken",
+          "sceneID": "S01"
+        },
+        {
+          "id": "S01_DISTRIBUTE",
+          "kind": "itemDistribution",
+          "title": "Gemeinsame Ausrüstung verteilen",
+          "body": "Nennt zuerst die drei eigenen Figuren. Verteilt anschließend alle sechs Gegenstände untereinander. Jede Figur braucht mindestens einen Gegenstand; wie die übrigen verteilt werden, entscheidet ihr selbst. Später darf die Gruppe Gegenstände weitergeben.",
+          "actionLabel": "Verteilung abschließen",
           "sceneID": "S01"
         },
         {
@@ -2326,7 +2433,7 @@
             {
               "id": "renew",
               "title": "Gastrecht erneuern",
-              "detail": "Eine Figur übernimmt den alten Eid.",
+              "detail": "Die Gruppe übernimmt gemeinsam Verantwortung für den alten Eid.",
               "endingID": "E02"
             },
             {
@@ -2345,7 +2452,7 @@
           "body": "Im geführten Modus würfelt die Gruppe die passende Fertigkeit des gewählten Endes. Zwei Erfolge vor zwei Fehlschlägen reichen. Bei E01 passt Soziales, bei E02 Wissen oder Soziales, bei E03 Handeln mit dem Eisen.",
           "actionLabel": "Probe auswerten",
           "roll": {
-            "actor": "Die Figur mit dem stärksten persönlichen Bezug",
+            "actor": "Eine Figur, die die Gruppe für diesen Versuch bestimmt",
             "ability": "Passende Fähigkeit des gewählten Endes",
             "target": "Der Wert der gewählten Fertigkeit",
             "modifier": "Ein zuvor passender Hinweis gibt +10; ein kritischer Misserfolg zählt als zwei Fehlschläge.",

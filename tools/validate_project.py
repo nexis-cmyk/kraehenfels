@@ -123,7 +123,7 @@ def main() -> None:
             fail(f"Native bundle contains duplicate audio resources: {duplicate_of} and {cue['id']}")
         seen_fingerprints[fingerprint] = cue["id"]
 
-    for name in ("00_Spielstart.pdf", "01_Karte_Spieler.pdf", "01_Karte_SL.pdf", "01_Karten_Detail.pdf", "02_Handouts.pdf", "03_Figurenbau.pdf", "10_SL_Abenteuer.pdf", "11_SL_Schnellreferenz.pdf", "12_SL_Am_Tisch.pdf", "13_SL_Spoiler-Handouts.pdf", "14_Soundboard-Cues.pdf"):
+    for name in ("00_Spielstart.pdf", "01_Karte_Spieler.pdf", "01_Karte_SL.pdf", "01_Karten_Detail.pdf", "02_Handouts.pdf", "03_Figurenbau.pdf", "04_Gegenstandskarten.pdf", "10_SL_Abenteuer.pdf", "11_SL_Schnellreferenz.pdf", "12_SL_Am_Tisch.pdf", "13_SL_Spoiler-Handouts.pdf", "14_Soundboard-Cues.pdf"):
         path = ROOT / "outputs" / name
         if not path.exists(): fail(f"Missing PDF: {name}")
         pages = len(PdfReader(str(path)).pages)
@@ -136,6 +136,10 @@ def main() -> None:
     player_map_text = "\n".join(page.extract_text() or "" for page in PdfReader(str(ROOT / "outputs" / "01_Karte_Spieler.pdf")).pages)
     if "Spielerkarte" not in player_map_text:
         fail("Player map is missing its player-safe marker")
+    item_cards_text = "\n".join(page.extract_text() or "" for page in PdfReader(str(ROOT / "outputs" / "04_Gegenstandskarten.pdf")).pages)
+    for title in ("Wolldecke", "Verbandtasche", "Hanfseil", "Sturmlaterne mit Öl", "Werkzeugrolle", "Alter Revolver"):
+        if title not in item_cards_text:
+            fail(f"Item cards are missing: {title}")
 
     for path in [ROOT / "content" / "scenario.md", ROOT / "content" / "handouts.md", ROOT / "content" / "character_creation.md"]:
         path.read_text(encoding="utf-8")

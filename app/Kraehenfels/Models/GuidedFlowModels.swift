@@ -9,6 +9,8 @@ enum GuideStepKind: String, Codable, Hashable {
     case clue
     case choice
     case next
+    case itemSearch
+    case itemDistribution
 
     var label: String {
         switch self {
@@ -20,6 +22,8 @@ enum GuideStepKind: String, Codable, Hashable {
         case .clue: return "HINWEIS ODER GEGENSTAND"
         case .choice: return "ENTSCHEIDUNG"
         case .next: return "NÄCHSTER SCHRITT"
+        case .itemSearch: return "GEGENSTÄNDE FINDEN"
+        case .itemDistribution: return "AUSRÜSTUNG VERTEILEN"
         }
     }
 
@@ -33,6 +37,8 @@ enum GuideStepKind: String, Codable, Hashable {
         case .clue: return "doc.text.magnifyingglass"
         case .choice: return "arrow.triangle.branch"
         case .next: return "arrow.right.circle.fill"
+        case .itemSearch: return "shippingbox.fill"
+        case .itemDistribution: return "person.3.sequence.fill"
         }
     }
 }
@@ -261,17 +267,182 @@ struct SetupItem: Codable, Identifiable, Hashable {
     let detail: String
 }
 
+enum ItemEffectTiming: String, Codable, Hashable {
+    case beforeRoll
+    case afterFailure
+}
+
+struct ItemEffect: Codable, Identifiable, Hashable {
+    let id: String
+    let title: String
+    let detail: String
+    let sceneIDs: [String]
+    let stepIDs: [String]
+    let consequenceIDs: [String]
+    let endingIDs: [String]
+    let timing: ItemEffectTiming
+    let modifier: Int?
+
+    init(
+        id: String,
+        title: String,
+        detail: String,
+        sceneIDs: [String] = [],
+        stepIDs: [String] = [],
+        consequenceIDs: [String] = [],
+        endingIDs: [String] = [],
+        timing: ItemEffectTiming = .beforeRoll,
+        modifier: Int? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.detail = detail
+        self.sceneIDs = sceneIDs
+        self.stepIDs = stepIDs
+        self.consequenceIDs = consequenceIDs
+        self.endingIDs = endingIDs
+        self.timing = timing
+        self.modifier = modifier
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, title, detail, sceneIDs, stepIDs, consequenceIDs, endingIDs, timing, modifier
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        detail = try container.decode(String.self, forKey: .detail)
+        sceneIDs = try container.decodeIfPresent([String].self, forKey: .sceneIDs) ?? []
+        stepIDs = try container.decodeIfPresent([String].self, forKey: .stepIDs) ?? []
+        consequenceIDs = try container.decodeIfPresent([String].self, forKey: .consequenceIDs) ?? []
+        endingIDs = try container.decodeIfPresent([String].self, forKey: .endingIDs) ?? []
+        timing = try container.decodeIfPresent(ItemEffectTiming.self, forKey: .timing) ?? .beforeRoll
+        modifier = try container.decodeIfPresent(Int.self, forKey: .modifier)
+    }
+
+    func isAvailable(for stepID: String, endingID: String?) -> Bool {
+        let matchesStep = stepIDs.isEmpty || stepIDs.contains(stepID)
+        let matchesEnding = endingIDs.isEmpty || (endingID.map(endingIDs.contains) ?? false)
+        return matchesStep && matchesEnding
+    }
+}
+
+struct ItemWeapon: Codable, Hashable {
+    let skill: String
+    let damageDice: String
+    let ammunition: Int
+    let unparryable: Bool
+
+    init(skill: String, damageDice: String, ammunition: Int, unparryable: Bool = false) {
+        self.skill = skill
+        self.damageDice = damageDice
+        self.ammunition = ammunition
+        self.unparryable = unparryable
+    }
+}
+
+struct AdventureItem: Codable, Identifiable, Hashable {
+    let id: String
+    let title: String
+    let locationID: String
+    let detail: String
+    let initialUses: Int
+    let effects: [ItemEffect]
+    let weapon: ItemWeapon?
+
+    init(
+        id: String,
+        title: String,
+        locationID: String,
+        detail: String,
+        initialUses: Int = 1,
+        effects: [ItemEffect] = [],
+        weapon: ItemWeapon? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.locationID = locationID
+        self.detail = detail
+        self.initialUses = max(0, initialUses)
+        self.effects = effects
+        self.weapon = weapon
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, title, locationID, detail, initialUses, effects, weapon
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        locationID = try container.decode(String.self, forKey: .locationID)
+        detail = try container.decode(String.self, forKey: .detail)
+        initialUses = max(0, try container.decodeIfPresent(Int.self, forKey: .initialUses) ?? 1)
+        effects = try container.decodeIfPresent([ItemEffect].self, forKey: .effects) ?? []
+        weapon = try container.decodeIfPresent(ItemWeapon.self, forKey: .weapon)
+    }
+}
+
+struct ItemFindLocation: Codable, Identifiable, Hashable {
+    let id: String
+    let title: String
+    let detail: String
+    let itemIDs: [String]
+}
+
 struct GuideContent: Codable {
     let characters: [QuickCharacter]
     let setupItems: [SetupItem]
     let playerBriefing: String
     let hiddenFromPlayers: String
+    let itemFindLocations: [ItemFindLocation]
+    let items: [AdventureItem]
     let steps: [String: [GuideStep]]
 
-    static let empty = GuideContent(characters: [], setupItems: [], playerBriefing: "", hiddenFromPlayers: "", steps: [:])
+    init(
+        characters: [QuickCharacter] = [],
+        setupItems: [SetupItem] = [],
+        playerBriefing: String = "",
+        hiddenFromPlayers: String = "",
+        itemFindLocations: [ItemFindLocation] = [],
+        items: [AdventureItem] = [],
+        steps: [String: [GuideStep]] = [:]
+    ) {
+        self.characters = characters
+        self.setupItems = setupItems
+        self.playerBriefing = playerBriefing
+        self.hiddenFromPlayers = hiddenFromPlayers
+        self.itemFindLocations = itemFindLocations
+        self.items = items
+        self.steps = steps
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case characters, setupItems, playerBriefing, hiddenFromPlayers, itemFindLocations, items, steps
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        characters = try container.decodeIfPresent([QuickCharacter].self, forKey: .characters) ?? []
+        setupItems = try container.decodeIfPresent([SetupItem].self, forKey: .setupItems) ?? []
+        playerBriefing = try container.decodeIfPresent(String.self, forKey: .playerBriefing) ?? ""
+        hiddenFromPlayers = try container.decodeIfPresent(String.self, forKey: .hiddenFromPlayers) ?? ""
+        itemFindLocations = try container.decodeIfPresent([ItemFindLocation].self, forKey: .itemFindLocations) ?? []
+        items = try container.decodeIfPresent([AdventureItem].self, forKey: .items) ?? []
+        steps = try container.decodeIfPresent([String: [GuideStep]].self, forKey: .steps) ?? [:]
+    }
+
+    static let empty = GuideContent()
 
     func steps(for sceneID: String) -> [GuideStep] {
         steps[sceneID] ?? []
+    }
+
+    func item(for id: String) -> AdventureItem? {
+        items.first(where: { $0.id == id })
     }
 }
 
@@ -291,8 +462,9 @@ struct RollResolutionRecord: Codable, Identifiable, Hashable {
     let isCriticalFailure: Bool
     let consequenceID: String?
     let consequenceTitle: String?
+    let itemUseIDs: [String]
 
-    init(stepID: String, result: RollEvaluator.Result, consequence: RollConsequence?) {
+    init(stepID: String, result: RollEvaluator.Result, consequence: RollConsequence?, itemUseIDs: [String] = []) {
         id = UUID()
         self.stepID = stepID
         roll = result.roll
@@ -302,7 +474,47 @@ struct RollResolutionRecord: Codable, Identifiable, Hashable {
         isCriticalFailure = result.isCriticalFailure
         consequenceID = consequence?.id
         consequenceTitle = consequence?.title
+        self.itemUseIDs = itemUseIDs
     }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, stepID, roll, target, label, isSuccess, isCriticalFailure, consequenceID, consequenceTitle, itemUseIDs
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        stepID = try container.decode(String.self, forKey: .stepID)
+        roll = try container.decode(Int.self, forKey: .roll)
+        target = try container.decode(Int.self, forKey: .target)
+        label = try container.decode(String.self, forKey: .label)
+        isSuccess = try container.decode(Bool.self, forKey: .isSuccess)
+        isCriticalFailure = try container.decode(Bool.self, forKey: .isCriticalFailure)
+        consequenceID = try container.decodeIfPresent(String.self, forKey: .consequenceID)
+        consequenceTitle = try container.decodeIfPresent(String.self, forKey: .consequenceTitle)
+        itemUseIDs = try container.decodeIfPresent([String].self, forKey: .itemUseIDs) ?? []
+    }
+}
+
+struct ItemUseRecord: Codable, Identifiable, Hashable {
+    let id: UUID
+    let itemID: String
+    let effectID: String
+    let sceneID: String
+    let stepID: String
+
+    init(itemID: String, effectID: String, sceneID: String, stepID: String) {
+        id = UUID()
+        self.itemID = itemID
+        self.effectID = effectID
+        self.sceneID = sceneID
+        self.stepID = stepID
+    }
+}
+
+struct ItemUseSelection: Hashable {
+    let itemID: String
+    let effectID: String
 }
 
 enum RollEvaluator {

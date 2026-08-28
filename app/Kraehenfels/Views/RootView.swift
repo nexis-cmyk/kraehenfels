@@ -5,6 +5,7 @@ enum WorkspaceDestination: Hashable {
     case preparation
     case scene(String)
     case materials
+    case inventory
     case rules
     case session
     case audioCheck
@@ -82,6 +83,7 @@ struct RootView: View {
 
             Section("Werkzeuge") {
                 NavigationLink(value: WorkspaceDestination.materials) { Label("Materialien", systemImage: "folder") }
+                NavigationLink(value: WorkspaceDestination.inventory) { Label("Ausrüstung", systemImage: "shippingbox") }
                 NavigationLink(value: WorkspaceDestination.rules) { Label("Regeln", systemImage: "dice") }
                 NavigationLink(value: WorkspaceDestination.session) { Label("Am Tisch", systemImage: "person.3") }
                 NavigationLink(value: WorkspaceDestination.audioCheck) { Label("Audio-Check", systemImage: "waveform") }
@@ -108,9 +110,11 @@ struct RootView: View {
                 onExit: { selection = .home }
             )
         case .scene(_):
-            GuidedGMView(onExit: { selection = session.hasStartedSession ? .home : .preparation })
+            GuidedGMView(onExit: { selection = .home })
         case .materials:
             MaterialsView()
+        case .inventory:
+            InventoryView()
         case .rules:
             RulesView()
         case .session:
@@ -218,6 +222,7 @@ private struct WorkspaceHomeView: View {
     private var materialPanel: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
             homeAction("Materialien", "folder", .materials)
+            homeAction("Ausrüstung", "shippingbox", .inventory)
             homeAction("Regeln", "dice", .rules)
             homeAction("Audio-Check", "waveform", .audioCheck)
             homeAction("Akte", "magnifyingglass", .dossier)

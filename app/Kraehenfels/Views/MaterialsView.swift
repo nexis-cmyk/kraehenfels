@@ -29,6 +29,9 @@ struct MaterialsView: View {
                         Label(scene.title == "Das schwarze Keiler" ? "Der Schwarze Keiler" : scene.title, systemImage: "location.fill")
                     }
                 }
+                NavigationLink(destination: InventoryView()) {
+                    Label("Gemeinsame Ausrüstung", systemImage: "shippingbox")
+                }
                 NavigationLink(destination: CaseFileView()) {
                     Label("Fakten und Hinweiskette", systemImage: "magnifyingglass")
                 }

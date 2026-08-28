@@ -5,6 +5,8 @@ export const guideKindLabels = {
   trigger: "WENN DAS PASSIERT",
   roll: "WÜRFELPROBE",
   clue: "HINWEIS ODER GEGENSTAND",
+  itemSearch: "GEGENSTÄNDE FINDEN",
+  itemDistribution: "AUSRÜSTUNG VERTEILEN",
   choice: "ENTSCHEIDUNG",
   next: "NÄCHSTER SCHRITT",
 };
