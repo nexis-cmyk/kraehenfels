@@ -965,7 +965,7 @@ struct RollHelperView: View {
 
     private func itemEffects(timing: ItemEffectTiming, consequenceID: String? = nil) -> [ItemEffectOption] {
         content.guideItems.flatMap { item in
-            guard session.ownerIndex(for: item.id) != nil, session.remainingUses(for: item) > 0 else { return [] }
+            guard session.ownerIndex(for: item.id) != nil, session.remainingUses(for: item) > 0 else { return [ItemEffectOption]() }
             return item.effects.compactMap { effect in
                 guard effect.timing == timing,
                       effect.isAvailable(for: step.id, endingID: selectedEndingID),
