@@ -114,6 +114,14 @@ struct InventoryView: View {
                         }
                     }
                 }
+                if item.playerCardAsset != nil {
+                    NavigationLink(destination: ItemCardPreviewView(item: item)) {
+                        Label("Spielerkarte anzeigen / teilen", systemImage: "photo")
+                            .frame(maxWidth: .infinity, minHeight: 40)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(FrostTheme.cobalt)
+                }
                 ownerMenu(for: item)
             }
         }
@@ -181,9 +189,11 @@ struct ItemFindingsPanel: View {
                         .fixedSize(horizontal: false, vertical: true)
                     ForEach(location.itemIDs, id: \.self) { itemID in
                         if let item = items.first(where: { $0.id == itemID }) {
-                            Label(item.title, systemImage: item.weapon == nil ? "shippingbox" : "scope")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(item.weapon == nil ? FrostTheme.cobalt : FrostTheme.warning)
+                            NavigationLink(destination: ItemCardPreviewView(item: item)) {
+                                Label(item.title, systemImage: item.weapon == nil ? "shippingbox" : "scope")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(item.weapon == nil ? FrostTheme.cobalt : FrostTheme.warning)
+                            }
                         }
                     }
                 }

@@ -217,11 +217,16 @@ def build_item_cards(path: Path, data: dict) -> None:
         c.line(x + 7 * mm, y + card_height - 31 * mm, x + card_width - 7 * mm, y + card_height - 31 * mm)
         body_y = y + 9 * mm
         body_height = card_height - 43 * mm
-        detail = f"<b>Beschreibung:</b> {escape(item.get('detail', ''))}<br/><br/><b>Anwendungen:</b> {int(item.get('initialUses', 1))}"
-        for effect in item.get("effects", []):
-            timing = "Vor der Probe" if effect.get("timing") == "beforeRoll" else "Nach einem Fehlschlag"
-            modifier = f" · Zielwert +{effect['modifier']}" if effect.get("modifier") else ""
-            detail += f"<br/><br/><b>{escape(timing)} · {escape(effect.get('title', ''))}{escape(modifier)}:</b> {escape(effect.get('detail', ''))}"
+        detail = f"<b>Beschreibung:</b> {escape(item.get('playerCardDetail', item.get('detail', '')))}<br/><br/><b>Anwendungen:</b> {int(item.get('initialUses', 1))}"
+        player_uses = item.get("playerCardUses", [])
+        if player_uses:
+            for use in player_uses:
+                detail += f"<br/><br/>{escape(use)}"
+        else:
+            for effect in item.get("effects", []):
+                timing = "Vor der Probe" if effect.get("timing") == "beforeRoll" else "Nach einem Fehlschlag"
+                modifier = f" · Zielwert +{effect['modifier']}" if effect.get("modifier") else ""
+                detail += f"<br/><br/><b>{escape(timing)} · {escape(effect.get('title', ''))}{escape(modifier)}:</b> {escape(effect.get('detail', ''))}"
         weapon = item.get("weapon")
         if weapon:
             detail += f"<br/><br/><b>Waffe:</b> {escape(weapon.get('skill', 'Schusswaffen'))} · {escape(weapon.get('damageDice', '7W10'))} Schaden · {int(weapon.get('ammunition', 0))} Patronen · nicht parierbar"
@@ -238,13 +243,13 @@ def draw_newspaper(c: canvas.Canvas, x: float, y: float, w: float, h: float) -> 
     c.roundRect(x, y, w, h, 2 * mm, fill=1, stroke=0)
     c.setFillColor(CHARCOAL)
     c.setFont("Times-Bold", 24)
-    c.drawCentredString(x + w / 2, y + h - 20 * mm, "DER KRÄHENFELSER BOTEN")
+    c.drawCentredString(x + w / 2, y + h - 20 * mm, "DER KRÄHENFELSER BOTE")
     c.setFont("Times-Roman", 7)
     c.drawCentredString(x + w / 2, y + h - 27 * mm, "Ausgabe vom 28. November 1890 · Preis 5 Pfennig")
     c.setStrokeColor(CHARCOAL)
     c.line(x + 10 * mm, y + h - 31 * mm, x + w - 10 * mm, y + h - 31 * mm)
     col = (w - 30 * mm) / 2
-    paragraph(c, "<b>REISENDE NICHT ANGEKOMMEN</b><br/><br/>Drei Reisende, die über den alten Pass nach Krähenfels kamen, haben ihre Weiterfahrt nicht angetreten. Der Gemeinderat verweist auf die Witterung. Angehörige werden gebeten, Namen nicht unnötig zu wiederholen.<br/><br/><b>GASTHOF MELDET VOLLE BELEGUNG</b><br/><br/>Der schwarze Keiler nimmt bei Schnee weiterhin Gäste auf. Bürgermeister Gruber erinnert an die Pflicht jedes Hauses, Fremden bis zum Morgen Schutz zu gewähren.", x + 10 * mm, y + 22 * mm, col, h - 62 * mm, text_style("newsleft", 9.2, 11, CHARCOAL, "Times-Roman"))
+    paragraph(c, "<b>REISENDE NICHT ANGEKOMMEN</b><br/><br/>Am 23. November erreichten drei Reisende Krähenfels über den alten Pass. Ihre Weiterfahrt am folgenden Morgen fand nicht statt. Der Gemeinderat verweist auf die Witterung. Angehörige werden gebeten, Namen nicht unnötig zu wiederholen.<br/><br/><b>GASTHOF MELDET VOLLE BELEGUNG</b><br/><br/>Der schwarze Keiler nimmt bei Schnee weiterhin Gäste auf. Bürgermeister Gruber erinnert an die Pflicht jedes Hauses, Fremden bis zum Morgen Schutz zu gewähren.", x + 10 * mm, y + 22 * mm, col, h - 62 * mm, text_style("newsleft", 9.2, 11, CHARCOAL, "Times-Roman"))
     paragraph(c, "<b>WINTERDIENST VERSCHOBEN</b><br/><br/>Die Wege zur Alten Eiche bleiben bis auf Weiteres gesperrt. Eine private Prozession ist nicht genehmigt.<br/><br/><b>VOM WALDRAND</b><br/><br/>Ein Holzfäller berichtet von Spuren, die im Schnee als Hufe beginnen und in menschlichen Sohlen enden. Der Bericht wurde nicht bestätigt.", x + 20 * mm + col, y + 22 * mm, col, h - 62 * mm, text_style("newsright", 9.2, 11, CHARCOAL, "Times-Roman"))
     # A real broadsheet needs a lower news rail as well; it keeps the evidence
     # useful and prevents the page from reading like a sparse text mockup.
@@ -470,6 +475,65 @@ def draw_rubbing(c: canvas.Canvas, x: float, y: float, w: float, h: float) -> No
     c.drawString(x + 17 * mm, y + 14 * mm, "Nicht laut lesen, wenn Gruber im Raum ist.")
 
 
+def draw_forest_route(c: canvas.Canvas, x: float, y: float, w: float, h: float) -> None:
+    """Draw a player-safe route sketch that actually connects the inn and the oak."""
+    c.setFillColor(colors.HexColor("#E4D5B8"))
+    c.roundRect(x, y, w, h, 2 * mm, fill=1, stroke=0)
+    c.setStrokeColor(colors.HexColor("#8E7654"))
+    c.setLineWidth(0.8)
+    c.rect(x + 8 * mm, y + 8 * mm, w - 16 * mm, h - 16 * mm, fill=0, stroke=1)
+    c.setFillColor(CHARCOAL)
+    c.setFont("Courier-Bold", 16)
+    c.drawString(x + 15 * mm, y + h - 20 * mm, "SKIZZE DES FORSTWEGS")
+    c.setFont("Courier-Oblique", 8)
+    c.drawRightString(x + w - 15 * mm, y + h - 19 * mm, "Rückseite des Schwarzen Keilers")
+
+    points = [
+        (x + 25 * mm, y + 45 * mm, "HINTERHOF"),
+        (x + 55 * mm, y + 95 * mm, "SCHMALER FORSTWEG"),
+        (x + 105 * mm, y + 128 * mm, "ALTE HOLZBRÜCKE"),
+        (x + 125 * mm, y + 180 * mm, "GESPALTENER GRENZSTEIN"),
+        (x + w - 35 * mm, y + h - 55 * mm, "ALTE EICHE"),
+    ]
+    c.setStrokeColor(colors.HexColor("#6B5A43"))
+    c.setLineWidth(2.1)
+    c.setDash(5, 4)
+    path = c.beginPath()
+    path.moveTo(points[0][0], points[0][1])
+    for px, py, _ in points[1:]:
+        path.lineTo(px, py)
+    c.drawPath(path, stroke=1, fill=0)
+    c.setDash()
+
+    c.setStrokeColor(colors.HexColor("#426B72"))
+    c.setLineWidth(3)
+    stream_y = y + 118 * mm
+    c.bezier(x + 12 * mm, stream_y - 16 * mm, x + 75 * mm, stream_y + 14 * mm, x + 120 * mm, stream_y - 17 * mm, x + w - 12 * mm, stream_y + 8 * mm)
+    c.setStrokeColor(colors.HexColor("#765C3A"))
+    c.setLineWidth(6)
+    c.line(points[2][0] - 10 * mm, points[2][1] - 5 * mm, points[2][0] + 10 * mm, points[2][1] + 5 * mm)
+
+    for index, (px, py, label) in enumerate(points):
+        c.setFillColor(RUST if index == len(points) - 1 else colors.HexColor("#315945"))
+        c.circle(px, py, 4.2 * mm, fill=1, stroke=0)
+        c.setFillColor(CHARCOAL)
+        c.setFont("Courier-Bold", 7.2)
+        label_x = min(px + 7 * mm, x + w - 62 * mm)
+        c.drawString(label_x, py - 1.5 * mm, label)
+
+    c.setStrokeColor(colors.HexColor("#315945"))
+    c.setLineWidth(1.1)
+    for tx, ty in ((35, 185), (58, 205), (82, 170), (148, 110), (155, 155), (48, 145), (92, 225)):
+        bx, by = x + tx * mm, y + ty * mm
+        c.line(bx, by, bx, by + 12 * mm)
+        c.line(bx, by + 8 * mm, bx - 5 * mm, by + 3 * mm)
+        c.line(bx, by + 8 * mm, bx + 5 * mm, by + 3 * mm)
+
+    c.setFillColor(colors.HexColor("#665743"))
+    c.setFont("Courier-Oblique", 8.5)
+    c.drawString(x + 15 * mm, y + 18 * mm, "Dem roten Faden folgen. Am Grenzstein links halten.")
+
+
 def draw_handout(c: canvas.Canvas, hid: str, title: str, spoiler: bool = False) -> None:
     width, height = A4
     c.setFillColor(PAPER if not spoiler else colors.HexColor("#25191D"))
@@ -528,7 +592,7 @@ def draw_handout(c: canvas.Canvas, hid: str, title: str, spoiler: bool = False) 
     elif hid == "H04":
         draw_oath(c, x, y, w, h)
     elif hid == "H10":
-        image_contain(c, ASSETS / "map-v3-oak-player.png", x, y, w, h, colors.HexColor("#E2D4B8"))
+        draw_forest_route(c, x, y, w, h)
     else:
         c.setFillColor(colors.HexColor("#E7DDC8"))
         c.rect(x, y, w, h, fill=1, stroke=0)

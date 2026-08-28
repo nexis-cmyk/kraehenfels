@@ -212,6 +212,7 @@ struct NPCEntry: Codable, Identifiable, Hashable {
     let hides: [String]
     let givesHandoutIds: [String]
     let prompts: [String]
+    let appearances: [NPCAppearance]
     let cueIds: [String]
     let states: [String]
     let portrait: String?
@@ -226,14 +227,24 @@ struct NPCEntry: Codable, Identifiable, Hashable {
         hides = try container.decodeIfPresent([String].self, forKey: .hides) ?? []
         givesHandoutIds = try container.decodeIfPresent([String].self, forKey: .givesHandoutIds) ?? []
         prompts = try container.decodeIfPresent([String].self, forKey: .prompts) ?? []
+        appearances = try container.decodeIfPresent([NPCAppearance].self, forKey: .appearances) ?? []
         cueIds = try container.decodeIfPresent([String].self, forKey: .cueIds) ?? []
         states = try container.decodeIfPresent([String].self, forKey: .states) ?? []
         portrait = try container.decodeIfPresent(String.self, forKey: .portrait)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, role, description, knows, hides, givesHandoutIds, prompts, cueIds, states, portrait
+        case id, name, role, description, knows, hides, givesHandoutIds, prompts, appearances, cueIds, states, portrait
     }
+}
+
+struct NPCAppearance: Codable, Hashable, Identifiable {
+    var id: String { sceneId }
+    let sceneId: String
+    let when: String
+    let playAs: String
+    let openingLine: String
+    let turn: String
 }
 
 struct ClueEntry: Codable, Identifiable, Hashable {
@@ -268,6 +279,7 @@ struct HandoutEntry: Codable, Identifiable, Hashable {
     let spoiler: Bool
     let fallback: String
     let asset: String?
+    let previewAsset: String?
     let linkedClueIds: [String]
 
     init(from decoder: Decoder) throws {
@@ -278,11 +290,12 @@ struct HandoutEntry: Codable, Identifiable, Hashable {
         spoiler = try container.decodeIfPresent(Bool.self, forKey: .spoiler) ?? false
         fallback = try container.decode(String.self, forKey: .fallback)
         asset = try container.decodeIfPresent(String.self, forKey: .asset)
+        previewAsset = try container.decodeIfPresent(String.self, forKey: .previewAsset)
         linkedClueIds = try container.decodeIfPresent([String].self, forKey: .linkedClueIds) ?? []
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, title, format, spoiler, fallback, asset, linkedClueIds
+        case id, title, format, spoiler, fallback, asset, previewAsset, linkedClueIds
     }
 }
 

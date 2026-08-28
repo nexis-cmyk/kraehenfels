@@ -225,6 +225,36 @@
         "Lobt das Gastrecht, während er die Gästezimmer verriegelt.",
         "Bietet Hilfe an, sobald die Gruppe zu viel über frühere Reisende weiß."
       ],
+      "appearances": [
+        {
+          "sceneId": "S02",
+          "when": "Sobald die Gruppe den Schwarzen Keiler erreicht. Gruber öffnet selbst und übernimmt sofort das Gespräch.",
+          "playAs": "Warm, ruhig und kontrolliert. Er nennt die Reisenden auffällig oft Gäste und beantwortet Fragen mit Gegenfragen.",
+          "openingLine": "Ihr habt Glück gehabt. In Krähenfels lässt man Gäste nicht im Schnee stehen.",
+          "turn": "Er verriegelt die Zimmertür erst, wenn die Gruppe schlafen will oder zwei wichtige Gespräche geführt hat. Danach wird er freundlich ausweichend."
+        },
+        {
+          "sceneId": "S06",
+          "when": "Wenn H05 gefunden wurde oder die Gruppe im Archiv die Buchhaltung mit dem Gastrecht verbindet.",
+          "playAs": "Die Wärme fällt aus seiner Stimme. Er versucht zuerst zu verhandeln, dann die Verantwortung auf das Dorf zu verteilen.",
+          "openingLine": "Manche Bücher halten ein Dorf nur am Leben, solange niemand sie zu Ende liest.",
+          "turn": "Mit klaren Beweisen kann er nicht mehr leugnen. Er gibt den Weg zur Eiche preis, aber nicht freiwillig den Schlüssel."
+        },
+        {
+          "sceneId": "S07",
+          "when": "Mit der Prozession an der Alten Eiche. Gruber steht vorn und spricht für das Dorf.",
+          "playAs": "Nicht brüllen. Er klingt wie ein Amtsträger, der eine grausame Pflicht als vernünftige Notwendigkeit verkauft.",
+          "openingLine": "Drei Gäste kamen. Drei Gäste bleiben. So überlebt Krähenfels den Winter.",
+          "turn": "Beim Widerruf verteidigt er sein Recht. Beim Erinnern bestreitet er die Namen. Beim Brechen versucht er, den Zugang zur Reliquie zu versperren."
+        },
+        {
+          "sceneId": "S08",
+          "when": "Nur wenn ein kurzer Nachhall zu Gruber sinnvoll ist.",
+          "playAs": "Sein Zustand folgt dem gewählten Ende: entmachtet, mit den Namen konfrontiert oder stumm vor der zerstörten Bindung.",
+          "openingLine": "Ihr habt nicht nur mich gerichtet. Ihr habt über jeden Winter nach diesem entschieden.",
+          "turn": "Gib ihm höchstens einen Satz. Der Epilog gehört den Spielerfiguren."
+        }
+      ],
       "cueIds": [
         "SFX03",
         "SFX07"
@@ -256,6 +286,36 @@
         "Antwortet erst, wenn die Gruppe ihr eine Fluchtmöglichkeit anbietet.",
         "Schiebt das Gästebuch in Reichweite, ohne es zu erklären."
       ],
+      "appearances": [
+        {
+          "sceneId": "S02",
+          "when": "Nach Grubers Begrüßung. Elara bleibt zunächst hinter der Theke und streut unbemerkt Salz an die Schwelle.",
+          "playAs": "Knapp, leise und immer mit einem Blick zur Tür. Sie hilft erst, wenn die Gruppe sie ernst nimmt oder ihr einen Ausweg anbietet.",
+          "openingLine": "Essen gibt es. Fragen machen die Nacht nur länger.",
+          "turn": "Bei Vertrauen schiebt sie H03 in Reichweite und nennt den letzten gestrichenen Namen. Sie erklärt nicht ungefragt das ganze Ritual."
+        },
+        {
+          "sceneId": "S06",
+          "when": "Nur wenn Elara zuvor Vertrauen gefasst hat. Dann hilft sie beim Zugang zum Archiv oder bestätigt Grubers nächtliche Riegel.",
+          "playAs": "Noch ängstlich, aber entschieden genug, um nicht wieder wegzusehen.",
+          "openingLine": "Wenn ihr das Buch öffnet, gibt es für mich keinen Weg zurück.",
+          "turn": "Sie bestätigt die Namen und Grubers Ablauf. Danach bleibt die Entscheidung bei der Gruppe."
+        },
+        {
+          "sceneId": "S07",
+          "when": "Am hinteren Rand der Prozession, falls die Gruppe ihr Vertrauen gewonnen hat.",
+          "playAs": "Sie widerspricht Gruber nicht mit einer Rede, sondern mit einer klaren kleinen Handlung.",
+          "openingLine": "Sie sind Gäste. Ihr habt das Wort zuerst gebrochen.",
+          "turn": "Sie hält Dorfbewohner zurück oder öffnet einen Weg. Ohne vorheriges Vertrauen bleibt sie stumm und schützt nur Leni, die im Gasthaus bleibt."
+        },
+        {
+          "sceneId": "S08",
+          "when": "Nach dem persönlichen Nachhall der Spielerfiguren, wenn Elara verbündet wurde.",
+          "playAs": "Erschöpft und praktisch. Sie denkt bereits daran, was mit dem Gasthaus und den Überlebenden geschieht.",
+          "openingLine": "Heute bleibt keine Tür mehr von außen verriegelt.",
+          "turn": "Ein Satz reicht. Danach hört man wieder gewöhnliche Geräusche im Gasthaus."
+        }
+      ],
       "cueIds": [
         "A02",
         "SFX03"
@@ -281,12 +341,34 @@
         "Er fürchtet die Stimme seiner verstorbenen Schwester."
       ],
       "givesHandoutIds": [
-        "H08",
-        "H09"
+        "H08"
       ],
       "prompts": [
         "Sagt: Öffnen, erinnern, brechen.",
         "Verwechselt absichtlich die Richtung zur Eiche, wenn Gruber in der Nähe ist."
+      ],
+      "appearances": [
+        {
+          "sceneId": "S05",
+          "when": "Am Waldrand, nachdem Leni ihre Zeichnung gezeigt hat oder die Gruppe der nicht menschlichen Spur folgt.",
+          "playAs": "Zuerst sprunghaft und misstrauisch. Sobald jemand seine Details mit den Beweisen verbindet, wird er plötzlich sehr genau.",
+          "openingLine": "Öffnen. Erinnern. Brechen. Mehr Wege hat das Holz nie gekannt.",
+          "turn": "Er gibt H08. H09 bleibt eine reine SL-Hilfe und wird nur sinngemäß genutzt, wenn die Gruppe feststeckt."
+        },
+        {
+          "sceneId": "S07",
+          "when": "Er löst sich kurz vor der Eiche aus der Prozession, wenn die Gruppe die drei Wege noch nicht sicher verstanden hat.",
+          "playAs": "Angespannt, aber zum ersten Mal eindeutig. Er erklärt keinen vierten Ausweg und nimmt den Spielern die Entscheidung nicht ab.",
+          "openingLine": "Wählt selbst. Aber wählt, bevor Gruber wieder für alle spricht.",
+          "turn": "Er benennt auf Nachfrage genau einen noch unklaren Preis und hält sich dann aus der Entscheidung heraus."
+        },
+        {
+          "sceneId": "S08",
+          "when": "Nur wenn Elias überlebt hat und sein Nachhall noch offen ist.",
+          "playAs": "Nüchtern und müde. Seine rätselhafte Art ist vorbei.",
+          "openingLine": "Jetzt muss niemand mehr so tun, als hätte das Holz von selbst gesprochen.",
+          "turn": "Lass ihn Verantwortung übernehmen, aber nicht die letzte Szene an sich ziehen."
+        }
       ],
       "cueIds": [
         "SFX06",
@@ -319,6 +401,29 @@
         "Liest die entscheidende Zeile erst, wenn jemand nach dem Sinn des Gastrechts fragt.",
         "Sagt nicht, ob er Gruber anzeigen würde."
       ],
+      "appearances": [
+        {
+          "sceneId": "S03",
+          "when": "An der Sakristeitür, sobald die Gruppe das ausgeschnittene Blatt im Kirchenbuch bemerkt.",
+          "playAs": "Vorsichtig und beschämt. Er reagiert besser auf die Frage nach dem Sinn des Gastrechts als auf eine direkte Anschuldigung.",
+          "openingLine": "Ein fehlendes Blatt ist manchmal lauter als eine ganze Predigt.",
+          "turn": "Bei der richtigen Frage liest er H04 vor oder gibt es heraus. Eine Probe entscheidet nur über sein Geständnis, nie über den Hinweis."
+        },
+        {
+          "sceneId": "S06",
+          "when": "Wenn die Gruppe ihn zuvor gewonnen hat oder im Archiv eine Bestätigung des alten Eids braucht.",
+          "playAs": "Beschämt, aber jetzt bereit, Gruber öffentlich zu widersprechen.",
+          "openingLine": "Ich habe zu lange geschwiegen. Der Eid schützte die Gäste, nicht das Dorf vor ihnen.",
+          "turn": "Er bestätigt das Gastrecht und bleibt danach zurück, um andere Dorfbewohner aus der Prozession herauszuhalten. Er geht nicht zur Eiche."
+        },
+        {
+          "sceneId": "S08",
+          "when": "Wenn der Epilog zeigt, wie Krähenfels mit seiner Schuld umgeht.",
+          "playAs": "Ohne Predigtton. Er nennt das Schweigen beim Namen.",
+          "openingLine": "Ein Eid wird nicht wahr, nur weil man ihn im Kirchenbuch stehen lässt.",
+          "turn": "Ein kurzer Satz genügt. Danach beginnt er, die fehlenden Namen abzuschreiben."
+        }
+      ],
       "cueIds": [
         "A04",
         "SFX10"
@@ -350,6 +455,29 @@
         "Schlägt einmal auf den Amboss, sobald Gruber erwähnt wird.",
         "Verlangt eine klare Entscheidung, bevor sie das Eisen herausgibt."
       ],
+      "appearances": [
+        {
+          "sceneId": "S04",
+          "when": "Sobald die Gruppe die Schmiede betritt. Marta legt den Hammer erst ab, wenn jemand sagt, weshalb er ihr Eisen braucht.",
+          "playAs": "Kurz, direkt und ohne Aberglauben. Sie prüft Absicht, nicht Höflichkeit.",
+          "openingLine": "Wer altes Eisen will, sagt zuerst, woran es brechen soll.",
+          "turn": "Bei einer klaren Absicht zeigt sie H06 und gibt das nötige Eisen. Der Hinweis bleibt auch bei einem Fehlschlag erhalten."
+        },
+        {
+          "sceneId": "S07",
+          "when": "Mit der Prozession oder kurz danach, falls die Gruppe ihr Vertrauen gewonnen und das Eisen noch nicht erhalten hat.",
+          "playAs": "Praktisch unter Druck. Sie diskutiert nicht mehr über Schuld, sondern schafft eine Möglichkeit zu handeln.",
+          "openingLine": "Wenn ihr brechen wollt, dann jetzt. Ein zweites Feuer bekommt ihr nicht.",
+          "turn": "Sie gibt das alte Eisen oder hält einen Dorfbewohner zurück. Die eigentliche Probe macht eine Spielerfigur."
+        },
+        {
+          "sceneId": "S08",
+          "when": "Wenn Marta im Finale geholfen hat oder das Dorf neu aufgebaut werden muss.",
+          "playAs": "Knapp wie zuvor, aber nicht mehr prüfend.",
+          "openingLine": "Morgen schmiede ich Nägel für Türen, die von innen aufgehen.",
+          "turn": "Beende ihren Nachhall mit Arbeit statt Erklärung."
+        }
+      ],
       "cueIds": [
         "A05",
         "SFX05"
@@ -380,6 +508,29 @@
       "prompts": [
         "Gibt die Zeichnung nur einer Figur, die sie ernst nimmt.",
         "Bleibt außer Gefahr und wird nie allein zum Wald geschickt."
+      ],
+      "appearances": [
+        {
+          "sceneId": "S02",
+          "when": "Nach dem ersten Gespräch mit Elara oder wenn jemand Schritte über dem Gastraum bemerkt.",
+          "playAs": "Scheu, aufmerksam und konkreter als die Erwachsenen. Sie beantwortet eine ernst gemeinte Frage, aber keine Verhörserie.",
+          "openingLine": "Nachts gehen sie nicht zur Kirche. Sie gehen dorthin, wo die Äste wie Hörner aussehen.",
+          "turn": "Sie zeigt H07 hier noch nicht. Sie verrät nur, dass sie etwas vom Dachfenster aus beobachtet hat."
+        },
+        {
+          "sceneId": "S05",
+          "when": "Am sicheren Waldrand, wenn eine Spielerfigur Leni ernst nimmt und Elara oder eine andere erwachsene Person in der Nähe bleibt.",
+          "playAs": "Leise, aber sicher in dem, was sie gesehen hat.",
+          "openingLine": "Ich habe sie gezeichnet, damit später niemand sagen kann, es sei nur der Schnee gewesen.",
+          "turn": "Sie gibt H07 und bleibt danach im Dorf. Sie geht weder allein in den Wald noch mit zur Alten Eiche."
+        },
+        {
+          "sceneId": "S08",
+          "when": "Im Gasthaus oder am Dorfplatz, nachdem die Gefahr vorbei ist.",
+          "playAs": "Vorsichtig erleichtert. Sie braucht keine Erklärung der Erwachsenen mehr.",
+          "openingLine": "Heute Morgen sind die Spuren nur Spuren.",
+          "turn": "Leni bleibt sicher. Ihr kurzer Satz kann den Epilog schließen, wenn kein anderer Nachhall besser passt."
+        }
       ],
       "cueIds": [
         "SFX07"
@@ -459,7 +610,7 @@
     {
       "id": "C08",
       "title": "Die Prozession geht zur Eiche",
-      "details": "Lenis Zeichnung zeigt Masken, Schrein und eine offene Tür im Gasthaus.",
+      "details": "Lenis Zeichnung zeigt vier Gestalten vor der Alten Eiche, den brennenden Schrein und den Knochenhirsch.",
       "required": true,
       "handoutId": "H07",
       "factId": "F04",
@@ -501,6 +652,7 @@
       "spoiler": false,
       "fallback": "Achse und Frachtzettel beschreiben",
       "asset": "handout-h01-order.pdf",
+      "previewAsset": "handout-h01.png",
       "linkedClueIds": [
         "C01",
         "C02"
@@ -508,11 +660,12 @@
     },
     {
       "id": "H02",
-      "title": "Krähenfelser Wochenblatt",
+      "title": "Der Krähenfelser Bote",
       "format": "A4 Zeitung",
       "spoiler": false,
       "fallback": "Zeitungsartikel vorlesen",
       "asset": "handout-h02-newspaper.pdf",
+      "previewAsset": "handout-h02.png",
       "linkedClueIds": [
         "C03"
       ]
@@ -524,6 +677,7 @@
       "spoiler": false,
       "fallback": "Namen und rote Striche nennen",
       "asset": "handout-h03-guestbook.pdf",
+      "previewAsset": "handout-h03.png",
       "linkedClueIds": [
         "C03",
         "C04"
@@ -536,6 +690,7 @@
       "spoiler": false,
       "fallback": "Die Eidzeile vorlesen",
       "asset": "handout-h04-oath.pdf",
+      "previewAsset": "handout-h04.png",
       "linkedClueIds": [
         "C05"
       ]
@@ -547,6 +702,7 @@
       "spoiler": false,
       "fallback": "Zwei korrespondierende Jahre zeigen",
       "asset": "handout-h05-ledger.pdf",
+      "previewAsset": "handout-h05.png",
       "linkedClueIds": [
         "C06"
       ]
@@ -558,6 +714,7 @@
       "spoiler": false,
       "fallback": "Drei Nägel und Feuer beschreiben",
       "asset": "handout-h06-smithy.pdf",
+      "previewAsset": "handout-h06.png",
       "linkedClueIds": [
         "C07"
       ]
@@ -569,17 +726,19 @@
       "spoiler": false,
       "fallback": "Prozession und Eiche beschreiben",
       "asset": "handout-h07-drawing.pdf",
+      "previewAsset": "handout-h07.png",
       "linkedClueIds": [
         "C08"
       ]
     },
     {
       "id": "H08",
-      "title": "Elias' Holzrubbing",
+      "title": "Elias' Holzabreibung",
       "format": "A4 Kohleabreibung",
       "spoiler": false,
       "fallback": "Öffnen, erinnern, brechen nennen",
       "asset": "handout-h08-rubbing.pdf",
+      "previewAsset": "handout-h08.png",
       "linkedClueIds": [
         "C09"
       ]
@@ -597,11 +756,12 @@
     },
     {
       "id": "H10",
-      "title": "Forstkarte zur Alten Eiche",
+      "title": "Skizze des Forstwegs zur Alten Eiche",
       "format": "A4 Waldkarte",
       "spoiler": false,
       "fallback": "Weg auf der SL-Karte markieren",
       "asset": "handout-h10-forest-map.pdf",
+      "previewAsset": "handout-h10.png",
       "linkedClueIds": [
         "C11"
       ]
@@ -1054,8 +1214,7 @@
         "N01",
         "N02",
         "N03",
-        "N05",
-        "N06"
+        "N05"
       ],
       "clueIds": [
         "C05",

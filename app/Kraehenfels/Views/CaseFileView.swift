@@ -167,7 +167,11 @@ struct MapDetailView: View {
     var body: some View {
         ScrollView([.vertical, .horizontal], showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
-                SceneArtView(resourceName: gmOverlay ? map.gmAsset : map.playerAsset, height: 330)
+                SceneArtView(
+                    resourceName: gmOverlay ? map.gmAsset : map.playerAsset,
+                    height: 330,
+                    shareLabel: gmOverlay ? "SL-Karte teilen / sichern" : "Spielerkarte teilen / sichern"
+                )
                     .frame(minWidth: 560)
                 Toggle("SL-Overlay", isOn: $gmOverlay)
                     .toggleStyle(.switch)

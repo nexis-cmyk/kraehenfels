@@ -266,9 +266,9 @@ def build_invitation() -> Path:
     current -= 2 * mm
     current = draw_para(
         c,
-        "Bitte erstellt vorab euren Charakter für <i>How to be a Hero</i>. Ihr könnt euch dabei "
-        "an einer echten Person, einem Beruf oder einer ganz eigenen Idee orientieren. "
-        "Die Charakter-Dossiers werden am Tisch gemeinsam fertig ausgefuellt.",
+        "Bringt bitte euren fertigen eigenen Charakter für <i>How to be a Hero</i> mit. "
+        "Ihr spielt keine vorgegebenen Figuren. In der Runde tragen wir nur eure drei Namen "
+        "in den Leitstand ein; Werte und Fähigkeiten bleiben auf euren normalen Charakterbögen.",
         inner_x,
         current,
         inner_width,
@@ -277,10 +277,10 @@ def build_invitation() -> Path:
     current -= 2.5 * mm
     current = draw_para(
         c,
-        "<b>Dafuer braucht ihr:</b><br/>"
-        "• Name, Alter und einen kurzen Charakterbegriff<br/>"
-        "• Werte für Handeln, Wissen und Soziales<br/>"
-        "• eigene Fähigkeiten, HP, mentale Stabilität und 1-2 Macken",
+        "<b>Bitte mitbringen:</b><br/>"
+        "• euren vollständigen Charakterbogen<br/>"
+        "• Würfel oder eine Würfel-App für W100, W10 und Schaden<br/>"
+        "• eine kurze Idee, warum eure Figur im November 1890 mit dieser Kutsche reist",
         inner_x,
         current,
         inner_width,
@@ -337,8 +337,9 @@ def build_invitation() -> Path:
     c.setLineWidth(0.45)
     c.line(inner_x + 15 * mm, current - 0.8 * mm, inner_x + 58 * mm, current - 0.8 * mm)
     c.drawString(inner_x + 68 * mm, current, "BEGINN:")
-    c.setStrokeColor(MUTED)
-    c.line(inner_x + 84 * mm, current - 0.8 * mm, inner_x + 116 * mm, current - 0.8 * mm)
+    c.setFillColor(INK)
+    c.drawString(inner_x + 87 * mm, current, "21:00 UHR")
+    c.setFillColor(RED)
     c.drawString(inner_x + 126 * mm, current, "ORT:")
     c.line(inner_x + 137 * mm, current - 0.8 * mm, inner_x + inner_width, current - 0.8 * mm)
 

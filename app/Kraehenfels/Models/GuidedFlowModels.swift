@@ -186,6 +186,7 @@ struct GuideStep: Codable, Identifiable, Hashable {
     let title: String
     let body: String
     let actionLabel: String
+    let materialInstruction: String?
     let roll: RollSpec?
     let clueID: String?
     let handoutID: String?
@@ -202,6 +203,7 @@ struct GuideStep: Codable, Identifiable, Hashable {
         title: String,
         body: String,
         actionLabel: String = "Erledigt",
+        materialInstruction: String? = nil,
         roll: RollSpec? = nil,
         clueID: String? = nil,
         handoutID: String? = nil,
@@ -217,6 +219,7 @@ struct GuideStep: Codable, Identifiable, Hashable {
         self.title = title
         self.body = body
         self.actionLabel = actionLabel
+        self.materialInstruction = materialInstruction
         self.roll = roll
         self.clueID = clueID
         self.handoutID = handoutID
@@ -228,7 +231,7 @@ struct GuideStep: Codable, Identifiable, Hashable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, sceneID, kind, title, body, actionLabel, roll, clueID, handoutID, handoutIDs
+        case id, sceneID, kind, title, body, actionLabel, materialInstruction, roll, clueID, handoutID, handoutIDs
         case npcID, npcIDs, audioCueID, options
     }
 
@@ -240,6 +243,7 @@ struct GuideStep: Codable, Identifiable, Hashable {
         title = try container.decode(String.self, forKey: .title)
         body = try container.decode(String.self, forKey: .body)
         actionLabel = try container.decodeIfPresent(String.self, forKey: .actionLabel) ?? "Erledigt"
+        materialInstruction = try container.decodeIfPresent(String.self, forKey: .materialInstruction)
         roll = try container.decodeIfPresent(RollSpec.self, forKey: .roll)
         clueID = try container.decodeIfPresent(String.self, forKey: .clueID)
         handoutID = try container.decodeIfPresent(String.self, forKey: .handoutID)
@@ -348,6 +352,9 @@ struct AdventureItem: Codable, Identifiable, Hashable {
     let title: String
     let locationID: String
     let detail: String
+    let playerCardDetail: String?
+    let playerCardUses: [String]
+    let playerCardAsset: String?
     let initialUses: Int
     let effects: [ItemEffect]
     let weapon: ItemWeapon?
@@ -357,6 +364,9 @@ struct AdventureItem: Codable, Identifiable, Hashable {
         title: String,
         locationID: String,
         detail: String,
+        playerCardDetail: String? = nil,
+        playerCardUses: [String] = [],
+        playerCardAsset: String? = nil,
         initialUses: Int = 1,
         effects: [ItemEffect] = [],
         weapon: ItemWeapon? = nil
@@ -365,13 +375,17 @@ struct AdventureItem: Codable, Identifiable, Hashable {
         self.title = title
         self.locationID = locationID
         self.detail = detail
+        self.playerCardDetail = playerCardDetail
+        self.playerCardUses = playerCardUses
+        self.playerCardAsset = playerCardAsset
         self.initialUses = max(0, initialUses)
         self.effects = effects
         self.weapon = weapon
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, title, locationID, detail, initialUses, effects, weapon
+        case id, title, locationID, detail, playerCardDetail, playerCardUses, playerCardAsset
+        case initialUses, effects, weapon
     }
 
     init(from decoder: Decoder) throws {
@@ -380,6 +394,9 @@ struct AdventureItem: Codable, Identifiable, Hashable {
         title = try container.decode(String.self, forKey: .title)
         locationID = try container.decode(String.self, forKey: .locationID)
         detail = try container.decode(String.self, forKey: .detail)
+        playerCardDetail = try container.decodeIfPresent(String.self, forKey: .playerCardDetail)
+        playerCardUses = try container.decodeIfPresent([String].self, forKey: .playerCardUses) ?? []
+        playerCardAsset = try container.decodeIfPresent(String.self, forKey: .playerCardAsset)
         initialUses = max(0, try container.decodeIfPresent(Int.self, forKey: .initialUses) ?? 1)
         effects = try container.decodeIfPresent([ItemEffect].self, forKey: .effects) ?? []
         weapon = try container.decodeIfPresent(ItemWeapon.self, forKey: .weapon)

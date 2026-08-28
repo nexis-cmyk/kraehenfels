@@ -1,6 +1,8 @@
 outputs/
 work/
 _TMP/
+tmp/
+output/
 **/.DS_Store
 **/__pycache__/
 **/*.pyc

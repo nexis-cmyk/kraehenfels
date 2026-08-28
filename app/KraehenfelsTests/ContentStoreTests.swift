@@ -35,6 +35,24 @@ final class ContentStoreTests: XCTestCase {
         XCTAssertTrue(cue.gmInstruction.isEmpty)
     }
 
+    func testMaterialMetadataDecodesForHandoutsItemsAndGuideSteps() throws {
+        let handout = try JSONDecoder().decode(HandoutEntry.self, from: #"""
+        {"id":"H01","title":"Auftrag","format":"PNG","spoiler":false,"fallback":"Vorlesen","asset":"h01.pdf","previewAsset":"handout-h01.png","linkedClueIds":[]}
+        """#.data(using: .utf8)!)
+        XCTAssertEqual(handout.previewAsset, "handout-h01.png")
+
+        let item = try JSONDecoder().decode(AdventureItem.self, from: #"""
+        {"id":"blanket","title":"Wolldecke","locationID":"seat","detail":"SL-Text","playerCardDetail":"Spielertext","playerCardUses":["Einmal verwenden"],"playerCardAsset":"item-wool-blanket.png"}
+        """#.data(using: .utf8)!)
+        XCTAssertEqual(item.playerCardAsset, "item-wool-blanket.png")
+        XCTAssertEqual(item.playerCardUses, ["Einmal verwenden"])
+
+        let step = try JSONDecoder().decode(GuideStep.self, from: #"""
+        {"id":"S01_CLUE","sceneID":"S01","kind":"clue","title":"Auftrag","body":"Text","materialInstruction":"Jetzt H01 zeigen."}
+        """#.data(using: .utf8)!)
+        XCTAssertEqual(step.materialInstruction, "Jetzt H01 zeigen.")
+    }
+
     func testRollEvaluatorMatchesHowToBeAHeroThresholds() {
         let critical = RollEvaluator.evaluate(roll: 4, target: 60)
         XCTAssertTrue(critical.isCriticalSuccess)

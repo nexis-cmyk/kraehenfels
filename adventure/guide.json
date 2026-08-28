@@ -59,8 +59,13 @@
     {
       "id": "item-wool-blanket",
       "title": "Wolldecke",
-      "locationID": "coach-seat",
-      "detail": "Dicke, feuchte Wolle. Sie hält eine Figur im Wald oder am Schrein noch einmal warm.",
+    "locationID": "coach-seat",
+    "detail": "Dicke, feuchte Wolle. Sie hält eine Figur im Wald oder am Schrein noch einmal warm.",
+    "playerCardDetail": "Dicke, feuchte Wolle. Schwer, aber zuverlässig gegen Kälte.",
+    "playerCardAsset": "item-wool-blanket.png",
+    "playerCardUses": [
+        "Einmal nach einem Fehlschlag einsetzen, wenn Kälte oder Wärmeverlust die Folge wäre."
+      ],
       "initialUses": 1,
       "effects": [
         {
@@ -82,8 +87,14 @@
     {
       "id": "item-bandage-pouch",
       "title": "Verbandtasche",
-      "locationID": "coach-seat",
-      "detail": "Leinen, saubere Binden und eine kleine Flasche Branntwein.",
+    "locationID": "coach-seat",
+    "detail": "Leinen, saubere Binden und eine kleine Flasche Branntwein.",
+    "playerCardDetail": "Leinen, saubere Binden und eine kleine Flasche Branntwein.",
+    "playerCardAsset": "item-bandage-pouch.png",
+    "playerCardUses": [
+        "Vor einer passenden Erste-Hilfe-Probe einsetzen: Zielwert +10.",
+        "Zwei Anwendungen."
+      ],
       "initialUses": 2,
       "effects": [
         {
@@ -101,8 +112,14 @@
     {
       "id": "item-hemp-rope",
       "title": "Hanfseil",
-      "locationID": "luggage-net",
-      "detail": "Ein kräftiges Seil, lang genug für eine Rettung an der Böschung oder eine riskante Waldaktion.",
+    "locationID": "luggage-net",
+    "detail": "Ein kräftiges Seil, lang genug für eine Rettung an der Böschung oder eine riskante Waldaktion.",
+    "playerCardDetail": "Ein kräftiges Seil, lang genug zum Retten, Klettern oder Sichern.",
+    "playerCardAsset": "item-hemp-rope.png",
+    "playerCardUses": [
+        "Vor einer passenden Rettungs-, Kletter- oder Sicherungsprobe einsetzen: Zielwert +10.",
+        "Eine Anwendung."
+      ],
       "initialUses": 1,
       "effects": [
         {
@@ -121,8 +138,14 @@
     {
       "id": "item-storm-lantern",
       "title": "Sturmlaterne mit Öl",
-      "locationID": "luggage-net",
-      "detail": "Eine windgeschützte Laterne mit genug Öl für zwei Einsätze. Sie macht Schnee, Spuren und Feuer sichtbar.",
+    "locationID": "luggage-net",
+    "detail": "Eine windgeschützte Laterne mit genug Öl für zwei Einsätze. Sie macht Schnee, Spuren und Feuer sichtbar.",
+    "playerCardDetail": "Eine windgeschützte Laterne mit genug Öl für zwei Einsätze.",
+    "playerCardAsset": "item-storm-lantern.png",
+    "playerCardUses": [
+        "Vor einer passenden Probe bei Dunkelheit, schlechten Spuren oder offenem Feuer einsetzen: Zielwert +10.",
+        "Zwei Anwendungen."
+      ],
       "initialUses": 2,
       "effects": [
         {
@@ -154,8 +177,14 @@
     {
       "id": "item-tool-roll",
       "title": "Werkzeugrolle",
-      "locationID": "driver-box",
-      "detail": "Zange, Schraubendreher und ein kleiner Schlüsselbund aus der Fahrerkiste.",
+    "locationID": "driver-box",
+    "detail": "Zange, Schraubendreher und ein kleiner Schlüsselbund aus der Fahrerkiste.",
+    "playerCardDetail": "Zange, Schraubendreher und ein kleiner Schlüsselbund aus der Fahrerkiste.",
+    "playerCardAsset": "item-tool-roll.png",
+    "playerCardUses": [
+        "Vor einer passenden Probe zum Öffnen, Reparieren oder Lösen eines Mechanismus einsetzen: Zielwert +10.",
+        "Eine Anwendung."
+      ],
       "initialUses": 1,
       "effects": [
         {
@@ -173,8 +202,14 @@
     {
       "id": "item-revolver",
       "title": "Alter Revolver",
-      "locationID": "driver-box",
-      "detail": "Ein abgenutzter Revolver mit drei Patronen. Er schafft Raum, löst aber weder den Pakt noch ersetzt er Eisen und Feuer.",
+    "locationID": "driver-box",
+    "detail": "Ein abgenutzter Revolver mit drei Patronen. Er schafft Raum, löst aber weder den Pakt noch ersetzt er Eisen und Feuer.",
+    "playerCardDetail": "Ein abgenutzter Revolver mit drei Patronen. Übernatürliche Probleme löst er nicht allein.",
+    "playerCardAsset": "item-revolver.png",
+    "playerCardUses": [
+        "Vor einem passenden Schuss einsetzen, der Abstand oder Zeit schaffen soll: Zielwert +10.",
+        "Drei Patronen."
+      ],
       "initialUses": 3,
       "effects": [
         {
@@ -211,6 +246,7 @@
         "title": "Der Unfall beginnt",
         "body": "Der Schnee kommt waagerecht durch die Tannen. Ein Knacken läuft durch die Kutsche. Dann kippt die Welt, Pferdeatem schlägt gegen die Scheiben und irgendwo im Wald ruft der Kutscher nach Hilfe.",
         "actionLabel": "Vorgelesen",
+        "materialInstruction": "Jetzt das Szenenbild der Kutschenpanne kurz zeigen. Danach den Vorlesetext lesen.",
         "audioCueID": "M01",
         "sceneID": "S01"
       },
@@ -257,6 +293,7 @@
         "title": "Die Kutsche gibt etwas zurück",
         "body": "Wenn die erste Aufregung nachlässt, lass die Gruppe die Kutsche durchsuchen. Die drei Fundorte sind die Sitzbank, das Gepäcknetz und das Fahrerfach am Kutschbock. Alle sechs Gegenstände werden gefunden; dafür ist keine Probe nötig und nichts kann dauerhaft übersehen werden.",
         "actionLabel": "Gegenstände aufdecken",
+        "materialInstruction": "Jetzt die sechs Gegenstandskarten öffnen. Zeige oder verschicke jede Karte erst, wenn der jeweilige Fundort durchsucht wird.",
         "sceneID": "S01"
       },
       {
@@ -265,6 +302,7 @@
         "title": "Gemeinsame Ausrüstung verteilen",
         "body": "Nennt zuerst die drei eigenen Figuren. Verteilt anschließend alle sechs Gegenstände untereinander. Jede Figur braucht mindestens einen Gegenstand; wie die übrigen verteilt werden, entscheidet ihr selbst. Später darf die Gruppe Gegenstände weitergeben.",
         "actionLabel": "Verteilung abschließen",
+        "materialInstruction": "Nach der Verteilung die passende Spielerkarte an jede Figur über WhatsApp schicken.",
         "sceneID": "S01"
       },
       {
@@ -273,6 +311,7 @@
         "title": "Kutschauftrag übergeben",
         "body": "Der Auftrag liegt unter dem Sitz. Zeige H01. Die frischen Kerben an der Achse und Grubers genaue Umleitung sind Pflichtinformationen und werden nicht weggewürfelt.",
         "actionLabel": "H01 zeigen",
+        "materialInstruction": "Jetzt H01 öffnen und zeigen. Über den Share-Button kannst du das Bild direkt verschicken oder sichern.",
         "clueID": "C01",
         "handoutID": "H01",
         "sceneID": "S01"
@@ -302,6 +341,7 @@
         "title": "Die Lichter im Schnee",
         "body": "Hinter den Tannen erscheinen drei gelbe Fenster. Das Schild Zum Schwarzen Keiler knarrt über einer Tür, aus der Wärme und der Geruch von nassem Holz dringen.",
         "actionLabel": "Vorgelesen",
+        "materialInstruction": "Jetzt das Szenenbild des Gasthauses zeigen. Die Innenkarte erst bei einer Ortsuntersuchung öffnen.",
         "audioCueID": "A02",
         "sceneID": "S02"
       },
@@ -320,6 +360,7 @@
         "title": "Freie Ermittlungsrunde",
         "body": "Die Spieler dürfen essen, mit Gruber, Elara oder Leni sprechen, das Gästebuch ansehen oder die Räume auf der Inn-Karte untersuchen. Eine Untersuchung liefert den relevanten Hinweis immer.",
         "actionLabel": "Freies Spiel öffnen",
+        "materialInstruction": "Bei einer Ortsuntersuchung die Spielerkarte des Gasthauses öffnen. H03 bleibt bis zur passenden Frage geschlossen.",
         "npcIDs": [
           "N01",
           "N02",
@@ -333,10 +374,15 @@
         "title": "Gästebuch und Riegel",
         "body": "Zeige H03, sobald jemand nach früheren Gästen, roten Strichen oder der verschlossenen Tür fragt. H02 ist ein optionaler Zeitungsbeleg und darf zusätzlich gezeigt werden. C03 und C04 sind garantiert. Bei einem passenden Gespräch nennt Elara den letzten gestrichenen Namen.",
         "actionLabel": "H03 zeigen",
+        "materialInstruction": "Bei Fragen nach früheren Gästen oder der Tür H03 zeigen. H02 nur als zusätzlichen Zeitungsbeleg verwenden.",
         "clueID": "C03",
         "handoutID": "H03",
         "handoutIDs": [
           "H02"
+        ],
+        "npcIDs": [
+          "N02",
+          "N06"
         ],
         "audioCueID": "SFX03",
         "sceneID": "S02"
@@ -412,6 +458,7 @@
         "title": "Die kalte Kirche",
         "body": "Die Kirchentür gibt nach. Dahinter riecht es nach nassem Stein und altem Wachs. Eine Seite im Kirchenbuch ist sauber herausgeschnitten.",
         "actionLabel": "Vorgelesen",
+        "materialInstruction": "Jetzt das Szenenbild der Kirche zeigen. Die Kirchenkarte nur bei einer Ortsuntersuchung öffnen.",
         "audioCueID": "A04",
         "sceneID": "S03"
       },
@@ -430,6 +477,7 @@
         "title": "Das alte Gastrecht",
         "body": "Zeige H04 oder lies die Ersatzzeile vor: Wer unter einem Krähenfelser Dach schläft, steht bis zum Hahnenschrei unter Schutz. Spiele SFX10 erst, nachdem Falk das Wort Gastrecht ausgesprochen hat. Dieser Hinweis ist nicht von einer Probe abhängig.",
         "actionLabel": "H04 zeigen",
+        "materialInstruction": "Jetzt H04 zeigen oder vorlesen. Das Bild kannst du direkt per WhatsApp verschicken.",
         "clueID": "C05",
         "handoutID": "H04",
         "npcID": "N04",
@@ -496,6 +544,7 @@
         "title": "Die Schmiede",
         "body": "Hinter der Tür glimmt die Esse. Marta lässt den Hammer sinken und betrachtet zuerst die Hände, nicht die Gesichter der Reisenden.",
         "actionLabel": "Vorgelesen",
+        "materialInstruction": "Jetzt das Szenenbild der Schmiede zeigen. Die Schmiedekarte nur bei einer Ortsuntersuchung öffnen.",
         "audioCueID": "A05",
         "sceneID": "S04"
       },
@@ -514,6 +563,7 @@
         "title": "Drei schwarze Nägel",
         "body": "Zeige H06. Die Zeichnung erklärt, dass drei handgeschmiedete Nägel Geweih und Holzherz binden. Feuer kann die Bindung zerstören.",
         "actionLabel": "H06 zeigen",
+        "materialInstruction": "Jetzt H06 zeigen. Teile das Bild erst, wenn Marta die drei Nägel erklärt.",
         "clueID": "C07",
         "handoutID": "H06",
         "npcID": "N05",
@@ -585,6 +635,7 @@
         "title": "Hinter den letzten Häusern",
         "body": "Hinter dem letzten Zaun wird der Schnee unberührt. Zwischen den Stämmen hängt ein roter Faden, dann endet jede menschliche Spur an einem Kreis aus dunklem Holz.",
         "actionLabel": "Vorgelesen",
+        "materialInstruction": "Jetzt das Szenenbild der Waldspur zeigen. Die große Waldkarte erst bei der Orientierung öffnen.",
         "audioCueID": "A06",
         "sceneID": "S05"
       },
@@ -603,16 +654,20 @@
       {
         "id": "S05_CLUE",
         "kind": "clue",
-        "title": "Zeichnung, Rubbing und Forstkarte",
+        "title": "Zeichnung, Holzabreibung und Wegskizze",
         "body": "Zeige H07, H08 und H10 in dieser Reihenfolge. Sie führen zur Eiche und erklären die drei Handlungsmöglichkeiten. Spiele SFX06 nur bei dem Moment, in dem die Spur scheinbar hinter der Gruppe weitergeht. Die Spur selbst ist sicher; ein Würfelwurf bestimmt nur Zeit und Kälte.",
         "actionLabel": "Drei Hinweise zeigen",
+        "materialInstruction": "Jetzt H07, danach H08 und zuletzt H10 öffnen. Diese Reihenfolge auch beim Verschicken beibehalten.",
         "clueID": "C08",
         "handoutID": "H07",
         "handoutIDs": [
           "H08",
           "H10"
         ],
-        "npcID": "N06",
+        "npcIDs": [
+          "N03",
+          "N06"
+        ],
         "audioCueID": "SFX06",
         "sceneID": "S05"
       },
@@ -681,6 +736,7 @@
         "title": "Das Rathausarchiv",
         "body": "Das Archiv ist wärmer als die Straße, aber nicht freundlicher. Auf dem Tisch liegt ein Buch, dessen Seiten an den Rändern wie von Frost gekräuselt sind.",
         "actionLabel": "Vorgelesen",
+        "materialInstruction": "Jetzt das Szenenbild des Archivs zeigen. Die Archivkarte nur bei einer Ortsuntersuchung öffnen.",
         "audioCueID": "A07",
         "sceneID": "S06"
       },
@@ -688,13 +744,11 @@
         "id": "S06_GM",
         "kind": "gmInfo",
         "title": "Wahrheit zusammenführen",
-        "body": "Hier fasst du die bereits gefundenen Fakten laut für dich zusammen. Fehlt eine Verbindung, gib die passende Ersatzroute über Falk, Marta, Elias oder Elara. Die Gruppe darf die Lösung selbst formulieren.",
+        "body": "Hier fasst du die bereits gefundenen Fakten laut für dich zusammen. Gruber erscheint, sobald H05 gefunden oder seine Buchhaltung verstanden wurde. Elara und Falk sind nur anwesend, wenn die Gruppe ihr Vertrauen gewonnen hat. Fehlt eine Verbindung, erinnere an bereits erhaltene Aussagen von Marta oder Elias. Die Gruppe formuliert die Lösung selbst.",
         "actionLabel": "Fakten prüfen",
         "npcIDs": [
           "N01",
           "N04",
-          "N05",
-          "N03",
           "N02"
         ],
         "sceneID": "S06"
@@ -705,6 +759,7 @@
         "title": "Winterbuchhaltung und Ritualfragment",
         "body": "Zeige H05. H09 bleibt ein SL-Spoiler und wird nur gezeigt oder vorgelesen, wenn die Gruppe die drei Folgen noch nicht aus anderen Spuren kennt. C06 und C10 werden dadurch bestätigt.",
         "actionLabel": "H05 zeigen",
+        "materialInstruction": "Jetzt H05 zeigen. H09 bleibt geschlossen und wird nur als SL-Spoiler genutzt, wenn die Verbindung sonst fehlt.",
         "clueID": "C06",
         "handoutID": "H05",
         "sceneID": "S06"
@@ -751,6 +806,7 @@
         "title": "Zur Alten Eiche",
         "body": "Alle Wege führen jetzt zum Finale. Lege die SL-Karte bereit und führe die Gruppe zur Eiche.",
         "actionLabel": "Zum Finale",
+        "materialInstruction": "Jetzt die SL-Karte des Archivs bereitlegen. Für Spieler bleibt die Karte spoilerfrei, bis die Gruppe an der Eiche ankommt.",
         "options": [
           {
             "id": "oak",
@@ -769,6 +825,7 @@
         "title": "Die Alte Eiche",
         "body": "Die Alte Eiche steht im Schnee wie ein schwarzes Gerippe. Zwischen den Wurzeln hängt die Geweihreliquie. Hinter euch setzt die Prozession ein, vor euch hebt der Knochenhirsch den Kopf.",
         "actionLabel": "Vorgelesen",
+        "materialInstruction": "Jetzt das Szenenbild der Alten Eiche und die Spielerkarte öffnen. Die SL-Karte bleibt bei dir und wird nicht verschickt.",
         "audioCueID": "A08",
         "sceneID": "S07"
       },
@@ -776,8 +833,14 @@
         "id": "S07_GM",
         "kind": "gmInfo",
         "title": "Drei Auswege",
-        "body": "Biete die drei Wege erst an, wenn die Gruppe verstanden hat, dass Gastrecht, Erinnerung und Feuer unterschiedliche Folgen haben. Spiele SFX08 nur beim vollständigen ersten Anblick des Wesens.",
+        "body": "Gruber führt die Prozession an. Elara, Elias und Marta handeln nur, wenn die Gruppe zuvor ihr Vertrauen gewonnen hat. Leni bleibt sicher im Gasthaus, Falk hält Dorfbewohner bei der Kirche zurück. Biete die drei Wege erst an, wenn Gastrecht, Erinnerung und Feuer verstanden wurden. Spiele SFX08 nur beim vollständigen ersten Anblick des Wesens.",
         "actionLabel": "Finale vorbereiten",
+        "npcIDs": [
+          "N01",
+          "N02",
+          "N03",
+          "N05"
+        ],
         "audioCueID": "SFX08",
         "sceneID": "S07"
       },
@@ -787,6 +850,7 @@
         "title": "Die Gruppe entscheidet",
         "body": "Lass die Spieler die Entscheidung in eigenen Worten treffen. Danach wählst du die filmische Gefahrenszene oder schaltest optional den vollständigen HTBAH-Kampf ein.",
         "actionLabel": "Ende wählen",
+        "materialInstruction": "Jetzt die drei Endkarten öffnen und erst an diesem Punkt zeigen. Die Karten kannst du danach als Bild verschicken.",
         "options": [
           {
             "id": "revoke",
@@ -890,6 +954,7 @@
         "title": "Tauwetter",
         "body": "Am Morgen taut der Schnee in dünnen Rinnsalen. Krähenfels hat wieder Geräusche. Nur die Frage, wer hier künftig Gäste schützt, bleibt unbeantwortet.",
         "actionLabel": "Vorgelesen",
+        "materialInstruction": "Jetzt das Szenenbild des Tauwetters zeigen. Danach gehören die letzten Worte den Spielerfiguren.",
         "audioCueID": "A03",
         "sceneID": "S08"
       },

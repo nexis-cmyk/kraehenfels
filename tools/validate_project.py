@@ -72,6 +72,27 @@ def main() -> None:
     for npc in npcs:
         missing = set(npc.get("givesHandoutIds", [])) - handout_ids
         if missing: fail(f"{npc['id']} references missing handouts: {sorted(missing)}")
+        appearances = npc.get("appearances", [])
+        appearance_scene_ids = [entry.get("sceneId") for entry in appearances]
+        if not appearances: fail(f"{npc['id']} has no scene-specific appearances")
+        if len(appearance_scene_ids) != len(set(appearance_scene_ids)):
+            fail(f"{npc['id']} has duplicate appearance scenes")
+        for appearance in appearances:
+            scene_id = appearance.get("sceneId")
+            if scene_id not in scene_ids: fail(f"{npc['id']} has appearance in missing scene {scene_id}")
+            if npc["id"] not in next(scene for scene in scenes if scene["id"] == scene_id).get("npcIds", []):
+                fail(f"{npc['id']} appearance is not listed in {scene_id}")
+            for required_key in ("when", "playAs", "openingLine", "turn"):
+                if not appearance.get(required_key): fail(f"{npc['id']} appearance in {scene_id} has no {required_key}")
+    for scene in scenes:
+        for npc_id in scene.get("npcIds", []):
+            npc = next(entry for entry in npcs if entry["id"] == npc_id)
+            if scene["id"] not in {appearance["sceneId"] for appearance in npc.get("appearances", [])}:
+                fail(f"{scene['id']} lists {npc_id} without a scene-specific appearance")
+    if "H09" in next(npc for npc in npcs if npc["id"] == "N03").get("givesHandoutIds", []):
+        fail("Elias must not expose the GM-only H09 as a regular player handout")
+    if "N06" in next(scene for scene in scenes if scene["id"] == "S07").get("npcIds", []):
+        fail("Leni must remain safe and cannot be present at the Old Oak finale")
     for clue in clues:
         fallback = clue.get("handoutId")
         if fallback is not None and fallback not in handout_ids:
@@ -84,6 +105,34 @@ def main() -> None:
     web_manifest = json.loads(web_manifest_path.read_text(encoding="utf-8"))
     if web_manifest["meta"].get("version") != manifest["meta"].get("version"):
         fail("Web test build is out of sync with the content release")
+
+    material_root = ROOT / "app" / "Kraehenfels" / "Resources" / "Materials"
+    expected_material_files = {
+        Path("Endings") / "ending-cards.png",
+    }
+    for handout in handouts:
+        preview_asset = handout.get("previewAsset")
+        if preview_asset:
+            expected_material_files.add(Path("Handouts") / preview_asset)
+    for item in manifest.get("guide", {}).get("items", []):
+        card_asset = item.get("playerCardAsset")
+        if card_asset:
+            expected_material_files.add(Path("Items") / card_asset)
+    if not material_root.exists():
+        fail("Native material resource directory is missing")
+    for relative_path in expected_material_files:
+        if not (material_root / relative_path).exists():
+            fail(f"Missing native material asset: {relative_path.as_posix()}")
+    actual_material_files = {
+        path.relative_to(material_root)
+        for path in material_root.rglob("*.png")
+    }
+    if actual_material_files != expected_material_files:
+        fail(
+            "Native material bundle differs from manifest: "
+            f"missing={sorted(str(path) for path in expected_material_files - actual_material_files)}, "
+            f"unexpected={sorted(str(path) for path in actual_material_files - expected_material_files)}"
+        )
 
     generated = ROOT / "audio" / "generated"
     bundled = ROOT / "app" / "Kraehenfels" / "Resources" / "Audio"
@@ -140,6 +189,19 @@ def main() -> None:
     for title in ("Wolldecke", "Verbandtasche", "Hanfseil", "Sturmlaterne mit Öl", "Werkzeugrolle", "Alter Revolver"):
         if title not in item_cards_text:
             fail(f"Item cards are missing: {title}")
+
+    final_player_path = ROOT / "output" / "pdf" / "Kraehenfels-Spielermaterial-Druck.pdf"
+    final_npc_path = ROOT / "output" / "pdf" / "Kraehenfels-NPC-Regie.pdf"
+    if not final_player_path.exists(): fail("Missing final player session pack")
+    if not final_npc_path.exists(): fail("Missing final NPC direction guide")
+    final_player = PdfReader(str(final_player_path))
+    final_npcs = PdfReader(str(final_npc_path))
+    if len(final_player.pages) != 19: fail(f"Final player session pack must have 19 pages, got {len(final_player.pages)}")
+    if len(final_npcs.pages) != 7: fail(f"NPC direction guide must have 7 pages, got {len(final_npcs.pages)}")
+    item_page_text = final_player.pages[3].extract_text() or ""
+    for spoiler_term in ("Knochenhirsch", "geführten Finale", "Bindung zerstören", "Marta"):
+        if spoiler_term in item_page_text:
+            fail(f"Player item cards leak the spoiler term: {spoiler_term}")
 
     for path in [ROOT / "content" / "scenario.md", ROOT / "content" / "handouts.md", ROOT / "content" / "character_creation.md"]:
         path.read_text(encoding="utf-8")

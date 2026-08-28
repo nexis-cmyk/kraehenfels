@@ -62,6 +62,42 @@ struct MaterialsView: View {
                     }
                 }
             }
+            Section("Gegenstandskarten") {
+                Text("Diese Karten kannst du einzeln über WhatsApp verschicken oder in Dateien sichern.")
+                    .font(.caption)
+                    .foregroundStyle(FrostTheme.quiet)
+                    .fixedSize(horizontal: false, vertical: true)
+                ForEach(content.guideItems) { item in
+                    NavigationLink(destination: ItemCardPreviewView(item: item)) {
+                        HStack {
+                            Image(systemName: item.weapon == nil ? "shippingbox.fill" : "scope")
+                                .foregroundStyle(item.weapon == nil ? FrostTheme.cobalt : FrostTheme.warning)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(item.title)
+                                    .foregroundStyle(.white)
+                                Text("Spielerkarte · \(item.initialUses) \(item.initialUses == 1 ? "Anwendung" : "Anwendungen")")
+                                    .font(.caption)
+                                    .foregroundStyle(FrostTheme.quiet)
+                            }
+                        }
+                    }
+                }
+            }
+            Section("Endkarten") {
+                NavigationLink(destination: EndingCardsPreviewView()) {
+                    HStack {
+                        Image(systemName: "rectangle.stack.fill")
+                            .foregroundStyle(FrostTheme.warning)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Entscheidungen an der Alten Eiche")
+                                .foregroundStyle(.white)
+                            Text("Erst im Finale zeigen")
+                                .font(.caption)
+                                .foregroundStyle(FrostTheme.warning)
+                        }
+                    }
+                }
+            }
             Section("NPC-Dossiers") {
                 ForEach(content.manifest.npcs) { npc in
                     NavigationLink(destination: NPCDossierView(npcID: npc.id)) {
@@ -113,16 +149,42 @@ struct HandoutPreviewView: View {
                                 .foregroundStyle(FrostTheme.quiet)
                         }
                     }
+                    if let previewAsset = handout.previewAsset {
+                        FrostCard {
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack {
+                                    Label("Spielerbild", systemImage: "photo")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(FrostTheme.cobalt)
+                                    Spacer()
+                                    Text("PNG")
+                                        .font(.caption2.monospaced().weight(.bold))
+                                        .foregroundStyle(FrostTheme.quiet)
+                                }
+                                MaterialImagePreview(
+                                    resourceName: previewAsset,
+                                    subdirectory: "Materials/Handouts",
+                                    maxHeight: 540,
+                                    accessibilityLabel: "Vorschau von \(handout.title)"
+                                )
+                                MaterialShareLink(
+                                    resourceName: previewAsset,
+                                    subdirectory: "Materials/Handouts",
+                                    label: "Bild teilen / sichern"
+                                )
+                            }
+                        }
+                    }
                     if let asset = handout.asset {
                         FrostCard {
                             VStack(alignment: .leading, spacing: 6) {
-                                Label("Druckstück im Paket", systemImage: "printer")
+                                Label("Druckdatei im Projekt", systemImage: "printer")
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(FrostTheme.cobalt)
                                 Text(asset)
                                     .font(.caption.monospaced())
                                     .foregroundStyle(FrostTheme.quiet)
-                                Text("Wenn du das Papierstück gerade nicht zur Hand hast, nutze den darunterstehenden Fallback. Die App behauptet nicht, eine fehlende PDF-Datei öffnen zu können.")
+                                Text("Die PNG-Vorschau oben ist für WhatsApp und zum Sichern gedacht.")
                                     .font(.caption)
                                     .foregroundStyle(FrostTheme.quiet)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -165,6 +227,109 @@ struct HandoutPreviewView: View {
     }
 }
 
+struct ItemCardPreviewView: View {
+    let item: AdventureItem
+    @EnvironmentObject private var content: ContentStore
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                FrostCard {
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionLabel(title: "SPIELERKARTE")
+                        Text(item.title)
+                            .font(.title2.weight(.bold))
+                            .foregroundStyle(FrostTheme.frost)
+                        Text("Fundort · \(locationTitle)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(item.weapon == nil ? FrostTheme.cobalt : FrostTheme.warning)
+                    }
+                }
+                if let asset = item.playerCardAsset {
+                    FrostCard {
+                        VStack(alignment: .leading, spacing: 10) {
+                            MaterialImagePreview(
+                                resourceName: asset,
+                                subdirectory: "Materials/Items",
+                                maxHeight: 540,
+                                accessibilityLabel: "Spielerkarte für \(item.title)"
+                            )
+                            MaterialShareLink(
+                                resourceName: asset,
+                                subdirectory: "Materials/Items",
+                                label: "Karte teilen / sichern"
+                            )
+                        }
+                    }
+                }
+                FrostCard {
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionLabel(title: "Text für die Spieler")
+                        Text(item.playerCardDetail ?? item.detail)
+                            .font(.body)
+                            .foregroundStyle(.white.opacity(0.9))
+                            .fixedSize(horizontal: false, vertical: true)
+                        ForEach(item.playerCardUses, id: \.self) { use in
+                            Label(use, systemImage: "checkmark.circle")
+                                .font(.caption)
+                                .foregroundStyle(FrostTheme.quiet)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            }
+            .padding(20)
+        }
+        .background(FrostTheme.ink.ignoresSafeArea())
+        .navigationTitle(item.title)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var locationTitle: String {
+        content.itemFindLocations.first(where: { $0.id == item.locationID })?.title ?? item.locationID
+    }
+}
+
+struct EndingCardsPreviewView: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                FrostCard {
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionLabel(title: "FINALE")
+                        Text("Entscheidungen an der Alten Eiche")
+                            .font(.title2.weight(.bold))
+                            .foregroundStyle(FrostTheme.frost)
+                        Text("Zeige die drei Karten erst, wenn Gastrecht, Erinnerung und Feuer verstanden wurden.")
+                            .font(.subheadline)
+                            .foregroundStyle(FrostTheme.quiet)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                FrostCard {
+                    VStack(alignment: .leading, spacing: 10) {
+                        MaterialImagePreview(
+                            resourceName: "ending-cards.png",
+                            subdirectory: "Materials/Endings",
+                            maxHeight: 620,
+                            accessibilityLabel: "Die drei Endkarten für die Alte Eiche"
+                        )
+                        MaterialShareLink(
+                            resourceName: "ending-cards.png",
+                            subdirectory: "Materials/Endings",
+                            label: "Karten teilen / sichern"
+                        )
+                    }
+                }
+            }
+            .padding(20)
+        }
+        .background(FrostTheme.ink.ignoresSafeArea())
+        .navigationTitle("Endkarten")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
 struct NPCDossierView: View {
     let npcID: String
     @EnvironmentObject private var content: ContentStore
@@ -192,11 +357,39 @@ struct NPCDossierView: View {
                     }
                     FrostCard {
                         VStack(alignment: .leading, spacing: 8) {
-                            SectionLabel(title: "Am Tisch")
-                            Text(npc.prompts.first ?? "Lass die Figur auf die Fragen der Gruppe reagieren.")
-                                .font(.body)
-                                .foregroundStyle(.white.opacity(0.9))
-                                .fixedSize(horizontal: false, vertical: true)
+                            SectionLabel(title: "Auftrittsfolge")
+                            ForEach(npc.appearances) { appearance in
+                                VStack(alignment: .leading, spacing: 5) {
+                                    Text("\(appearance.sceneId) · \(sceneTitle(for: appearance.sceneId))")
+                                        .font(.caption.weight(.bold))
+                                        .foregroundStyle(FrostTheme.cobalt)
+                                    Text(appearance.when)
+                                        .font(.caption)
+                                        .foregroundStyle(.white.opacity(0.9))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                    Text("So spielen: \(appearance.playAs)")
+                                        .font(.caption)
+                                        .foregroundStyle(FrostTheme.quiet)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                    Text("„\(appearance.openingLine)“")
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(FrostTheme.warning)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                    Text("Danach: \(appearance.turn)")
+                                        .font(.caption)
+                                        .foregroundStyle(.white.opacity(0.82))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                if appearance.id != npc.appearances.last?.id {
+                                    Divider().overlay(FrostTheme.quiet.opacity(0.25))
+                                }
+                            }
+                            if npc.appearances.isEmpty {
+                                Text(npc.prompts.first ?? "Lass die Figur auf die Fragen der Gruppe reagieren.")
+                                    .font(.body)
+                                    .foregroundStyle(.white.opacity(0.9))
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
                             Picker("Haltung", selection: Binding(get: { session.npcStates[npc.id, default: 0] }, set: { session.setNPCState(npc.id, state: $0) })) {
                                 ForEach(Array(npc.states.enumerated()), id: \.offset) { index, state in
                                     Text(state.capitalized).tag(index)
@@ -249,5 +442,9 @@ struct NPCDossierView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+
+    private func sceneTitle(for sceneID: String) -> String {
+        content.manifest.scenes.first(where: { $0.id == sceneID })?.shortTitle ?? sceneID
     }
 }

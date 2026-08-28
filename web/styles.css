@@ -141,6 +141,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .npc-entry h3 { color: white; font-size: 1rem; }
 .npc-heading p { color: var(--cobalt); font-size: 0.78rem; font-weight: 700; }
 .npc-entry > p { margin-top: var(--space-xs); color: var(--quiet); font-size: 0.875rem; }
+.npc-appearance { display: grid; gap: var(--space-sm); margin-top: var(--space-md); padding: var(--space-md); border: 1px solid color-mix(in oklch, var(--cobalt), transparent 55%); border-radius: 0.75rem; background: color-mix(in oklch, var(--ink-soft), var(--cobalt) 7%); }
+.npc-appearance p { margin: 0; color: oklch(0.9 0.018 150); font-size: 0.8rem; line-height: 1.45; }
+.npc-appearance span { display: block; margin-bottom: 0.18rem; color: var(--quiet); font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 0.64rem; font-weight: 800; letter-spacing: 0.07em; }
+.npc-appearance blockquote { margin: 0.1rem 0; padding-left: 0.75rem; border-left: 2px solid var(--rust); color: oklch(0.86 0.07 45); font-size: 0.88rem; font-weight: 700; line-height: 1.45; }
 .npc-state { display: grid; gap: 0.35rem; max-width: 18rem; margin-top: var(--space-sm); color: var(--quiet); font-size: 0.7rem; font-weight: 750; text-transform: uppercase; letter-spacing: 0.06em; }
 .npc-state select { min-height: 2.75rem; border: 1px solid var(--line); border-radius: 0.55rem; background: var(--ink-soft); color: var(--frost); padding: 0.45rem 0.6rem; font: inherit; text-transform: none; letter-spacing: normal; }
 .npc-spoiler { display: grid; gap: var(--space-sm); margin-top: var(--space-md); padding-top: var(--space-sm); border-top: 1px solid color-mix(in oklch, var(--rust), transparent 65%); }

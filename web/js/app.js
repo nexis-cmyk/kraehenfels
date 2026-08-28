@@ -188,8 +188,15 @@ function renderCue(cue) {
   </div>`;
 }
 
-function renderNPC(npc) {
-  const prompt = npc.prompts?.[0] ? `<p class="npc-prompt">Impuls: ${escapeHtml(npc.prompts[0])}</p>` : "";
+function renderNPC(npc, sceneID) {
+  const appearance = npc.appearances?.find((entry) => entry.sceneId === sceneID);
+  const prompt = !appearance && npc.prompts?.[0] ? `<p class="npc-prompt">Impuls: ${escapeHtml(npc.prompts[0])}</p>` : "";
+  const appearanceCard = appearance ? `<div class="npc-appearance">
+      <p><span>AUFTRITT</span>${escapeHtml(appearance.when)}</p>
+      <p><span>SO SPIELEN</span>${escapeHtml(appearance.playAs)}</p>
+      <blockquote>„${escapeHtml(appearance.openingLine)}“</blockquote>
+      <p><span>DANACH</span>${escapeHtml(appearance.turn)}</p>
+    </div>` : "";
   const spoiler = state.spoilersOpen ? `<div class="npc-spoiler">
       ${npc.knows?.length ? `<p><span>WEISS</span>${npc.knows.map(escapeHtml).join("<br>")}</p>` : ""}
       ${npc.hides?.length ? `<p><span>VERSCHWEIGT</span>${npc.hides.map(escapeHtml).join("<br>")}</p>` : ""}
@@ -199,7 +206,7 @@ function renderNPC(npc) {
   const states = npc.states?.length ? `<label class="npc-state"><span>Haltung</span><select data-npc-state="${npc.id}">${npc.states.map((label, index) => `<option value="${index}" ${index === stateIndex ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}</select></label>` : "";
   return `<article class="npc-entry">
     <div class="npc-heading"><div><h3>${escapeHtml(npc.name)}</h3><p>${escapeHtml(npc.role)}</p></div></div>
-    <p>${escapeHtml(npc.description)}</p>${states}${spoiler}${prompt}
+    <p>${escapeHtml(npc.description)}</p>${appearanceCard}${states}${spoiler}${prompt}
   </article>`;
 }
 
@@ -777,7 +784,7 @@ function render() {
 
     <section class="content-section npc-section">
       <div class="section-heading"><h2>NPCs in dieser Szene</h2><span>${npcs.length ? "Verhalten und Handouts" : "Keine festen NPCs"}</span></div>
-      <div class="npc-list">${npcs.length ? npcs.map(renderNPC).join("") : `<p class="quiet-copy">Der Wald reagiert auf die Gruppe und spricht nicht mit Worten.</p>`}</div>
+      <div class="npc-list">${npcs.length ? npcs.map((npc) => renderNPC(npc, scene.id)).join("") : `<p class="quiet-copy">Der Wald reagiert auf die Gruppe und spricht nicht mit Worten.</p>`}</div>
     </section>
 
     <section class="content-section dossier-section">

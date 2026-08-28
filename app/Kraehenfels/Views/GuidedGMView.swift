@@ -212,7 +212,7 @@ struct GuidedGMView: View {
             VStack(alignment: .leading, spacing: 16) {
                 progressHeader
                 if let scene = content.scene(for: session.currentSceneID) {
-                    SceneArtView(resourceName: scene.art, height: 168)
+                    SceneArtView(resourceName: scene.art, height: 168, shareLabel: "Szenenbild teilen / sichern")
                     sceneContext(scene)
                     audioPlanPanel(scene)
                 }
@@ -523,6 +523,20 @@ struct GuidedGMView: View {
                 .font(step.kind == .readAloud ? .body.italic() : .body)
                 .foregroundStyle(.white.opacity(0.92))
                 .fixedSize(horizontal: false, vertical: true)
+            if let materialInstruction = step.materialInstruction,
+               !materialInstruction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                FrostCard {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Label("MATERIAL JETZT", systemImage: "hand.point.right.fill")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(FrostTheme.warning)
+                        Text(materialInstruction)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(FrostTheme.frost)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
             if let roll = step.roll {
                 rollSessionPanel(step, roll)
             } else {
@@ -678,40 +692,51 @@ struct GuidedGMView: View {
 
     @ViewBuilder
     private func materialLinks(for step: GuideStep) -> some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(([step.handoutID].compactMap { $0 } + step.handoutIDs), id: \.self) { handoutID in
-                    NavigationLink(destination: HandoutPreviewView(handoutID: handoutID)) {
-                        Label(handoutID, systemImage: "doc.text")
+        let handoutIDs = [step.handoutID].compactMap { $0 } + step.handoutIDs
+        let npcIDs = [step.npcID].compactMap { $0 } + step.npcIDs
+        let maps = content.scene(for: step.sceneID).map { content.maps(for: $0) } ?? []
+        let hasLinks = !handoutIDs.isEmpty || !maps.isEmpty || !npcIDs.isEmpty || step.audioCueID != nil
+
+        if hasLinks {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(handoutIDs, id: \.self) { handoutID in
+                        NavigationLink(destination: HandoutPreviewView(handoutID: handoutID)) {
+                            Label(content.handout(for: handoutID).map { "\($0.id) · \($0.title)" } ?? handoutID, systemImage: "doc.text")
+                        }
+                        .buttonStyle(.bordered)
                     }
-                    .buttonStyle(.bordered)
-                }
-                if let scene = content.scene(for: step.sceneID) {
-                    ForEach(content.maps(for: scene)) { map in
+                    ForEach(maps) { map in
                         NavigationLink(destination: MapDetailView(map: map, showSpoilers: true)) {
-                            Label("Karte", systemImage: "map")
+                            Label(map.title, systemImage: "map")
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    if step.id == "S07_CHOICE" {
+                        NavigationLink(destination: EndingCardsPreviewView()) {
+                            Label("Endkarten", systemImage: "rectangle.stack")
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    ForEach(npcIDs, id: \.self) { npcID in
+                        NavigationLink(destination: NPCDossierView(npcID: npcID)) {
+                            Label(content.manifest.npcs.first(where: { $0.id == npcID })?.name ?? "NPC", systemImage: "person.crop.circle")
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    if let cueID = step.audioCueID,
+                       !(cueID == "SFX09" && session.selectedEndingID != "E03"),
+                       let cue = content.cue(for: cueID) {
+                        Button {
+                            audio.play(cue)
+                        } label: {
+                            Label("Sound", systemImage: "speaker.wave.2")
                         }
                         .buttonStyle(.bordered)
                     }
                 }
-                ForEach(([step.npcID].compactMap { $0 } + step.npcIDs), id: \.self) { npcID in
-                    NavigationLink(destination: NPCDossierView(npcID: npcID)) {
-                        Label(content.manifest.npcs.first(where: { $0.id == npcID })?.name ?? "NPC", systemImage: "person.crop.circle")
-                    }
-                    .buttonStyle(.bordered)
-                }
-                if let cueID = step.audioCueID,
-                   !(cueID == "SFX09" && session.selectedEndingID != "E03"),
-                   let cue = content.cue(for: cueID) {
-                    Button {
-                        audio.play(cue)
-                    } label: {
-                        Label("Sound", systemImage: "speaker.wave.2")
-                    }
-                    .buttonStyle(.bordered)
-                }
+                .tint(FrostTheme.cobalt)
             }
-            .tint(FrostTheme.cobalt)
         }
     }
 

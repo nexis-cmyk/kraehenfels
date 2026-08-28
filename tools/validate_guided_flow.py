@@ -32,6 +32,7 @@ def main() -> None:
 
     cue_ids = {cue["id"] for cue in manifest["audioCues"]}
     handout_ids = {handout["id"] for handout in manifest["handouts"]}
+    npc_ids = {npc["id"] for npc in manifest.get("npcs", [])}
     ending_ids = {ending["id"] for ending in manifest["endings"]}
     item_locations = guide.get("itemFindLocations", [])
     items = guide.get("items", [])
@@ -67,6 +68,8 @@ def main() -> None:
         for required_key in ("title", "locationID", "detail", "effects"):
             if not item.get(required_key):
                 fail(f"item {item_id} has no {required_key}")
+        if not item.get("playerCardDetail") or not item.get("playerCardUses"):
+            fail(f"item {item_id} has no player-safe card copy")
         if item.get("locationID") not in set(location_ids):
             fail(f"item {item_id} references missing find location {item.get('locationID')}")
         uses = item.get("initialUses")
@@ -115,6 +118,10 @@ def main() -> None:
             for handout_id in [step.get("handoutID"), *step.get("handoutIDs", [])]:
                 if handout_id and handout_id not in handout_ids:
                     fail(f"guided flow references missing handout {handout_id}")
+            referenced_npcs = [step.get("npcID"), *step.get("npcIDs", [])]
+            invalid_npcs = {npc_id for npc_id in referenced_npcs if npc_id and npc_id not in npc_ids}
+            if invalid_npcs:
+                fail(f"guided flow references missing NPCs: {sorted(invalid_npcs)}")
             for option in step.get("options", []):
                 destination = option.get("destinationSceneID")
                 if destination:
@@ -168,6 +175,25 @@ def main() -> None:
     required_steps = {"S01_READ", "S01_ITEMS", "S01_DISTRIBUTE", "S01_CLUE", "S02_CHOICE", "S06_TRIGGER", "S07_DANGER", "S08_NEXT"}
     if not required_steps <= step_ids:
         fail(f"required guide steps missing: {sorted(required_steps - step_ids)}")
+
+    material_steps = {
+        "S01_READ", "S01_ITEMS", "S01_DISTRIBUTE", "S01_CLUE",
+        "S02_READ", "S02_ACT", "S02_CLUE",
+        "S03_READ", "S03_CLUE",
+        "S04_READ", "S04_CLUE",
+        "S05_READ", "S05_CLUE",
+        "S06_READ", "S06_CLUE", "S06_NEXT",
+        "S07_READ", "S07_CHOICE",
+        "S08_READ",
+    }
+    missing_material_steps = {
+        step["id"]
+        for steps in steps_by_scene.values()
+        for step in steps
+        if step["id"] in material_steps and not step.get("materialInstruction")
+    }
+    if missing_material_steps:
+        fail(f"material instructions missing: {sorted(missing_material_steps)}")
 
     print(f"Guided flow QA: PASS ({len(step_ids)} steps, {len(step_scenes)} scenes, {len(destinations)} destinations)")
 

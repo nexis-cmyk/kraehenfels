@@ -10,7 +10,7 @@ struct SceneDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                SceneArtView(resourceName: scene.art, height: 205)
+                SceneArtView(resourceName: scene.art, height: 205, shareLabel: "Szenenbild teilen / sichern")
                 sceneHeader
                 escalationCard
                 readAloudCard
@@ -261,6 +261,23 @@ struct SceneDetailView: View {
                 Text(npc.description)
                     .font(.subheadline)
                     .foregroundStyle(FrostTheme.quiet)
+                if let appearance = npc.appearances.first(where: { $0.sceneId == scene.id }) {
+                    VStack(alignment: .leading, spacing: 7) {
+                        bulletList(title: "Auftritt", items: [appearance.when], icon: "clock")
+                        bulletList(title: "So spielen", items: [appearance.playAs], icon: "theatermasks")
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("ERSTER SATZ")
+                                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                .foregroundStyle(FrostTheme.quiet)
+                            Text("„\(appearance.openingLine)“")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(FrostTheme.warning)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        bulletList(title: "Danach", items: [appearance.turn], icon: "arrow.turn.down.right")
+                    }
+                    .padding(.vertical, 4)
+                }
                 if showSpoilers {
                     if !npc.knows.isEmpty {
                         bulletList(title: "Weiß", items: npc.knows, icon: "checkmark.seal")
@@ -283,7 +300,7 @@ struct SceneDetailView: View {
                         .accessibilityLabel("Haltung von \(npc.name)")
                     }
                 }
-                if let prompt = npc.prompts.first {
+                if npc.appearances.first(where: { $0.sceneId == scene.id }) == nil, let prompt = npc.prompts.first {
                     Label(prompt, systemImage: "person.wave.2")
                         .font(.caption)
                         .foregroundStyle(FrostTheme.warning)
@@ -360,20 +377,45 @@ struct SceneDetailView: View {
             SectionLabel(title: "Handouts")
             ForEach(scene.handoutIds, id: \.self) { id in
                 if let handout = content.handout(for: id) {
-                    HStack(spacing: 12) {
-                        Image(systemName: handout.spoiler ? (showSpoilers ? "lock.open.fill" : "lock.fill") : "doc.text")
-                            .foregroundStyle(handout.spoiler ? FrostTheme.warning : FrostTheme.cobalt)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("\(handout.id) · \(handout.title)")
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.white)
-                            Text(handout.spoiler && !showSpoilers ? "Spoiler · Schalter oben öffnen" : (handout.spoiler ? "SL-Spoiler · \(handout.format)" : "Spielerhinweis · \(handout.format)"))
-                                .font(.caption)
-                                .foregroundStyle(handout.spoiler ? FrostTheme.warning : FrostTheme.quiet)
+                    if showSpoilers || !handout.spoiler {
+                        NavigationLink(destination: HandoutPreviewView(handoutID: handout.id)) {
+                            HStack(spacing: 12) {
+                                Image(systemName: handout.spoiler ? "lock.open.fill" : "doc.text")
+                                    .foregroundStyle(handout.spoiler ? FrostTheme.warning : FrostTheme.cobalt)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("\(handout.id) · \(handout.title)")
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundStyle(.white)
+                                    Text(handout.spoiler ? "SL-Spoiler · \(handout.format)" : "Spielerhinweis · \(handout.format)")
+                                        .font(.caption)
+                                        .foregroundStyle(handout.spoiler ? FrostTheme.warning : FrostTheme.quiet)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(FrostTheme.quiet)
+                            }
                         }
-                        Spacer()
+                        .padding(.vertical, 5)
+                    } else {
+                        HStack(spacing: 12) {
+                            Image(systemName: "lock.fill")
+                                .foregroundStyle(FrostTheme.warning)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("\(handout.id) · \(handout.title)")
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundStyle(.white)
+                                Text("Spoiler · Schalter oben öffnen")
+                                    .font(.caption)
+                                    .foregroundStyle(FrostTheme.warning)
+                            }
+                            Spacer()
+                            Image(systemName: "lock.fill")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(FrostTheme.quiet)
+                        }
+                        .padding(.vertical, 5)
                     }
-                    .padding(.vertical, 5)
                 }
             }
         }
