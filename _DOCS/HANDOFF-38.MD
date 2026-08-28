@@ -10,9 +10,10 @@ Die Gegenstände haben nur konkrete, storygerechte Anwendungen: Vor einer passen
 
 Das gemeinsame Manifest enthält nun 43 Guided-Schritte, drei Fundorte und sechs Gegenstände. Native App, Web-Vorschau und `04_Gegenstandskarten.pdf` werden aus denselben Quellen gebaut.
 
-Datum: 2026-08-26
-Release: `v4.1.2`, Build `8`
-Release-Commit auf `main`: `78b51f7`
+Datum: 2026-08-28
+Release: `v4.2.0`, Build `9`
+Release-Commit auf `main`: `5c01cb5`
+Feed-Commit auf `main`: `8a84170`
 
 ## Erledigt
 
@@ -20,7 +21,7 @@ Release-Commit auf `main`: `78b51f7`
 - Ein Erfolg wird direkt übernommen. Ein Fehlschlag bleibt offen, bis eine Folge gewählt und bewusst bestätigt wurde. Eine feste kanonische Folge zeigt nur eine Option, benötigt aber ebenfalls die Bestätigung.
 - Kritische Misserfolge zeigen zusätzlich die kritische Komplikation und verwenden denselben Auswahl- und Bestätigungsweg. Pflicht-Hinweise bleiben unabhängig vom Wurf erhalten.
 - Auswirkungen werden erst beim Bestätigen angewandt. Schließen, Korrigieren und erneutes Auswerten verändern keinen Spielstand.
-- Native V5-Sitzungen speichern strukturierte Würfelergebnisse mit gewählter Folge. Alte V5-Snapshots ohne das neue Feld bleiben lesbar. Zurücksetzen, Pfadwechsel und ein Wechsel des Finale-Endes entfernen abhängige Würfe.
+- Native Sitzungen speichern strukturierte Würfelergebnisse mit gewählter Folge und Gegenstandseinsätzen. Alte V5-Snapshots ohne die neuen Felder bleiben lesbar. Zurücksetzen, Pfadwechsel und ein Wechsel des Finale-Endes entfernen abhängige Würfe.
 - Das Finale verlangt zwei Erfolge vor zwei Fehlschlägen. Ein kritischer Misserfolg zählt doppelt und beendet die Gefahrenszene mit zwei Fehlschlägen.
 - Web-Vorschau und SwiftUI-App verwenden denselben Storyablauf. Die Würfelsession zeigt das letzte Ergebnis und die gewählte Folge.
 - Touch-Flächen im relevanten Ablauf sind mindestens 44 Pixel beziehungsweise 44 Punkte hoch. Der Web-Inhalt lässt sich bis zum unteren Ende scrollen und berücksichtigt den unteren Abstand.
@@ -29,33 +30,34 @@ Release-Commit auf `main`: `78b51f7`
 ## Prüfung
 
 - `python tools/build_content_v5.py`: PASS.
-- `python tools/validate_guided_flow.py`: PASS, 41 Schritte, 8 Szenen, 7 Ziele.
+- `python tools/validate_guided_flow.py`: PASS, 43 Schritte, 8 Szenen, 7 Ziele.
 - `node --check web/js/app.js` und `node --check web/js/guided-flow.js`: PASS.
-- Python-Syntaxprüfung für Content-Build und Guided-Flow-Validator: PASS.
+- Python-Syntaxprüfung für Content-Build, Print-Pack, Archive, Web-Build und Validatoren: PASS.
 - Die drei Manifeste sind bytegleich.
-- Live-Webprüfung auf localhost: S01- und S02-Fehlschlag mit Auswahl und Effekt, S07-kritischer Fehlschlag, Auswahl für alle drei Enden, Finale-Fortschritt, Pfadwechsel mit Löschung abhängiger Würfe sowie Scroll- und Touch-Maße geprüft.
-- GitHub Actions iOS-Run `32966458958`: SUCCESS. XcodeGen, Simulator-Build, Appetize-Paket und Swift-Tests liefen erfolgreich.
-- GitHub Actions Release-Run `32966881331`: SUCCESS. IPA und generierter AltStore-Feed wurden veröffentlicht.
-- Der vollständige lokale Projektvalidator stoppt auf Windows an einem vorhandenen ignorierten Build-Artefakt: `audio/generated/V6_A01_Kutschenstrasse.m4a` fehlt. Die gebündelte App-Ressource ist vorhanden; der macOS-Release-Workflow war trotzdem erfolgreich.
+- Live-Webprüfung auf localhost: eigene Figuren, alle sechs Kutschenfunde, Verteilung, Besitzwechsel, Gegenstandsverbrauch, S01- und S02-Fehlschlag mit Auswahl und Effekt, S07-Finale, Pfadwechsel, Reload, Scroll- und Touch-Maße sowie der komplette Weg bis zum Epilog geprüft.
+- `python tools/validate_project.py`: PASS. 13 PDFs, Druck- und Audioarchiv, Manifeste, Audio- und Bildressourcen sind geprüft.
+- GitHub Actions iOS-Run `33162003168`: SUCCESS. XcodeGen, Simulator-Build, Appetize-Paket und Swift-Tests liefen erfolgreich.
+- GitHub Actions Release-Run `33162304071`: SUCCESS. IPA und generierter AltStore-Feed wurden veröffentlicht.
+- GitHub Actions Pages-Run `33162527079`: SUCCESS. Die Web-Testversion ist live.
 
 ## AltStore
 
 Direkter, unveränderlicher Release-Feed:
 
-`https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.1.2/source.generated.json`
+`https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.2.0/source.generated.json`
 
 IPA:
 
-`https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.1.2/Kraehenfels.ipa`
+`https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.2.0/Kraehenfels.ipa`
 
 Dauerhafter Feed im Repository:
 
 `https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json`
 
-Der Feed enthält Version `4.1.2`, Build `8`, die IPA-Größe `82487980` Bytes und SHA-256 `e9da919ecd0d12be18ebfd411fcba9984c9ac870fb5f3e25883af4aa16ed463c`.
+Der Feed enthält Version `4.2.0`, Build `9`, die IPA-Größe `82603188` Bytes und SHA-256 `a7a362adef74b6490eaf0ef01ff2e5c74789dfd2dd5edfef9630e783f9fb3bff`.
 
 Die IPA ist unsigniert. AltStore signiert sie beim Installieren mit dem eigenen Apple-Account.
 
 ## Übergabe
 
-In AltStore unter `Sources` den direkten Release-Feed hinzufügen. Falls noch der alte Feed mit `v4.1.1` eingetragen ist, diesen entfernen oder aktualisieren und anschließend `v4.1.2` installieren.
+In AltStore unter `Sources` den direkten Release-Feed hinzufügen. Falls noch der alte Feed mit `v4.1.2` eingetragen ist, diesen entfernen oder aktualisieren und anschließend `v4.2.0` installieren.
