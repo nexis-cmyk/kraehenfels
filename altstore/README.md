@@ -1,12 +1,12 @@
 # AltStore-Feed
 
-Die Datei [`source.json`](source.json) enthält den zuletzt veröffentlichten iPad-Release `v5.0.0` (Build `11`). Der macOS-Release-Workflow erzeugt nach jedem Build einen Feed mit den Daten der gebauten IPA.
+Die Datei [`source.json`](source.json) enthält den zuletzt veröffentlichten iPad-Release `v5.0.1` (Build `12`). Der macOS-Release-Workflow erzeugt nach jedem Build einen Feed mit den Daten der gebauten IPA.
 
 In AltStore Classic: `Sources` öffnen, `+` wählen und diese Feed-URL eintragen:
 
-Aktueller veröffentlichter Release-Feed (für die Installation von v5.0.0):
+Aktueller veröffentlichter Release-Feed (für die Installation von v5.0.1):
 
-`https://github.com/nexis-cmyk/kraehenfels/releases/download/v5.0.0/source.generated.json`
+`https://github.com/nexis-cmyk/kraehenfels/releases/download/v5.0.1/source.generated.json`
 
 Dauerhafter Feed:
 
