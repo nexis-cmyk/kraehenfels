@@ -45,7 +45,8 @@ def main() -> None:
     if map_ids != {"MAP01", "MAP02", "MAP03", "MAP04", "MAP05", "MAP06"}: fail("V3 map set is incomplete")
     if phase_ids != {"P01", "P02", "P03", "P04", "P05"}: fail("V3 phase set is incomplete")
     if len(manifest.get("endings", [])) != 3: fail("V3 must expose exactly three endings")
-    if manifest["meta"].get("version") != "4.0.0": fail("Native manifest must be the 4.0.0 content release")
+    if manifest["meta"].get("version") != "5.1.0": fail("Native manifest must be the 5.1.0 content release")
+    if len(npcs) != 6: fail(f"5.1.0 must expose exactly six NPCs, got {len(npcs)}")
 
     location_ids = {entry["id"] for entry in manifest.get("locations", [])}
     fact_ids = {fact["id"] for fact in manifest.get("facts", [])}
@@ -86,10 +87,17 @@ def main() -> None:
             if not entry.get("playWhen") or not entry.get("gmInstruction"):
                 fail(f"{scene['id']} has an incomplete audio instruction for {entry.get('cueId')}")
 
+    guide = manifest.get("guide", {})
+    guide_steps = guide.get("steps", {})
+    guide_step_ids = {step.get("id") for steps in guide_steps.values() for step in steps}
+    valid_presence_modes = {"always", "conditional", "afterClue", "afterStep", "state", "ending", "manual", "contextual", "never"}
+    legacy_appearance_fields = {"when", "playAs", "openingLine", "turn"}
+    appearance_count = 0
     for npc in npcs:
         missing = set(npc.get("givesHandoutIds", [])) - handout_ids
         if missing: fail(f"{npc['id']} references missing handouts: {sorted(missing)}")
         appearances = npc.get("appearances", [])
+        appearance_count += len(appearances)
         appearance_scene_ids = [entry.get("sceneId") for entry in appearances]
         if not appearances: fail(f"{npc['id']} has no scene-specific appearances")
         if len(appearance_scene_ids) != len(set(appearance_scene_ids)):
@@ -99,8 +107,64 @@ def main() -> None:
             if scene_id not in scene_ids: fail(f"{npc['id']} has appearance in missing scene {scene_id}")
             if npc["id"] not in next(scene for scene in scenes if scene["id"] == scene_id).get("npcIds", []):
                 fail(f"{npc['id']} appearance is not listed in {scene_id}")
-            for required_key in ("when", "playAs", "openingLine", "turn"):
-                if not appearance.get(required_key): fail(f"{npc['id']} appearance in {scene_id} has no {required_key}")
+            if legacy_appearance_fields.intersection(appearance):
+                fail(f"{npc['id']} appearance in {scene_id} still contains dialogue fields: {sorted(legacy_appearance_fields.intersection(appearance))}")
+            presence = appearance.get("presence")
+            if not isinstance(presence, dict):
+                fail(f"{npc['id']} appearance in {scene_id} has no structured presence rule")
+            if presence.get("mode") not in valid_presence_modes:
+                fail(f"{npc['id']} appearance in {scene_id} has invalid presence mode {presence.get('mode')!r}")
+            for required_key in ("instruction", "absentInstruction"):
+                if not isinstance(presence.get(required_key), str) or not presence[required_key].strip():
+                    fail(f"{npc['id']} appearance in {scene_id} has no presence {required_key}")
+            after_clue = presence.get("afterClueID")
+            if after_clue is not None and after_clue not in clue_ids:
+                fail(f"{npc['id']} appearance in {scene_id} references missing afterClueID {after_clue}")
+            after_step = presence.get("afterGuideStepID")
+            if after_step is not None:
+                if after_step not in guide_step_ids:
+                    fail(f"{npc['id']} appearance in {scene_id} references missing afterGuideStepID {after_step}")
+                if not after_step.startswith(f"{scene_id}_"):
+                    fail(f"{npc['id']} appearance in {scene_id} gates on a step from another scene: {after_step}")
+            minimum_state = presence.get("minimumStateIndex")
+            if minimum_state is not None and (not isinstance(minimum_state, int) or isinstance(minimum_state, bool) or not 0 <= minimum_state < len(npc.get("states", []))):
+                fail(f"{npc['id']} appearance in {scene_id} has invalid minimumStateIndex")
+            required_endings = presence.get("requiredEndingIDs", [])
+            if not isinstance(required_endings, list) or any(ending not in {entry["id"] for entry in manifest.get("endings", [])} for ending in required_endings):
+                fail(f"{npc['id']} appearance in {scene_id} has invalid requiredEndingIDs")
+            if presence.get("mode") not in {"always", "never"} and not any((after_clue, after_step, minimum_state is not None, required_endings)):
+                fail(f"{npc['id']} appearance in {scene_id} is conditional but has no machine-readable gate")
+            for required_key in ("reason", "mood", "goal", "behavior", "nextAction"):
+                if not isinstance(appearance.get(required_key), str) or not appearance[required_key].strip():
+                    fail(f"{npc['id']} appearance in {scene_id} has no direction {required_key}")
+            reactions = appearance.get("clueReactions", [])
+            if not isinstance(reactions, list):
+                fail(f"{npc['id']} appearance in {scene_id} has invalid clueReactions")
+            reaction_ids = [reaction.get("clueID") for reaction in reactions]
+            if len(reaction_ids) != len(set(reaction_ids)):
+                fail(f"{npc['id']} appearance in {scene_id} has duplicate clue reactions")
+            for reaction in reactions:
+                if reaction.get("clueID") not in clue_ids:
+                    fail(f"{npc['id']} appearance in {scene_id} reacts to missing clue {reaction.get('clueID')}")
+                for required_key in ("reaction", "reveals", "nextAction"):
+                    if not isinstance(reaction.get(required_key), str) or not reaction[required_key].strip():
+                        fail(f"{npc['id']} reaction to {reaction.get('clueID')} has no {required_key}")
+                target_state = reaction.get("targetState")
+                if target_state is not None and target_state not in npc.get("states", []):
+                    fail(f"{npc['id']} reaction to {reaction.get('clueID')} targets unknown state {target_state!r}")
+        reachable_state_indexes = {0}
+        for appearance in appearances:
+            for reaction in appearance.get("clueReactions", []):
+                target_state = reaction.get("targetState")
+                if target_state in npc.get("states", []):
+                    reachable_state_indexes.add(npc["states"].index(target_state))
+        for appearance in appearances:
+            presence = appearance.get("presence", {})
+            minimum_state = presence.get("minimumStateIndex")
+            if presence.get("mode") == "state" and isinstance(minimum_state, int) and minimum_state > 0:
+                if not any(index >= minimum_state for index in reachable_state_indexes):
+                    fail(f"{npc['id']} has a state-gated appearance that no clue reaction can unlock")
+    if appearance_count != 20: fail(f"5.1.0 must expose exactly 20 NPC appearances, got {appearance_count}")
     for scene in scenes:
         for npc_id in scene.get("npcIds", []):
             npc = next(entry for entry in npcs if entry["id"] == npc_id)
@@ -126,7 +190,6 @@ def main() -> None:
             if clue["id"] not in linked:
                 fail(f"Clue {clue['id']} is not linked back from handout {fallback}")
 
-    guide = manifest.get("guide", {})
     combat = guide.get("combat")
     if not isinstance(combat, dict) or not isinstance(combat.get("enemy"), dict):
         fail("Guide combat configuration is missing")
@@ -137,7 +200,6 @@ def main() -> None:
             fail(f"Combat enemy {key} must be {expected!r}")
     if set(combat.get("victoryByEnding", {})) != {"E01", "E02", "E03"}:
         fail("Combat victory text must cover all three endings")
-    guide_steps = guide.get("steps", {})
     for scene_id, steps in guide_steps.items():
         for step in steps:
             clue_refs = [step.get("clueID"), *step.get("clueIDs", [])]

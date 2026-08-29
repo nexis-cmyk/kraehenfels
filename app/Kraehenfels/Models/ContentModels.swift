@@ -55,7 +55,7 @@ struct ContentManifest: Codable {
     }
 
     static let empty = ContentManifest(
-        meta: ContentMeta(title: "Krähenfels: Die letzte Kutsche", appTitle: "Krähenfels", subtitle: "SL-Begleiter", system: "How to be a Hero", setting: "Schwarzwald, November 1890", language: "de", version: "4.0.0", minimumIOS: "17.0"),
+        meta: ContentMeta(title: "Krähenfels: Die letzte Kutsche", appTitle: "Krähenfels", subtitle: "SL-Begleiter", system: "How to be a Hero", setting: "Schwarzwald, November 1890", language: "de", version: "5.1.0", minimumIOS: "17.0"),
         scenes: [], handouts: [], audioCues: [], guide: .empty, rules: []
     )
 
@@ -238,13 +238,128 @@ struct NPCEntry: Codable, Identifiable, Hashable {
     }
 }
 
+struct NPCPresenceRule: Codable, Hashable {
+    let mode: String
+    let instruction: String
+    let absentInstruction: String
+    let afterClueID: String?
+    let afterGuideStepID: String?
+    let minimumStateIndex: Int?
+    let requiredEndingIDs: [String]
+
+    init(
+        mode: String = "always",
+        instruction: String = "",
+        absentInstruction: String = "",
+        afterClueID: String? = nil,
+        afterGuideStepID: String? = nil,
+        minimumStateIndex: Int? = nil,
+        requiredEndingIDs: [String] = []
+    ) {
+        self.mode = mode
+        self.instruction = instruction
+        self.absentInstruction = absentInstruction
+        self.afterClueID = afterClueID
+        self.afterGuideStepID = afterGuideStepID
+        self.minimumStateIndex = minimumStateIndex
+        self.requiredEndingIDs = requiredEndingIDs
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        mode = try container.decodeIfPresent(String.self, forKey: .mode) ?? "always"
+        instruction = try container.decodeIfPresent(String.self, forKey: .instruction) ?? ""
+        absentInstruction = try container.decodeIfPresent(String.self, forKey: .absentInstruction) ?? ""
+        afterClueID = try container.decodeIfPresent(String.self, forKey: .afterClueID)
+        afterGuideStepID = try container.decodeIfPresent(String.self, forKey: .afterGuideStepID)
+        minimumStateIndex = try container.decodeIfPresent(Int.self, forKey: .minimumStateIndex)
+        requiredEndingIDs = try container.decodeIfPresent([String].self, forKey: .requiredEndingIDs) ?? []
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case mode, instruction, absentInstruction, afterClueID, afterGuideStepID, minimumStateIndex, requiredEndingIDs
+    }
+
+    var isConditional: Bool {
+        mode != "always" || afterClueID != nil || afterGuideStepID != nil || minimumStateIndex != nil || !requiredEndingIDs.isEmpty
+    }
+
+    /// Evaluates the structured gate instead of making the GM remember when an
+    /// NPC is allowed to enter a scene. Content can combine a clue, a state and
+    /// an ending; every declared requirement must be met.
+    func isSatisfied(
+        checkedClueIDs: Set<String>,
+        npcStateIndex: Int,
+        selectedEndingID: String?,
+        completedGuideStepIDs: Set<String> = []
+    ) -> Bool {
+        guard mode != "never" else { return false }
+        if let afterClueID, !checkedClueIDs.contains(afterClueID) { return false }
+        if let afterGuideStepID, !completedGuideStepIDs.contains(afterGuideStepID) { return false }
+        if let minimumStateIndex, npcStateIndex < minimumStateIndex { return false }
+        if !requiredEndingIDs.isEmpty {
+            guard let selectedEndingID, requiredEndingIDs.contains(selectedEndingID) else { return false }
+        }
+        return true
+    }
+}
+
+struct NPCClueReaction: Codable, Hashable, Identifiable {
+    var id: String { clueID }
+    let clueID: String
+    let reaction: String
+    let reveals: String
+    let nextAction: String
+    let targetState: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        clueID = try container.decode(String.self, forKey: .clueID)
+        reaction = try container.decode(String.self, forKey: .reaction)
+        reveals = try container.decodeIfPresent(String.self, forKey: .reveals) ?? ""
+        nextAction = try container.decodeIfPresent(String.self, forKey: .nextAction) ?? ""
+        targetState = try container.decodeIfPresent(String.self, forKey: .targetState)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case clueID, reaction, reveals, nextAction, targetState
+    }
+}
+
 struct NPCAppearance: Codable, Hashable, Identifiable {
     var id: String { sceneId }
     let sceneId: String
-    let when: String
-    let playAs: String
-    let openingLine: String
-    let turn: String
+    let presence: NPCPresenceRule
+    let reason: String
+    let mood: String
+    let goal: String
+    let behavior: String
+    let nextAction: String
+    let clueReactions: [NPCClueReaction]
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sceneId = try container.decode(String.self, forKey: .sceneId)
+        if let decodedPresence = try container.decodeIfPresent(NPCPresenceRule.self, forKey: .presence) {
+            presence = decodedPresence
+        } else {
+            let legacyWhen = try container.decodeIfPresent(String.self, forKey: .when) ?? ""
+            presence = NPCPresenceRule(mode: "conditional", instruction: legacyWhen)
+        }
+        reason = try container.decodeIfPresent(String.self, forKey: .reason) ?? ""
+        let legacyPlayAs = try container.decodeIfPresent(String.self, forKey: .playAs)
+        mood = try container.decodeIfPresent(String.self, forKey: .mood) ?? legacyPlayAs ?? ""
+        goal = try container.decodeIfPresent(String.self, forKey: .goal) ?? ""
+        behavior = try container.decodeIfPresent(String.self, forKey: .behavior) ?? ""
+        let legacyTurn = try container.decodeIfPresent(String.self, forKey: .turn)
+        nextAction = try container.decodeIfPresent(String.self, forKey: .nextAction) ?? legacyTurn ?? ""
+        clueReactions = try container.decodeIfPresent([NPCClueReaction].self, forKey: .clueReactions) ?? []
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case sceneId, presence, reason, mood, goal, behavior, nextAction, clueReactions
+        case when, playAs, turn
+    }
 }
 
 struct ClueEntry: Codable, Identifiable, Hashable {

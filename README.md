@@ -8,18 +8,18 @@ Das Repository enthält:
 - eine spoilerfreie Dorfkarte, eine markierte SL-Karte und drei Detailkarten
 - Handouts, drei eigene Figurenbögen und sechs storygerechte Gegenstandskarten aus der Kutsche
 - 20 technisch geprüfte Atmosphären, Musik-Layer und Soundeffekte. Zwölf problematische Cues liegen als V6-Ersatzfassungen vor
-- eine native iPad-Begleitapp ab iOS 17 mit geführtem Spielleiter-Modus, Nachtstand, NPCs, Pflichtspuren, Vorlesetexten, Würfelhelfer, Tischnotizen und Audio-Selbsttest
+- eine native iPad-Begleitapp ab iOS 17 mit geführtem Spielleiter-Modus, klaren NPC-Regieimpulsen statt vorformulierter Dialoge, eindeutiger Hinweis-Reihenfolge, Zurück-Navigation, Tischnotizen und Audio-Selbsttest
 - GitHub Actions für Tests, IPA-Build und AltStore-Feed
 - eine offlinefähige Web-Testversion für Leitstand und Soundboard
 - lokale Soundbewertungen und lokale Tischnotizen ohne Konto oder Internetzwang
 
 ## iPad-Build und AltStore
 
-Der native Release `v5.0.1` (Build `12`) ist veröffentlicht und direkt über AltStore installierbar. Die App ist für iPad ausgelegt. macOS oder GitHub Actions erzeugen die unsignierte IPA. AltStore signiert sie bei der Installation mit deinem Apple-Account.
+Der nächste native Release ist `v5.1.0` (Build `13`). Die App ist für iPad ausgelegt; macOS oder GitHub Actions erzeugen die unsignierte IPA. AltStore signiert sie bei der Installation mit deinem Apple-Account. Der dauerhafte Feed bleibt auf dem zuletzt tatsächlich veröffentlichten Build, bis der v5.1.0-Workflow erfolgreich abgeschlossen ist.
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
 - [Release-Übersicht](https://github.com/nexis-cmyk/kraehenfels/releases)
-- [AltStore-Feed für den veröffentlichten Release v5.0.1](https://github.com/nexis-cmyk/kraehenfels/releases/download/v5.0.1/source.generated.json)
+- [AltStore-Feed für den zuletzt veröffentlichten Release v5.0.1](https://github.com/nexis-cmyk/kraehenfels/releases/download/v5.0.1/source.generated.json)
 - [Dauerhafter AltStore-Feed](https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json)
 
 Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-Account signiert. Eine kurze Windows-Anleitung steht in [`altstore/README.md`](altstore/README.md).
@@ -62,7 +62,7 @@ xcodebuild -project Kraehenfels.xcodeproj -scheme Kraehenfels \
   -destination 'generic/platform=iOS Simulator' test
 ```
 
-Ein Tag wie `v3.0.0` oder der Button **Run workflow** mit einer Versionsnummer startet `.github/workflows/release.yml`. Der Workflow erzeugt eine unsignierte `Kraehenfels.ipa` und zusätzlich einen ausgefüllten `altstore/source.generated.json` als Release-Asset. Für die aktuelle Installation ist der unveränderliche Release-Feed am zuverlässigsten; die dauerhaft gepflegte Feed-URL zeigt auf `https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json`.
+Ein Tag wie `v5.1.0` oder der Button **Run workflow** mit einer Versionsnummer startet `.github/workflows/release.yml`. Der Workflow erzeugt eine unsignierte `Kraehenfels.ipa` und zusätzlich einen ausgefüllten `altstore/source.generated.json` als Release-Asset. Für die Installation ist der unveränderliche Release-Feed am zuverlässigsten; die dauerhaft gepflegte Feed-URL zeigt auf `https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json`.
 
 ## Druckpaket
 
@@ -88,7 +88,7 @@ Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.z
 
 Die Browser-Version wird aus dem aktuellen Inhaltsmanifest und den nativen Audio-/Art-Ressourcen synchronisiert. Szenen, Handouts, Cues und Service-Worker-Cache bleiben dadurch auf demselben Release-Stand. Die lokale Startanleitung steht in [`web/README.md`](web/README.md).
 
-Der geführte Spielleiter-Ablauf stammt aus `adventure/guide.json`. Native App und Web-Teststand verwenden dieselben 43 Schritte, Vorbereitungspunkte und Verzweigungen.
+Der geführte Spielleiter-Ablauf stammt aus `adventure/guide.json`. Native App und Web-Teststand verwenden dieselben 44 Schritte, Vorbereitungspunkte und Verzweigungen.
 
 Nach einem Push auf `main` veröffentlicht GitHub Actions sie außerdem unter `https://nexis-cmyk.github.io/kraehenfels/`. Dafür muss Pages einmal im Repository freigeschaltet werden: **Settings → Pages → Build and deployment → Source: GitHub Actions → Save**. Danach kannst du sie unterwegs als Web-App ausprobieren.
 

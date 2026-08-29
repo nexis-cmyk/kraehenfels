@@ -419,6 +419,12 @@ struct GuidedGMView: View {
         if step.id == "S07_COMBAT" {
             return session.combatState?.outcome != nil
         }
+        if step.id == "S06_H09" {
+            return session.checkedClueIDs.contains("C06")
+        }
+        if step.id == "S06_TRIGGER" {
+            return ["C06", "C10"].allSatisfy(session.checkedClueIDs.contains)
+        }
         return true
     }
 
@@ -779,61 +785,26 @@ struct GuidedGMView: View {
                 HStack {
                     SectionLabel(title: "Jetzt relevante NPCs")
                     Spacer()
-                    Text("Nur dieser Schritt")
+                    Text("Regie statt Dialog")
                         .font(.caption2)
                         .foregroundStyle(FrostTheme.quiet)
                 }
                 ForEach(ids, id: \.self) { npcID in
                     if let npc = content.manifest.npcs.first(where: { $0.id == npcID }) {
-                        let appearance = npc.appearances.first(where: { $0.sceneId == step.sceneID })
-                        VStack(alignment: .leading, spacing: 5) {
-                            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                Image(systemName: "person.crop.circle.fill")
-                                    .foregroundStyle(FrostTheme.cobalt)
-                                Text(npc.name)
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(.white)
-                                Spacer()
-                                Text("bereit")
-                                    .font(.caption2.weight(.bold))
-                                    .foregroundStyle(FrostTheme.accent)
-                            }
-                            Text(npc.role)
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(FrostTheme.quiet)
-                            if let appearance {
-                                Label(appearance.when, systemImage: "clock.badge.checkmark")
-                                    .font(.caption)
-                                    .foregroundStyle(.white.opacity(0.88))
-                                    .fixedSize(horizontal: false, vertical: true)
-                                Label("So spielen: \(appearance.playAs)", systemImage: "person.wave.2")
-                                    .font(.caption)
-                                    .foregroundStyle(FrostTheme.cobalt)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                Text("„\(appearance.openingLine)“")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(FrostTheme.warning)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            } else {
-                                Label("Kein geplanter Auftritt in dieser Szene. Nicht einsetzen.", systemImage: "exclamationmark.triangle")
-                                    .font(.caption)
-                                    .foregroundStyle(FrostTheme.warning)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                            if !npc.states.isEmpty {
-                                Picker("Haltung von \(npc.name)", selection: Binding(
-                                    get: { session.npcStates[npc.id, default: 0] },
-                                    set: { session.setNPCState(npc.id, state: $0) }
-                                )) {
-                                    ForEach(Array(npc.states.enumerated()), id: \.offset) { index, label in
-                                        Text(label.capitalized).tag(index)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
-                            }
+                        if let appearance = npc.appearances.first(where: { $0.sceneId == step.sceneID }) {
+                            NPCDirectionView(
+                                npc: npc,
+                                appearance: appearance,
+                                sceneID: step.sceneID,
+                                focusClueIDs: Set(([step.clueID].compactMap { $0 }) + step.clueIDs)
+                            )
+                        } else {
+                            Label("Kein geplanter Auftritt in dieser Szene. Nicht einsetzen.", systemImage: "exclamationmark.triangle")
+                                .font(.caption)
+                                .foregroundStyle(FrostTheme.warning)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(11)
                         }
-                        .padding(11)
-                        .background(FrostTheme.ink.opacity(0.38), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                     }
                 }
             }

@@ -514,4 +514,87 @@ final class ContentStoreTests: XCTestCase {
         XCTAssertFalse(session.completedGuideStepIDs.contains("S06_CLUE"))
         XCTAssertEqual(session.checkedClueIDs, ["C01", "C02"])
     }
+
+    @MainActor
+    func testCluePresenterAndNPCReactionLifecyclePersistsAndCanUndoState() {
+        let suiteName = "kraehenfels.tests.npc-direction-lifecycle"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let session = SessionStore(defaults: defaults)
+        session.beginGuidedSession()
+        session.playerNames = ["Ada", "Bert", "Cleo"]
+        session.setCluePresenter("C04", index: 1)
+        XCTAssertEqual(session.cluePresenterIndex(for: "C04"), 1)
+
+        session.confirmNPCReaction(npcID: "N02", sceneID: "S02", clueID: "C04", targetStateIndex: 2)
+        XCTAssertTrue(session.isNPCReactionConfirmed(npcID: "N02", sceneID: "S02", clueID: "C04"))
+        XCTAssertEqual(session.npcStates["N02"], 2)
+
+        let resumed = SessionStore(defaults: defaults)
+        XCTAssertEqual(resumed.cluePresenterIndex(for: "C04"), 1)
+        XCTAssertTrue(resumed.isNPCReactionConfirmed(npcID: "N02", sceneID: "S02", clueID: "C04"))
+        XCTAssertEqual(resumed.npcStates["N02"], 2)
+
+        resumed.clearNPCReaction(npcID: "N02", sceneID: "S02", clueID: "C04")
+        XCTAssertFalse(resumed.isNPCReactionConfirmed(npcID: "N02", sceneID: "S02", clueID: "C04"))
+        XCTAssertEqual(resumed.npcStates["N02"], 0)
+    }
+
+    @MainActor
+    func testRemovingClueClearsPresenterAndNPCReaction() {
+        let suiteName = "kraehenfels.tests.npc-direction-clue-reset"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let session = SessionStore(defaults: defaults)
+        session.beginGuidedSession()
+        session.toggleClue("C04")
+        session.setCluePresenter("C04", index: 2)
+        session.confirmNPCReaction(npcID: "N02", sceneID: "S02", clueID: "C04", targetStateIndex: 2)
+        session.toggleClue("C04")
+
+        XCTAssertNil(session.cluePresenterIndex(for: "C04"))
+        XCTAssertFalse(session.isNPCReactionConfirmed(npcID: "N02", sceneID: "S02", clueID: "C04"))
+        XCTAssertEqual(session.npcStates["N02"], 0)
+    }
+
+    func testNPCPresenceRuleCombinesClueStepStateAndEndingGates() {
+        let rule = NPCPresenceRule(
+            mode: "conditional",
+            instruction: "Einsetzen",
+            absentInstruction: "Warten",
+            afterClueID: "C06",
+            afterGuideStepID: "S06_H05",
+            minimumStateIndex: 2,
+            requiredEndingIDs: ["E01"]
+        )
+
+        XCTAssertFalse(rule.isSatisfied(checkedClueIDs: [], npcStateIndex: 2, selectedEndingID: "E01", completedGuideStepIDs: ["S06_H05"]))
+        XCTAssertFalse(rule.isSatisfied(checkedClueIDs: ["C06"], npcStateIndex: 1, selectedEndingID: "E01", completedGuideStepIDs: ["S06_H05"]))
+        XCTAssertFalse(rule.isSatisfied(checkedClueIDs: ["C06"], npcStateIndex: 2, selectedEndingID: "E02", completedGuideStepIDs: ["S06_H05"]))
+        XCTAssertFalse(rule.isSatisfied(checkedClueIDs: ["C06"], npcStateIndex: 2, selectedEndingID: "E01", completedGuideStepIDs: []))
+        XCTAssertTrue(rule.isSatisfied(checkedClueIDs: ["C06"], npcStateIndex: 2, selectedEndingID: "E01", completedGuideStepIDs: ["S06_H05"]))
+    }
+
+    func testStructuredNPCAppearanceDecodesWithoutDialogueFields() throws {
+        let payload = #"""
+        {
+          "sceneId":"S06",
+          "presence":{"mode":"afterClue","instruction":"Nach H05","absentInstruction":"Noch nicht","afterClueID":"C06"},
+          "reason":"Buchhaltung kontrollieren",
+          "mood":"angespannt",
+          "goal":"Beweiskette brechen",
+          "behavior":"Nur auf Fakten reagieren",
+          "nextAction":"Den Schlüssel zurückhalten",
+          "clueReactions":[{"clueID":"C06","reaction":"Wird still","reveals":"Muster wird sichtbar","nextAction":"Schweigen","targetState":"entlarvt"}]
+        }
+        """#.data(using: .utf8)!
+
+        let appearance = try JSONDecoder().decode(NPCAppearance.self, from: payload)
+        XCTAssertEqual(appearance.sceneId, "S06")
+        XCTAssertEqual(appearance.presence.afterClueID, "C06")
+        XCTAssertEqual(appearance.clueReactions.first?.targetState, "entlarvt")
+        XCTAssertEqual(appearance.nextAction, "Den Schlüssel zurückhalten")
+    }
 }

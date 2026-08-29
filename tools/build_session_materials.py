@@ -322,11 +322,11 @@ def draw_timeline_page(c: canvas.Canvas, data: dict) -> None:
         paragraph(c, direction, 23 * mm, y + 4 * mm, width - 46 * mm, row_height - 15 * mm, text_style(f"timeline-{scene_id}", 7.5, 9.2, colors.white))
     c.setFillColor(QUIET)
     c.setFont("Helvetica", 7)
-    c.drawString(18 * mm, 12 * mm, "Alle Zitate sind Startpunkte. Sprich natürlich und kürze, sobald die Gruppe reagiert.")
+    c.drawString(18 * mm, 12 * mm, "Regie statt Dialog: Nutze die Impulse situativ und gib die Entscheidung immer an die Spielerfiguren zurück.")
 
 
 def draw_secret_box(c: canvas.Canvas, x: float, y: float, width: float, title: str, entries: list[str], accent) -> None:
-    box_height = 38 * mm
+    box_height = 28 * mm
     c.setFillColor(PANEL)
     c.setStrokeColor(accent)
     c.setLineWidth(0.7)
@@ -341,16 +341,16 @@ def draw_secret_box(c: canvas.Canvas, x: float, y: float, width: float, title: s
 def draw_npc_page(c: canvas.Canvas, npc: dict, scenes: dict[str, dict]) -> None:
     width, height = A4
     page_title(c, npc["name"], f"{npc['role']} · NPC-Dossier")
-    paragraph(c, escape(npc["description"]), 18 * mm, height - 68 * mm, width - 36 * mm, 22 * mm, text_style(f"desc-{npc['id']}", 10.2, 13.2, colors.white))
+    paragraph(c, escape(npc["description"]), 18 * mm, height - 63 * mm, width - 36 * mm, 18 * mm, text_style(f"desc-{npc['id']}", 9.6, 12, colors.white))
     gap = 6 * mm
     box_width = (width - 36 * mm - gap) / 2
-    draw_secret_box(c, 18 * mm, height - 113 * mm, box_width, "Weiß", npc.get("knows", []), COBALT)
-    draw_secret_box(c, 18 * mm + box_width + gap, height - 113 * mm, box_width, "Verschweigt", npc.get("hides", []), WARNING)
+    draw_secret_box(c, 18 * mm, height - 101 * mm, box_width, "Weiß", npc.get("knows", []), COBALT)
+    draw_secret_box(c, 18 * mm + box_width + gap, height - 101 * mm, box_width, "Verschweigt", npc.get("hides", []), WARNING)
 
     appearances = npc.get("appearances", [])
-    start_y = height - 121 * mm
-    bottom = 20 * mm
-    gap_y = 4 * mm
+    start_y = height - 106 * mm
+    bottom = 13 * mm
+    gap_y = 3 * mm
     card_height = (start_y - bottom - gap_y * max(0, len(appearances) - 1)) / max(1, len(appearances))
     for index, appearance in enumerate(appearances):
         y = start_y - (index + 1) * card_height - index * gap_y
@@ -361,14 +361,59 @@ def draw_npc_page(c: canvas.Canvas, npc: dict, scenes: dict[str, dict]) -> None:
         c.roundRect(18 * mm, y, width - 36 * mm, card_height, 2.5 * mm, fill=1, stroke=1)
         c.setFillColor(COBALT)
         c.setFont("Helvetica-Bold", 8)
-        c.drawString(23 * mm, y + card_height - 9 * mm, f"{appearance['sceneId']} · {scene.get('shortTitle', scene.get('title', 'Szene'))}")
-        content = (
-            f"<b>Auftritt:</b> {escape(appearance['when'])}<br/>"
-            f"<b>So spielen:</b> {escape(appearance['playAs'])}<br/>"
-            f"<font color='#D17B6E'><b>Erster Satz:</b> „{escape(appearance['openingLine'])}“</font><br/>"
-            f"<b>Danach:</b> {escape(appearance['turn'])}"
+        c.drawString(23 * mm, y + card_height - 7 * mm, f"{appearance['sceneId']} · {scene.get('shortTitle', scene.get('title', 'Szene'))}")
+        presence = appearance.get("presence", {})
+        mode = presence.get("mode", "always")
+        mode_label = {
+            "always": "einsetzen",
+            "conditional": "situationsabhängig",
+            "contextual": "situationsabhängig",
+            "manual": "manuell",
+            "afterClue": "nach Hinweis",
+            "afterStep": "nach Schritt",
+            "state": "nach Haltung",
+            "ending": "im Epilog",
+            "never": "nicht einsetzen",
+        }.get(mode, mode)
+        c.setFillColor(WARNING if mode == "never" else RUST if mode in {"conditional", "contextual", "manual", "afterClue", "afterStep", "state", "ending"} else COBALT)
+        c.setFont("Helvetica-Bold", 6.5)
+        c.drawRightString(width - 23 * mm, y + card_height - 7 * mm, mode_label.upper())
+
+        # Keep the page count stable while still carrying every new direction
+        # field. Each appearance is a compact two-column briefing: the left
+        # column answers why/how, the right column handles concrete clue cues.
+        inner_x = 23 * mm
+        inner_y = y + 2.5 * mm
+        inner_width = width - 46 * mm
+        body_height = max(8 * mm, card_height - 10 * mm)
+        column_gap = 4 * mm
+        left_width = inner_width * 0.44
+        right_width = inner_width - left_width - column_gap
+        left_content = (
+            f"<b>EINSETZEN:</b> {escape(presence.get('instruction', ''))}<br/>"
+            f"<b>NICHT:</b> {escape(presence.get('absentInstruction', ''))}<br/>"
+            f"<b>WARUM:</b> {escape(appearance.get('reason', ''))}<br/>"
+            f"<b>LAUNE:</b> {escape(appearance.get('mood', ''))}<br/>"
+            f"<b>ZIEL:</b> {escape(appearance.get('goal', ''))}<br/>"
+            f"<b>VERHALTEN:</b> {escape(appearance.get('behavior', ''))}<br/>"
+            f"<b>NÄCHSTES:</b> {escape(appearance.get('nextAction', ''))}"
         )
-        paragraph(c, content, 23 * mm, y + 5 * mm, width - 46 * mm, card_height - 17 * mm, text_style(f"appearance-{npc['id']}-{index}", 6.9, 8.5, colors.white))
+        reaction_blocks = []
+        for reaction in appearance.get("clueReactions", []):
+            target = reaction.get("targetState")
+            target_suffix = f" · Haltung: {escape(target)}" if target else ""
+            reaction_blocks.append(
+                f"<b>{escape(reaction.get('clueID', ''))} · WENN HINWEIS GEZEIGT:</b> {escape(reaction.get('reaction', ''))}<br/>"
+                f"<b>KLAR:</b> {escape(reaction.get('reveals', ''))}<br/>"
+                f"<b>DANACH:</b> {escape(reaction.get('nextAction', ''))}{target_suffix}"
+            )
+        right_content = "<br/>".join(reaction_blocks) or "Keine konkrete Hinweisreaktion hinterlegt; Haltung und Ziel beibehalten."
+        paragraph(c, left_content, inner_x, inner_y, left_width, body_height, text_style(f"appearance-left-{npc['id']}-{index}", 5.55, 6.25, colors.white))
+        divider_x = inner_x + left_width + column_gap / 2
+        c.setStrokeColor(PAPER_DARK)
+        c.setLineWidth(0.35)
+        c.line(divider_x, inner_y, divider_x, inner_y + body_height)
+        paragraph(c, right_content, inner_x + left_width + column_gap, inner_y, right_width, body_height, text_style(f"appearance-right-{npc['id']}-{index}", 5.2, 5.9, colors.white))
     footer = f"Haltungen: {', '.join(npc.get('states', []))}"
     if npc.get("givesHandoutIds"):
         footer += f" · Verknüpft: {', '.join(npc['givesHandoutIds'])}"

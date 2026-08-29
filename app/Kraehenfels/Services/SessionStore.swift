@@ -27,6 +27,10 @@ final class SessionStore: ObservableObject {
         var currentSceneID: String
         var completedSceneIDs: [String]
         var checkedClueIDs: [String]
+        var cluePresenterIndexes: [String: Int]?
+        var confirmedNPCReactionIDs: [String]?
+        var npcReactionPreviousStateIndexes: [String: Int]?
+        var npcReactionAppliedStateIndexes: [String: Int]?
         var completedChecklistIDs: [String]
         var npcStates: [String: Int]
         var threatLevel: Int
@@ -87,6 +91,28 @@ final class SessionStore: ObservableObject {
     }
 
     @Published var checkedClueIDs: Set<String> {
+        didSet { persist() }
+    }
+
+    /// Stores which entered player figure is currently presenting each clue.
+    /// A missing entry means the whole group found or showed it.
+    @Published var cluePresenterIndexes: [String: Int] {
+        didSet { persist() }
+    }
+
+    /// Prevents a confirmed NPC reaction from being repeated accidentally
+    /// when the guide is revisited.
+    @Published private(set) var confirmedNPCReactionIDs: Set<String> {
+        didSet { persist() }
+    }
+
+    /// State snapshots let the GM undo a confirmed reaction without leaving
+    /// the NPC in a state that was only applied by that reaction.
+    private var npcReactionPreviousStateIndexes: [String: Int] {
+        didSet { persist() }
+    }
+
+    private var npcReactionAppliedStateIndexes: [String: Int] {
         didSet { persist() }
     }
 
@@ -220,6 +246,10 @@ final class SessionStore: ObservableObject {
             currentSceneID = snapshot.currentSceneID
             completedSceneIDs = Set(snapshot.completedSceneIDs)
             checkedClueIDs = Set(snapshot.checkedClueIDs)
+            cluePresenterIndexes = snapshot.cluePresenterIndexes ?? [:]
+            confirmedNPCReactionIDs = Set(snapshot.confirmedNPCReactionIDs ?? [])
+            npcReactionPreviousStateIndexes = snapshot.npcReactionPreviousStateIndexes ?? [:]
+            npcReactionAppliedStateIndexes = snapshot.npcReactionAppliedStateIndexes ?? [:]
             completedChecklistIDs = Set(snapshot.completedChecklistIDs)
             npcStates = snapshot.npcStates
             threatLevel = Self.normalizedThreat(snapshot.threatLevel)
@@ -258,6 +288,10 @@ final class SessionStore: ObservableObject {
             currentSceneID = "S01"
             completedSceneIDs = []
             checkedClueIDs = []
+            cluePresenterIndexes = [:]
+            confirmedNPCReactionIDs = []
+            npcReactionPreviousStateIndexes = [:]
+            npcReactionAppliedStateIndexes = [:]
             completedChecklistIDs = []
             npcStates = [:]
             threatLevel = 0
@@ -345,6 +379,10 @@ final class SessionStore: ObservableObject {
         currentSceneID = "S01"
         completedSceneIDs = []
         checkedClueIDs = []
+        cluePresenterIndexes = [:]
+        confirmedNPCReactionIDs = []
+        npcReactionPreviousStateIndexes = [:]
+        npcReactionAppliedStateIndexes = [:]
         completedChecklistIDs = []
         npcStates = [:]
         threatLevel = 0
@@ -380,6 +418,10 @@ final class SessionStore: ObservableObject {
         guidedStepIndex = 0
         completedSceneIDs = []
         checkedClueIDs = []
+        cluePresenterIndexes = [:]
+        confirmedNPCReactionIDs = []
+        npcReactionPreviousStateIndexes = [:]
+        npcReactionAppliedStateIndexes = [:]
         completedChecklistIDs = []
         npcStates = [:]
         threatLevel = 0
@@ -420,6 +462,10 @@ final class SessionStore: ObservableObject {
         guidedStepIndex = 0
         completedSceneIDs = ["S01", "S02", "S03", "S04", "S05"]
         checkedClueIDs = []
+        cluePresenterIndexes = [:]
+        confirmedNPCReactionIDs = []
+        npcReactionPreviousStateIndexes = [:]
+        npcReactionAppliedStateIndexes = [:]
         completedChecklistIDs = []
         completedGuideStepIDs = []
         guideHistory = []
@@ -510,6 +556,15 @@ final class SessionStore: ObservableObject {
         completedGuideStepIDs = completedGuideStepIDs.filter { stepID in
             !dependentScenes.contains(String(stepID.prefix(3)))
         }
+        let removedReactionKeys = npcReactionPreviousStateIndexes.keys.filter { key in
+            let components = key.split(separator: "|", omittingEmptySubsequences: false)
+            guard components.count >= 2 else { return false }
+            return dependentScenes.contains(String(components[1]))
+        }
+        removedReactionKeys.forEach {
+            npcReactionPreviousStateIndexes.removeValue(forKey: $0)
+            npcReactionAppliedStateIndexes.removeValue(forKey: $0)
+        }
         rollHistory = rollHistory.filter { stepID, _ in
             !dependentScenes.contains(String(stepID.prefix(3)))
         }
@@ -518,6 +573,11 @@ final class SessionStore: ObservableObject {
         }
         itemUseRecords = itemUseRecords.filter { !dependentScenes.contains($0.sceneID) }
         guideHistory = guideHistory.filter { !dependentScenes.contains($0.sceneID) }
+        confirmedNPCReactionIDs = confirmedNPCReactionIDs.filter { key in
+            let components = key.split(separator: "|", omittingEmptySubsequences: false)
+            guard components.count >= 2 else { return true }
+            return !dependentScenes.contains(String(components[1]))
+        }
         if dependentScenes.contains("S07") {
             selectedEndingID = nil
             resetFinaleProgress()
@@ -865,9 +925,76 @@ final class SessionStore: ObservableObject {
     func toggleClue(_ clueID: String) {
         if checkedClueIDs.contains(clueID) {
             checkedClueIDs.remove(clueID)
+            cluePresenterIndexes.removeValue(forKey: clueID)
+            confirmedNPCReactionIDs = confirmedNPCReactionIDs.filter { key in
+                !key.hasSuffix("|\(clueID)")
+            }
+            let reactionKeys = npcReactionPreviousStateIndexes.keys.filter { $0.hasSuffix("|\(clueID)") }
+            reactionKeys.forEach { key in
+                let components = key.split(separator: "|", omittingEmptySubsequences: false)
+                if components.count >= 1,
+                   let previous = npcReactionPreviousStateIndexes[key],
+                   let applied = npcReactionAppliedStateIndexes[key],
+                   npcStates[String(components[0]), default: 0] == applied {
+                    setNPCState(String(components[0]), state: previous)
+                }
+                npcReactionPreviousStateIndexes.removeValue(forKey: key)
+                npcReactionAppliedStateIndexes.removeValue(forKey: key)
+            }
         } else {
             checkedClueIDs.insert(clueID)
         }
+    }
+
+    /// Assigns the player figure who is physically holding or presenting a clue.
+    /// `nil` deliberately means that the whole group is presenting it.
+    func setCluePresenter(_ clueID: String, index: Int?) {
+        guard let index else {
+            cluePresenterIndexes.removeValue(forKey: clueID)
+            return
+        }
+        guard (0..<3).contains(index) else { return }
+        cluePresenterIndexes[clueID] = index
+    }
+
+    func cluePresenterIndex(for clueID: String) -> Int? {
+        cluePresenterIndexes[clueID]
+    }
+
+    /// Stable key used to avoid replaying the same NPC reaction when a guide
+    /// step is revisited.
+    func npcReactionKey(npcID: String, sceneID: String, clueID: String) -> String {
+        "\(npcID)|\(sceneID)|\(clueID)"
+    }
+
+    func isNPCReactionConfirmed(npcID: String, sceneID: String, clueID: String) -> Bool {
+        confirmedNPCReactionIDs.contains(npcReactionKey(npcID: npcID, sceneID: sceneID, clueID: clueID))
+    }
+
+    /// Confirms the reaction at the table and applies the content-defined
+    /// target state in the same atomic user action.
+    func confirmNPCReaction(npcID: String, sceneID: String, clueID: String, targetStateIndex: Int? = nil) {
+        let key = npcReactionKey(npcID: npcID, sceneID: sceneID, clueID: clueID)
+        if !confirmedNPCReactionIDs.contains(key), let targetStateIndex {
+            npcReactionPreviousStateIndexes[key] = npcStates[npcID, default: 0]
+            npcReactionAppliedStateIndexes[key] = min(max(targetStateIndex, 0), 2)
+        }
+        confirmedNPCReactionIDs.insert(key)
+        if let targetStateIndex {
+            setNPCState(npcID, state: targetStateIndex)
+        }
+    }
+
+    func clearNPCReaction(npcID: String, sceneID: String, clueID: String) {
+        let key = npcReactionKey(npcID: npcID, sceneID: sceneID, clueID: clueID)
+        confirmedNPCReactionIDs.remove(key)
+        if let previous = npcReactionPreviousStateIndexes[key],
+           let applied = npcReactionAppliedStateIndexes[key],
+           npcStates[npcID, default: 0] == applied {
+            setNPCState(npcID, state: previous)
+        }
+        npcReactionPreviousStateIndexes.removeValue(forKey: key)
+        npcReactionAppliedStateIndexes.removeValue(forKey: key)
     }
 
     func toggleChecklist(_ checklistID: String) {
@@ -925,6 +1052,10 @@ final class SessionStore: ObservableObject {
             currentSceneID: currentSceneID,
             completedSceneIDs: Array(completedSceneIDs).sorted(),
             checkedClueIDs: Array(checkedClueIDs).sorted(),
+            cluePresenterIndexes: cluePresenterIndexes,
+            confirmedNPCReactionIDs: Array(confirmedNPCReactionIDs).sorted(),
+            npcReactionPreviousStateIndexes: npcReactionPreviousStateIndexes,
+            npcReactionAppliedStateIndexes: npcReactionAppliedStateIndexes,
             completedChecklistIDs: Array(completedChecklistIDs).sorted(),
             npcStates: npcStates,
             threatLevel: Self.normalizedThreat(threatLevel),

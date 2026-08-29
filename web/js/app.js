@@ -1,5 +1,5 @@
 import { AudioEngine } from "./audio-engine.js";
-import { evaluateRoll, guideKindLabels } from "./guided-flow.js?v=4.0.0-r11";
+import { evaluateRoll, guideKindLabels } from "./guided-flow.js?v=5.1.0-r1";
 
 const app = document.querySelector("#app");
 const sceneNav = document.querySelector("#scene-nav");
@@ -61,9 +61,23 @@ const state = {
   trust: normalizedTrack(localStorage.getItem("kraehenfels.trust") ?? 3, 5),
   injuries: normalizedTrack(localStorage.getItem("kraehenfels.injuries"), 3),
   npcStates: stored("kraehenfels.npcStates", {}),
+  cluePresenterIndexes: (() => {
+    const value = stored("kraehenfels.cluePresenterIndexes", {});
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  })(),
+  confirmedNPCReactionIDs: new Set(stored("kraehenfels.confirmedNPCReactionIDs", [])),
+  npcReactionPreviousStateIndexes: (() => {
+    const value = stored("kraehenfels.npcReactionPreviousStateIndexes", {});
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  })(),
+  npcReactionAppliedStateIndexes: (() => {
+    const value = stored("kraehenfels.npcReactionAppliedStateIndexes", {});
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  })(),
   selectedHooks: stored("kraehenfels.selectedHooks", {}),
   gmMode: stored("kraehenfels.gmMode", false),
   guidedIndexes: stored("kraehenfels.guidedIndexes", {}),
+  completedGuideStepIDs: new Set(stored("kraehenfels.completedGuideStepIDs", [])),
   guideHistory: stored("kraehenfels.guideHistory", []),
   setupChecks: new Set(stored("kraehenfels.setupChecks", [])),
   discoveredItemIDs: new Set(stored("kraehenfels.discoveredItemIDs", [])),
@@ -108,9 +122,14 @@ function persist() {
   localStorage.setItem("kraehenfels.trust", String(state.trust));
   localStorage.setItem("kraehenfels.injuries", String(state.injuries));
   localStorage.setItem("kraehenfels.npcStates", JSON.stringify(state.npcStates));
+  localStorage.setItem("kraehenfels.cluePresenterIndexes", JSON.stringify(state.cluePresenterIndexes));
+  localStorage.setItem("kraehenfels.confirmedNPCReactionIDs", JSON.stringify([...state.confirmedNPCReactionIDs]));
+  localStorage.setItem("kraehenfels.npcReactionPreviousStateIndexes", JSON.stringify(state.npcReactionPreviousStateIndexes));
+  localStorage.setItem("kraehenfels.npcReactionAppliedStateIndexes", JSON.stringify(state.npcReactionAppliedStateIndexes));
   localStorage.setItem("kraehenfels.selectedHooks", JSON.stringify(state.selectedHooks));
   localStorage.setItem("kraehenfels.gmMode", JSON.stringify(state.gmMode));
   localStorage.setItem("kraehenfels.guidedIndexes", JSON.stringify(state.guidedIndexes));
+  localStorage.setItem("kraehenfels.completedGuideStepIDs", JSON.stringify([...state.completedGuideStepIDs]));
   localStorage.setItem("kraehenfels.guideHistory", JSON.stringify(state.guideHistory));
   localStorage.setItem("kraehenfels.setupChecks", JSON.stringify([...state.setupChecks]));
   localStorage.setItem("kraehenfels.discoveredItemIDs", JSON.stringify([...state.discoveredItemIDs]));
@@ -159,6 +178,76 @@ function npcById(id) {
   return state.manifest.npcs.find((npc) => npc.id === id);
 }
 
+function npcReactionKey(npcID, sceneID, clueID) {
+  return `${npcID}|${sceneID}|${clueID}`;
+}
+
+function npcPresenceSatisfied(appearance, focusClueIDs = []) {
+  const presence = appearance?.presence || {};
+  const clueSet = new Set([...state.clues, ...focusClueIDs]);
+  if (presence.mode === "never") return false;
+  if (presence.afterClueID && !clueSet.has(presence.afterClueID)) return false;
+  if (presence.afterGuideStepID && !state.completedGuideStepIDs.has(presence.afterGuideStepID)) return false;
+  const stateIndex = Number(state.npcStates[appearance.npcID] || 0);
+  if (presence.minimumStateIndex !== null && presence.minimumStateIndex !== undefined && stateIndex < Number(presence.minimumStateIndex)) return false;
+  if (Array.isArray(presence.requiredEndingIDs) && presence.requiredEndingIDs.length && !presence.requiredEndingIDs.includes(state.endingID)) return false;
+  return true;
+}
+
+function npcPresenceIsContextual(appearance) {
+  const presence = appearance?.presence || {};
+  return ["conditional", "contextual", "manual"].includes(presence.mode);
+}
+
+function npcPresenterName(clueID) {
+  const index = state.cluePresenterIndexes[clueID];
+  if (index === undefined || index === null || index === "") return "die Gruppe";
+  const numeric = Number(index);
+  return state.playerNames[numeric]?.trim() || `Figur ${numeric + 1}`;
+}
+
+function npcTargetStateIndex(npc, targetState) {
+  if (!targetState) return null;
+  const index = (npc.states || []).findIndex((value) => value.trim().toLocaleLowerCase() === String(targetState).trim().toLocaleLowerCase());
+  return index >= 0 ? index : null;
+}
+
+function npcDirectionMarkup(npc, appearance, sceneID, focusClueIDs = [], showAllReactions = false) {
+  const normalizedAppearance = { ...appearance, npcID: npc.id };
+  const present = npcPresenceSatisfied(normalizedAppearance, focusClueIDs);
+  const contextual = npcPresenceIsContextual(appearance);
+  const presence = appearance.presence || {};
+  const reactions = (appearance.clueReactions || []).filter((reaction) => showAllReactions || focusClueIDs.includes(reaction.clueID) || state.clues.has(reaction.clueID));
+  const status = present ? (contextual ? "situationsabhängig" : "einsetzen") : "nicht einsetzen";
+  const direction = present ? `<div class="npc-direction-grid">
+      <p><span>WARUM HIER</span>${escapeHtml(appearance.reason)}</p>
+      <p><span>LAUNE</span>${escapeHtml(appearance.mood)}</p>
+      <p><span>ZIEL</span>${escapeHtml(appearance.goal)}</p>
+      <p><span>VERHALTEN</span>${escapeHtml(appearance.behavior)}</p>
+      <p><span>NÄCHSTE HANDLUNG</span>${escapeHtml(appearance.nextAction)}</p>
+      <p><span>EINSETZEN</span>${escapeHtml(presence.instruction)}</p>
+    </div>
+    ${(npc.states || []).length ? `<label class="npc-state"><span>Haltung</span><select data-npc-state="${escapeHtml(npc.id)}">${npc.states.map((label, index) => `<option value="${index}" ${index === Number(state.npcStates[npc.id] || 0) ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}</select></label>` : ""}
+    ${reactions.length ? `<div class="npc-reactions"><div class="npc-reactions-heading"><span>REAKTION AUF HINWEISE</span><small>Wer hält das Blatt?</small></div>${reactions.map((reaction) => {
+      const key = npcReactionKey(npc.id, sceneID, reaction.clueID);
+      const confirmed = state.confirmedNPCReactionIDs.has(key);
+      const targetIndex = npcTargetStateIndex(npc, reaction.targetState);
+      const presenterIndex = state.cluePresenterIndexes[reaction.clueID];
+      const clueIsAvailable = state.clues.has(reaction.clueID) || focusClueIDs.includes(reaction.clueID);
+      return `<article class="npc-reaction ${confirmed ? "is-confirmed" : ""}">
+        <div class="npc-reaction-title"><strong>${escapeHtml(reaction.clueID)} · ${escapeHtml(clueById(reaction.clueID)?.title || reaction.clueID)}</strong><small>${state.clues.has(reaction.clueID) ? "bestätigt" : "nach Ausgabe"}</small></div>
+        <label class="npc-presenter"><span>Hinweis hält</span><select data-clue-presenter="${escapeHtml(reaction.clueID)}"><option value="" ${presenterIndex === undefined ? "selected" : ""}>Gruppe</option>${state.playerNames.map((name, index) => `<option value="${index}" ${Number(presenterIndex) === index ? "selected" : ""}>${escapeHtml(name.trim() || `Figur ${index + 1}`)}</option>`).join("")}</select></label>
+        <p><span>WENN ${escapeHtml(npcPresenterName(reaction.clueID).toUpperCase())} DEN HINWEIS ZEIGT</span>${escapeHtml(reaction.reaction)}</p>
+        <p><span>WAS KLAR WIRD</span>${escapeHtml(reaction.reveals)}</p>
+        <p><span>DANACH</span>${escapeHtml(reaction.nextAction)}</p>
+        ${confirmed ? `<div class="npc-reaction-confirmed">✓ Reaktion bestätigt${reaction.targetState ? ` · Haltung: ${escapeHtml(reaction.targetState)}` : ""}<button class="text-button" data-npc-reaction="clear" data-npc-id="${escapeHtml(npc.id)}" data-scene-id="${escapeHtml(sceneID)}" data-clue-id="${escapeHtml(reaction.clueID)}" type="button">Rückgängig</button></div>` : `<button class="button button-quiet npc-reaction-confirm" data-npc-reaction="confirm" data-npc-id="${escapeHtml(npc.id)}" data-scene-id="${escapeHtml(sceneID)}" data-clue-id="${escapeHtml(reaction.clueID)}" data-target-state="${targetIndex ?? ""}" type="button" ${clueIsAvailable ? "" : "disabled"}>${clueIsAvailable ? "Reaktion bestätigen" : "Hinweis zuerst ausgeben"}</button>`}
+      </article>`;
+    }).join("")}</div>` : ""}` : `<p class="npc-absent">${escapeHtml(presence.absentInstruction || "Noch nicht einsetzen.")}</p>`;
+  return `<div class="npc-appearance ${present ? "is-present" : "is-absent"}">
+      <div class="npc-appearance-status"><span>${present ? "●" : "○"}</span><b>${escapeHtml(status)}</b></div>${direction}
+    </div>`;
+}
+
 function handoutById(id) {
   return state.manifest.handouts.find((handout) => handout.id === id);
 }
@@ -194,6 +283,33 @@ function toggleSet(set, value) {
   render();
 }
 
+function toggleClue(clueID) {
+  if (state.clues.has(clueID)) {
+    state.clues.delete(clueID);
+    delete state.cluePresenterIndexes[clueID];
+    state.confirmedNPCReactionIDs = new Set([...state.confirmedNPCReactionIDs].filter((key) => !key.endsWith(`|${clueID}`)));
+    ["npcReactionPreviousStateIndexes", "npcReactionAppliedStateIndexes"].forEach((property) => {
+      Object.keys(state[property]).filter((key) => key.endsWith(`|${clueID}`)).forEach((key) => {
+        if (property === "npcReactionPreviousStateIndexes") {
+          const parts = String(key).split("|");
+          const previous = state.npcReactionPreviousStateIndexes[key];
+          const applied = state.npcReactionAppliedStateIndexes[key];
+          const npcID = parts[0];
+          if (previous !== undefined && applied !== undefined && Number(state.npcStates[npcID] || 0) === Number(applied)) {
+            state.npcStates[npcID] = Number(previous);
+          }
+        }
+        delete state.npcReactionPreviousStateIndexes[key];
+        delete state.npcReactionAppliedStateIndexes[key];
+      });
+    });
+  } else {
+    state.clues.add(clueID);
+  }
+  persist();
+  render();
+}
+
 function renderCue(cue) {
   const active = audio.isPlaying(cue.id);
   const rating = Number(state.audioRatings[cue.id] || 0);
@@ -215,22 +331,15 @@ function renderCue(cue) {
 function renderNPC(npc, sceneID) {
   const appearance = npc.appearances?.find((entry) => entry.sceneId === sceneID);
   const prompt = !appearance && npc.prompts?.[0] ? `<p class="npc-prompt">Impuls: ${escapeHtml(npc.prompts[0])}</p>` : "";
-  const appearanceCard = appearance ? `<div class="npc-appearance">
-      <p><span>AUFTRITT</span>${escapeHtml(appearance.when)}</p>
-      <p><span>SO SPIELEN</span>${escapeHtml(appearance.playAs)}</p>
-      <blockquote>„${escapeHtml(appearance.openingLine)}“</blockquote>
-      <p><span>DANACH</span>${escapeHtml(appearance.turn)}</p>
-    </div>` : "";
   const spoiler = state.spoilersOpen ? `<div class="npc-spoiler">
       ${npc.knows?.length ? `<p><span>WEISS</span>${npc.knows.map(escapeHtml).join("<br>")}</p>` : ""}
       ${npc.hides?.length ? `<p><span>VERSCHWEIGT</span>${npc.hides.map(escapeHtml).join("<br>")}</p>` : ""}
       ${npc.givesHandoutIds?.length ? `<div class="gives-handout"><span>GIBT</span><div class="npc-handout-links">${npc.givesHandoutIds.map(guideReferenceMarkup).join("")}</div></div>` : ""}
     </div>` : "";
-  const stateIndex = Number(state.npcStates[npc.id] || 0);
-  const states = npc.states?.length ? `<label class="npc-state"><span>Haltung</span><select data-npc-state="${npc.id}">${npc.states.map((label, index) => `<option value="${index}" ${index === stateIndex ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}</select></label>` : "";
+  const appearanceCard = appearance ? npcDirectionMarkup(npc, appearance, sceneID, [], true) : "";
   return `<article class="npc-entry">
     <div class="npc-heading"><div><h3>${escapeHtml(npc.name)}</h3><p>${escapeHtml(npc.role)}</p></div></div>
-    <p>${escapeHtml(npc.description)}</p>${appearanceCard}${states}${spoiler}${prompt}
+    <p>${escapeHtml(npc.description)}</p>${appearanceCard}${spoiler}${prompt}
   </article>`;
 }
 
@@ -336,7 +445,10 @@ function migrateActiveLegacySession() {
   state.npcStates = {};
   state.selectedHooks = {};
   state.setupChecks = new Set();
+  state.npcReactionPreviousStateIndexes = {};
+  state.npcReactionAppliedStateIndexes = {};
   state.guidedIndexes = { S06: 0 };
+  state.completedGuideStepIDs = new Set();
   state.guideHistory = [];
   state.guidedRolls = {};
   state.guidedRollHistory = [];
@@ -640,7 +752,10 @@ function advanceGuideStep() {
   const step = currentGuideStep(state.currentSceneId);
   if (step?.id === "S01_DISTRIBUTE" && !distributionComplete()) return false;
   if (step?.id === "S07_COMBAT" && !state.combatState?.outcome) return false;
+  if (step?.id === "S06_H09" && !state.clues.has("C06")) return false;
+  if (step?.id === "S06_TRIGGER" && !(state.clues.has("C06") && state.clues.has("C10"))) return false;
   if (step?.id === "S01_ITEMS") discoverItems();
+  if (step?.id) state.completedGuideStepIDs.add(step.id);
   [step?.clueID, ...(step?.clueIDs || [])].filter(Boolean).forEach((clueID) => state.clues.add(clueID));
   pushGuidePosition();
   state.guidedIndexes[state.currentSceneId] = Math.min(currentGuideIndex(state.currentSceneId) + 1, Math.max(0, steps.length - 1));
@@ -658,10 +773,21 @@ function resetDependentPath(destination) {
   const dependent = new Set(order.slice(index + 1));
   state.completed = new Set([...state.completed].filter((sceneID) => !dependent.has(sceneID)));
   state.guidedIndexes = Object.fromEntries(Object.entries(state.guidedIndexes).filter(([sceneID]) => !dependent.has(sceneID)));
+  state.completedGuideStepIDs = new Set([...state.completedGuideStepIDs].filter((stepID) => !dependent.has(String(stepID).slice(0, 3))));
   state.guidedRolls = Object.fromEntries(Object.entries(state.guidedRolls).filter(([stepID]) => !dependent.has(stepID.slice(0, 3))));
   state.guidedRollHistory = state.guidedRollHistory.filter((entry) => !dependent.has(String(entry.stepID || "").slice(0, 3)));
   state.itemUseRecords = state.itemUseRecords.filter((record) => !dependent.has(String(record.sceneID || "").slice(0, 3)));
   state.guideHistory = state.guideHistory.filter((position) => !dependent.has(position.sceneID));
+  state.confirmedNPCReactionIDs = new Set([...state.confirmedNPCReactionIDs].filter((key) => {
+    const parts = String(key).split("|");
+    return parts.length < 2 || !dependent.has(parts[1]);
+  }));
+  ["npcReactionPreviousStateIndexes", "npcReactionAppliedStateIndexes"].forEach((property) => {
+    state[property] = Object.fromEntries(Object.entries(state[property]).filter(([key]) => {
+      const parts = String(key).split("|");
+      return parts.length < 2 || !dependent.has(parts[1]);
+    }));
+  });
   if (index < order.indexOf("S07")) {
     state.endingID = "";
     resetFinaleProgress();
@@ -919,14 +1045,15 @@ function renderFinaleModePicker() {
 function renderGuideNPCs(step) {
   const ids = [...new Set([step.npcID, ...(step.npcIDs || [])].filter(Boolean))];
   if (!ids.length) return "";
+  const focusClueIDs = [step.clueID, ...(step.clueIDs || [])].filter(Boolean);
   const entries = ids.map((id) => {
     const npc = npcById(id);
     if (!npc) return "";
     const appearance = npc.appearances?.find((entry) => entry.sceneId === step.sceneID);
     if (!appearance) return "";
-    return `<article class="guide-npc-entry"><div class="guide-npc-heading"><strong>${escapeHtml(npc.name)}</strong><span>${escapeHtml(npc.role)}</span></div><p><b>AUFTRITT</b> ${escapeHtml(appearance.when)}</p><p><b>SO SPIELEN</b> ${escapeHtml(appearance.playAs)}</p><blockquote>„${escapeHtml(appearance.openingLine)}“</blockquote><p><b>DANACH</b> ${escapeHtml(appearance.turn)}</p></article>`;
+    return `<article class="guide-npc-entry"><div class="guide-npc-heading"><strong>${escapeHtml(npc.name)}</strong><span>${escapeHtml(npc.role)}</span></div>${npcDirectionMarkup(npc, appearance, step.sceneID, focusClueIDs)}</article>`;
   }).filter(Boolean).join("");
-  return entries ? `<section class="guide-npcs"><div class="section-heading"><h3>Jetzt relevante NPCs</h3><span>nur dieser Schritt</span></div>${entries}</section>` : "";
+  return entries ? `<section class="guide-npcs"><div class="section-heading"><h3>Jetzt relevante NPCs</h3><span>Regie statt Dialog</span></div>${entries}</section>` : "";
 }
 
 function combatStatusLabel(participant) {
@@ -1245,7 +1372,34 @@ document.addEventListener("click", async (event) => {
     return;
   }
   const clueButton = event.target.closest("[data-clue]");
-  if (clueButton) return toggleSet(state.clues, clueButton.dataset.clue);
+  if (clueButton) return toggleClue(clueButton.dataset.clue);
+  const reactionButton = event.target.closest("[data-npc-reaction]");
+  if (reactionButton) {
+    const key = npcReactionKey(reactionButton.dataset.npcId, reactionButton.dataset.sceneId, reactionButton.dataset.clueId);
+    if (reactionButton.dataset.npcReaction === "clear") {
+      state.confirmedNPCReactionIDs.delete(key);
+      const previous = state.npcReactionPreviousStateIndexes[key];
+      const applied = state.npcReactionAppliedStateIndexes[key];
+      if (previous !== undefined && applied !== undefined && Number(state.npcStates[reactionButton.dataset.npcId] || 0) === Number(applied)) {
+        state.npcStates[reactionButton.dataset.npcId] = Number(previous);
+      }
+      delete state.npcReactionPreviousStateIndexes[key];
+      delete state.npcReactionAppliedStateIndexes[key];
+    } else {
+      state.confirmedNPCReactionIDs.add(key);
+      const targetState = reactionButton.dataset.targetState;
+      if (targetState !== "") {
+        if (state.npcReactionPreviousStateIndexes[key] === undefined) {
+          state.npcReactionPreviousStateIndexes[key] = Number(state.npcStates[reactionButton.dataset.npcId] || 0);
+          state.npcReactionAppliedStateIndexes[key] = Math.min(2, Math.max(0, Number(targetState)));
+        }
+        state.npcStates[reactionButton.dataset.npcId] = Math.min(2, Math.max(0, Number(targetState)));
+      }
+    }
+    persist();
+    render();
+    return;
+  }
   const checklistButton = event.target.closest("[data-check]");
   if (checklistButton) return toggleSet(state.checklist, checklistButton.dataset.check);
   const hookButton = event.target.closest("[data-hook]");
@@ -1279,9 +1433,14 @@ document.addEventListener("click", async (event) => {
     state.nightPhase = 0;
     state.threatLevel = 0;
     state.npcStates = {};
+    state.cluePresenterIndexes = {};
+    state.confirmedNPCReactionIDs.clear();
+    state.npcReactionPreviousStateIndexes = {};
+    state.npcReactionAppliedStateIndexes = {};
     state.selectedHooks = {};
     state.currentSceneId = "S01";
     state.guidedIndexes = { S01: 0 };
+    state.completedGuideStepIDs = new Set();
     state.guideHistory = [];
     state.guidedRolls = {};
     state.guidedRollHistory = [];
@@ -1435,8 +1594,10 @@ document.addEventListener("click", async (event) => {
       const currentScene = state.currentSceneId;
       const needsConfirmation = state.completed.has(destination);
       if (needsConfirmation && !window.confirm("Gefundene Hinweise und Tischnotizen bleiben erhalten. Spätere Szenen werden ab dem neuen Ziel zurückgesetzt. Pfad neu setzen?")) return;
-      state.completed.add(currentScene);
-      pushGuidePosition();
+       state.completed.add(currentScene);
+       const currentStep = currentGuideStep(currentScene);
+       if (currentStep?.id) state.completedGuideStepIDs.add(currentStep.id);
+       pushGuidePosition();
       if (needsConfirmation) resetDependentPath(destination);
       state.currentSceneId = destination;
       state.guidedIndexes[destination] = 0;
@@ -1631,6 +1792,13 @@ document.addEventListener("change", (event) => {
     persist();
     render();
   }
+  if (event.target.matches("[data-clue-presenter]")) {
+    const clueID = event.target.dataset.cluePresenter;
+    if (event.target.value === "") delete state.cluePresenterIndexes[clueID];
+    else state.cluePresenterIndexes[clueID] = Number(event.target.value);
+    persist();
+    render();
+  }
 });
 
 document.addEventListener("input", (event) => {
@@ -1689,6 +1857,11 @@ document.querySelector("#reset-progress").addEventListener("click", () => {
   state.guideHistory = [];
   state.guidedRolls = {};
   state.guidedRollHistory = [];
+  state.cluePresenterIndexes = {};
+  state.confirmedNPCReactionIDs.clear();
+  state.npcReactionPreviousStateIndexes = {};
+  state.npcReactionAppliedStateIndexes = {};
+  state.completedGuideStepIDs = new Set();
   state.finaleSuccesses = 0;
   state.finaleFailures = 0;
   state.finaleOutcome = "";

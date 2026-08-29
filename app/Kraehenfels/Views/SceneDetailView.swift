@@ -268,21 +268,13 @@ struct SceneDetailView: View {
                     .font(.subheadline)
                     .foregroundStyle(FrostTheme.quiet)
                 if let appearance = npc.appearances.first(where: { $0.sceneId == scene.id }) {
-                    VStack(alignment: .leading, spacing: 7) {
-                        bulletList(title: "Auftritt", items: [appearance.when], icon: "clock")
-                        bulletList(title: "So spielen", items: [appearance.playAs], icon: "theatermasks")
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("ERSTER SATZ")
-                                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                .foregroundStyle(FrostTheme.quiet)
-                            Text("„\(appearance.openingLine)“")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(FrostTheme.warning)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        bulletList(title: "Danach", items: [appearance.turn], icon: "arrow.turn.down.right")
-                    }
-                    .padding(.vertical, 4)
+                    NPCDirectionView(
+                        npc: npc,
+                        appearance: appearance,
+                        sceneID: scene.id,
+                        focusClueIDs: Set(scene.clueIds),
+                        showAllReactions: true
+                    )
                 }
                 if showSpoilers {
                     if !npc.knows.isEmpty {
@@ -295,15 +287,6 @@ struct SceneDetailView: View {
                         Label("Kann geben: \(npc.givesHandoutIds.joined(separator: ", "))", systemImage: "doc.badge.plus")
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(FrostTheme.cobalt)
-                    }
-                    if !npc.states.isEmpty {
-                        Picker("Haltung", selection: Binding(get: { session.npcStates[npc.id, default: 0] }, set: { session.setNPCState(npc.id, state: $0) })) {
-                            ForEach(Array(npc.states.enumerated()), id: \.offset) { index, state in
-                                Text(state.capitalized).tag(index)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .accessibilityLabel("Haltung von \(npc.name)")
                     }
                 }
                 if npc.appearances.first(where: { $0.sceneId == scene.id }) == nil {

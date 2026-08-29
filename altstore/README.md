@@ -1,6 +1,6 @@
 # AltStore-Feed
 
-Die Datei [`source.json`](source.json) enthält den zuletzt veröffentlichten iPad-Release `v5.0.1` (Build `12`). Der macOS-Release-Workflow erzeugt nach jedem Build einen Feed mit den Daten der gebauten IPA.
+Die Datei [`source.json`](source.json) enthält den zuletzt veröffentlichten iPad-Release `v5.0.1` (Build `12`). Der vorbereitete Release-Workflow baut `v5.1.0` (Build `13`) und erzeugt nach erfolgreichem macOS-Build einen Feed mit den echten Daten der gebauten IPA.
 
 In AltStore Classic: `Sources` öffnen, `+` wählen und diese Feed-URL eintragen:
 

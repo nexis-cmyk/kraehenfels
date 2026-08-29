@@ -6,7 +6,7 @@
     "system": "How to be a Hero",
     "setting": "Schwarzwald, November 1890",
     "language": "de",
-    "version": "4.0.0",
+    "version": "5.1.0",
     "minimumIOS": "17.0"
   },
   "phases": [
@@ -224,37 +224,154 @@
       ],
       "givesHandoutIds": [],
       "prompts": [
-        "Lobt das Gastrecht, während er die Gästezimmer verriegelt.",
-        "Bietet Hilfe an, sobald die Gruppe zu viel über frühere Reisende weiß."
+        "Lobe das Gastrecht, während du die Gästezimmer kontrollierst.",
+        "Wechsle bei konkreten Fragen von Hilfe zu Verwaltungsargumenten."
       ],
       "appearances": [
         {
           "sceneId": "S02",
-          "when": "Sobald die Gruppe den Schwarzen Keiler erreicht. Gruber öffnet selbst und übernimmt sofort das Gespräch.",
-          "playAs": "Warm, ruhig und kontrolliert. Er nennt die Reisenden auffällig oft Gäste und beantwortet Fragen mit Gegenfragen.",
-          "openingLine": "Ihr habt Glück gehabt. In Krähenfels lässt man Gäste nicht im Schnee stehen.",
-          "turn": "Er verriegelt die Zimmertür erst, wenn die Gruppe schlafen will oder zwei wichtige Gespräche geführt hat. Danach wird er freundlich ausweichend."
+          "presence": {
+            "mode": "always",
+            "instruction": "Beim Eintreffen im Schwarzen Keiler öffnet Gruber selbst und hält die Gruppe im Schankraum.",
+            "absentInstruction": "Außerhalb des Gasthauses nicht ungeplant einsetzen.",
+            "afterClueID": null,
+            "minimumStateIndex": null,
+            "requiredEndingIDs": []
+          },
+          "reason": "Er will die Ankunft kontrollieren und die Reisenden bis zur Verriegelung beruhigen.",
+          "mood": "Freundlich, glatt und kontrolliert; die Hilfsbereitschaft wirkt einstudiert.",
+          "goal": "Die Gruppe als harmlose Gäste behandeln und Nachfragen klein halten.",
+          "behavior": "Direkte Fragen knapp beantworten und auf Unterkunft und Wetter zurücklenken.",
+          "nextAction": "Nach zwei Gesprächen oder beim Schlafengehen die Tür von außen verriegeln.",
+          "clueReactions": [
+            {
+              "clueID": "C01",
+              "reaction": "Er wird wachsamer und prüft, wer den Schaden bemerkt hat.",
+              "reveals": "Die Umleitung der Kutsche ist für ihn gefährlich, wenn sie als Absicht erkannt wird.",
+              "nextAction": "Zur Unterkunft drängen und die Untersuchung verschieben.",
+              "targetState": "prüfend"
+            },
+            {
+              "clueID": "C02",
+              "reaction": "Er erklärt die Zahlung als normale Amtsausgabe und bietet ungefragt eine praktische Lösung an.",
+              "reveals": "Die Spur führt vom Unfall zum Rathaus.",
+              "nextAction": "Die Gruppe ins Gasthaus lotsen und den Schlüssel nicht zeigen.",
+              "targetState": "prüfend"
+            },
+            {
+              "clueID": "C03",
+              "reaction": "Er erkennt die roten Striche und liefert zu schnell eine harmlose Erklärung.",
+              "reveals": "Er weiß, dass Namen aus dem Gästebuch verschwunden sind.",
+              "nextAction": "Die Seite nicht aus der Hand geben; Elara und Leni beobachten lassen.",
+              "targetState": "prüfend"
+            },
+            {
+              "clueID": "C04",
+              "reaction": "Er spricht von Schutz vor dem Wetter, statt die Verriegelung zu bestreiten.",
+              "reveals": "Die Tür wird absichtlich von außen kontrolliert.",
+              "nextAction": "Den Schlüssel verbergen und die Gruppe in den Schlafbereich schicken.",
+              "targetState": "prüfend"
+            }
+          ]
         },
         {
           "sceneId": "S06",
-          "when": "Wenn H05 gefunden wurde oder die Gruppe im Archiv die Buchhaltung mit dem Gastrecht verbindet.",
-          "playAs": "Die Wärme fällt aus seiner Stimme. Er versucht zuerst zu verhandeln, dann die Verantwortung auf das Dorf zu verteilen.",
-          "openingLine": "Manche Bücher halten ein Dorf nur am Leben, solange niemand sie zu Ende liest.",
-          "turn": "Mit klaren Beweisen kann er nicht mehr leugnen. Er gibt den Weg zur Eiche preis, aber nicht freiwillig den Schlüssel."
+          "presence": {
+            "mode": "afterClue",
+            "instruction": "Erst einführen, sobald H05 als Fund bestätigt ist. Dann kommt Gruber ins Archiv, um die Buchhaltung zu kontrollieren.",
+            "absentInstruction": "Wenn H05 noch nicht bestätigt ist, bleibt Gruber außerhalb und wird nicht vorgezogen.",
+            "afterClueID": "C06",
+            "minimumStateIndex": null,
+            "requiredEndingIDs": []
+          },
+          "reason": "Die Buchhaltung bedroht seine Kontrolle; er kommt, um die Beweiskette zu brechen.",
+          "mood": "Die Gastgebermaske fällt ab; er verhandelt statt zu begrüßen.",
+          "goal": "H05 kleinreden und die Verantwortung auf frühere Bürgermeister und das Dorf verteilen.",
+          "behavior": "Er lässt sich auf Fakten festnageln, erklärt aber nichts freiwillig.",
+          "nextAction": "Bei klarer Verbindung den Weg zur Eiche bestätigen, Schlüssel und Entscheidung aber zurückhalten.",
+          "clueReactions": [
+            {
+              "clueID": "C05",
+              "reaction": "Er behandelt den Eid als alte Folklore und relativiert den Schutz.",
+              "reveals": "Er weiß, dass das Gastrecht gegen seine Praxis steht.",
+              "nextAction": "H05 danebenlegen und nicht abgleiten.",
+              "targetState": "entlarvt"
+            },
+            {
+              "clueID": "C06",
+              "reaction": "Beim Blick auf die Winterbuchhaltung wechselt er vom Gastgeber zum Verhandler.",
+              "reveals": "Milde Winter und verschwundene Gäste sind als Muster dokumentiert.",
+              "nextAction": "Die Gruppe mit H09 weiterarbeiten lassen; nichts erklären, was sie schon sehen.",
+              "targetState": "entlarvt"
+            }
+          ]
         },
         {
           "sceneId": "S07",
-          "when": "Mit der Prozession an der Alten Eiche. Gruber steht vorn und spricht für das Dorf.",
-          "playAs": "Nicht brüllen. Er klingt wie ein Amtsträger, der eine grausame Pflicht als vernünftige Notwendigkeit verkauft.",
-          "openingLine": "Drei Gäste kamen. Drei Gäste bleiben. So überlebt Krähenfels den Winter.",
-          "turn": "Beim Widerruf verteidigt er sein Recht. Beim Erinnern bestreitet er die Namen. Beim Brechen versucht er, den Zugang zur Reliquie zu versperren."
+          "presence": {
+            "mode": "always",
+            "instruction": "Mit der Prozession steht Gruber vor dem Schrein und spricht für die Dorfbewohner.",
+            "absentInstruction": "Nicht zeigen, bevor die Prozession an der Eiche sichtbar ist.",
+            "afterClueID": null,
+            "minimumStateIndex": null,
+            "requiredEndingIDs": []
+          },
+          "reason": "Er muss die alte Ordnung vor Zeugen verteidigen.",
+          "mood": "Amtlich, angespannt und überzeugt, dass Zweckmäßigkeit Moral ersetzt.",
+          "goal": "Die Wahl der Gruppe verlangsamen und jeden Ausweg als Gefahr darstellen.",
+          "behavior": "Er bleibt zwischen Gruppe und Schrein und reagiert nur auf den gewählten Weg.",
+          "nextAction": "Beim Widerruf Recht behaupten, beim Erinnern Namen kleinreden, beim Brechen den Zugang versperren.",
+          "clueReactions": [
+            {
+              "clueID": "C07",
+              "reaction": "Bei den schwarzen Nägeln greift er sofort nach der Gesprächsführung.",
+              "reveals": "Er fürchtet den Verlust der Reliquie und des Systems dahinter.",
+              "nextAction": "Stelle ihn zwischen Gruppe und Schrein, ohne den Spielerentscheid zu ersetzen.",
+              "targetState": "entlarvt"
+            },
+            {
+              "clueID": "C08",
+              "reaction": "Er nennt die Zeichnung eine Angstfantasie, sobald die Prozession erkennbar wird.",
+              "reveals": "Er weiß, dass die Menge zur Eiche zieht.",
+              "nextAction": "Die Prozession als reale Bedrohung weiterlaufen lassen.",
+              "targetState": "entlarvt"
+            },
+            {
+              "clueID": "C09",
+              "reaction": "Die drei Verben bringen ihn aus der Reihenfolge; er spielt sie gegeneinander aus.",
+              "reveals": "Alle drei Wege gehören zum alten Pakt.",
+              "nextAction": "Keine Lösung vorgeben; die Gruppe muss wählen.",
+              "targetState": "entlarvt"
+            },
+            {
+              "clueID": "C10",
+              "reaction": "Er stellt die Preise der Wege so dar, dass jede Entscheidung wie ein Fehler wirkt.",
+              "reveals": "Er will Zeit gewinnen, bis die Bindung für ihn entscheidet.",
+              "nextAction": "Nach der Wahl sofort in die Gefahrenszene überleiten.",
+              "targetState": "entlarvt"
+            }
+          ]
         },
         {
           "sceneId": "S08",
-          "when": "Nur wenn ein kurzer Nachhall zu Gruber sinnvoll ist.",
-          "playAs": "Sein Zustand folgt dem gewählten Ende: entmachtet, mit den Namen konfrontiert oder stumm vor der zerstörten Bindung.",
-          "openingLine": "Ihr habt nicht nur mich gerichtet. Ihr habt über jeden Winter nach diesem entschieden.",
-          "turn": "Gib ihm höchstens einen Satz. Der Epilog gehört den Spielerfiguren."
+          "presence": {
+            "mode": "ending",
+            "instruction": "Nur nach gewähltem Ende und nur als kurzer Nachhall nach den Spielerfiguren.",
+            "absentInstruction": "Wenn kein Ende gewählt ist, gehört der Epilog ausschließlich den Spielerfiguren.",
+            "afterClueID": null,
+            "minimumStateIndex": null,
+            "requiredEndingIDs": [
+              "E01",
+              "E02",
+              "E03"
+            ]
+          },
+          "reason": "Die Folgen seines Systems sollen sichtbar werden, ohne einen neuen Konflikt zu eröffnen.",
+          "mood": "Erschöpft und entmachtet; keine neue Autorität.",
+          "goal": "Die Konsequenz anerkennen und Aufmerksamkeit zum Dorf zurückgeben.",
+          "behavior": "Nicht initiieren; nur auf das Ergebnis reagieren.",
+          "nextAction": "Nach dem persönlichen Nachhall höchstens kurz reagieren und zurücktreten.",
+          "clueReactions": []
         }
       ],
       "cueIds": [
@@ -285,37 +402,120 @@
         "H03"
       ],
       "prompts": [
-        "Antwortet erst, wenn die Gruppe ihr eine Fluchtmöglichkeit anbietet.",
-        "Schiebt das Gästebuch in Reichweite, ohne es zu erklären."
+        "Beobachte Türen, Schwelle und Gruber, bevor du dich einmischst.",
+        "Biete erst einen sicheren Ausweg an, dann gib den passenden Hinweis weiter."
       ],
       "appearances": [
         {
           "sceneId": "S02",
-          "when": "Nach Grubers Begrüßung. Elara bleibt zunächst hinter der Theke und streut unbemerkt Salz an die Schwelle.",
-          "playAs": "Knapp, leise und immer mit einem Blick zur Tür. Sie hilft erst, wenn die Gruppe sie ernst nimmt oder ihr einen Ausweg anbietet.",
-          "openingLine": "Essen gibt es. Fragen machen die Nacht nur länger.",
-          "turn": "Bei Vertrauen schiebt sie H03 in Reichweite und nennt den letzten gestrichenen Namen. Sie erklärt nicht ungefragt das ganze Ritual."
+          "presence": {
+            "mode": "conditional",
+            "instruction": "Nach Grubers Begrüßung hinter der Theke zeigen. Elara streut Salz und prüft die Aufmerksamkeit der Gruppe.",
+            "absentInstruction": "Wenn niemand sie ernst nimmt, bleibt sie im Hintergrund und gibt keinen Hinweis freiwillig.",
+            "afterClueID": null,
+            "afterGuideStepID": "S02_GM",
+            "minimumStateIndex": null,
+            "requiredEndingIDs": []
+          },
+          "reason": "Sie will Leni und die Gäste schützen, ohne Gruber offen herauszufordern.",
+          "mood": "Ängstlich, knapp und ständig mit Blick zur Tür.",
+          "goal": "Herausfinden, ob die Gruppe vertrauenswürdig und handlungsfähig ist.",
+          "behavior": "Auf konkrete, respektvolle Fragen reagieren; kein vollständiges Geständnis.",
+          "nextAction": "Bei einem glaubhaften Ausweg H03 in Reichweite schieben und nur den letzten gestrichenen Namen markieren.",
+          "clueReactions": [
+            {
+              "clueID": "C03",
+              "reaction": "Sie wird still, schaut zur Tür und erkennt die Seite als echten Beweis.",
+              "reveals": "Die gestrichenen Namen sind echte Gäste, nicht nur Gerüchte.",
+              "nextAction": "H03 näherlegen, aber das Ritual nicht vorwegnehmen.",
+              "targetState": "wankend"
+            },
+            {
+              "clueID": "C04",
+              "reaction": "Sie legt wortlos neues Salz an die Schwelle und beschönigt die Verriegelung nicht mehr.",
+              "reveals": "Sie hat Grubers Ablauf selbst erlebt.",
+              "nextAction": "Eine Figur muss ihr einen sicheren Ausweg anbieten; bei glaubwürdigem Angebot geht sie mit ins Archiv.",
+              "targetState": "verbündet"
+            }
+          ]
         },
         {
           "sceneId": "S06",
-          "when": "Nur wenn Elara zuvor Vertrauen gefasst hat. Dann hilft sie beim Zugang zum Archiv oder bestätigt Grubers nächtliche Riegel.",
-          "playAs": "Noch ängstlich, aber entschieden genug, um nicht wieder wegzusehen.",
-          "openingLine": "Wenn ihr das Buch öffnet, gibt es für mich keinen Weg zurück.",
-          "turn": "Sie bestätigt die Namen und Grubers Ablauf. Danach bleibt die Entscheidung bei der Gruppe."
+          "presence": {
+            "mode": "state",
+            "instruction": "Nur einführen, wenn Elara auf Haltung „verbündet“ steht. Dann begleitet sie den Zugang zum Archiv.",
+            "absentInstruction": "Bei ängstlich oder wankend bleibt Elara bei Leni im Gasthaus.",
+            "afterClueID": null,
+            "minimumStateIndex": 2,
+            "requiredEndingIDs": []
+          },
+          "reason": "Sie kommt mit, weil sie jetzt nicht mehr allein gegen Gruber steht.",
+          "mood": "Noch nervös, aber entschieden genug, nicht wegzusehen.",
+          "goal": "Namen und Verriegelung aus eigener Erfahrung bestätigen, ohne die Lösung zu liefern.",
+          "behavior": "Nur auf konkrete Fragen antworten.",
+          "nextAction": "Nach der Bestätigung aus der Entscheidungsrunde zurückziehen.",
+          "clueReactions": [
+            {
+              "clueID": "C06",
+              "reaction": "Sie erkennt das Muster und senkt kurz den Blick.",
+              "reveals": "Sie verbindet die Buchhaltung mit Gästen, deren Namen gestrichen wurden.",
+              "nextAction": "Die beiden Belege nebeneinanderlegen und Elara nur bestätigen lassen.",
+              "targetState": "verbündet"
+            },
+            {
+              "clueID": "C10",
+              "reaction": "Sie bleibt bei der Zeile über die zurückgegebenen Namen hängen.",
+              "reveals": "Der Preis des Pakts betrifft konkrete Menschen, nicht abstrakte Winter.",
+              "nextAction": "Die Gruppe die Konsequenzen selbst aussprechen lassen.",
+              "targetState": "verbündet"
+            }
+          ]
         },
         {
           "sceneId": "S07",
-          "when": "Am hinteren Rand der Prozession, falls die Gruppe ihr Vertrauen gewonnen hat.",
-          "playAs": "Sie widerspricht Gruber nicht mit einer Rede, sondern mit einer klaren kleinen Handlung.",
-          "openingLine": "Sie sind Gäste. Ihr habt das Wort zuerst gebrochen.",
-          "turn": "Sie hält Dorfbewohner zurück oder öffnet einen Weg. Ohne vorheriges Vertrauen bleibt sie stumm und schützt nur Leni, die im Gasthaus bleibt."
+          "presence": {
+            "mode": "state",
+            "instruction": "Am hinteren Rand der Prozession nur zeigen, wenn Elara verbündet ist.",
+            "absentInstruction": "Ohne Vertrauen bleibt sie im Gasthaus und schützt Leni.",
+            "afterClueID": null,
+            "minimumStateIndex": 2,
+            "requiredEndingIDs": []
+          },
+          "reason": "Sie folgt, um Leni und den Zugang für die Gruppe zu schützen.",
+          "mood": "Furchtsam, praktisch und zu keiner Rede bereit.",
+          "goal": "Eine kleine Handlung gegen Grubers Kontrolle ermöglichen.",
+          "behavior": "Keine Rede; sie handelt räumlich.",
+          "nextAction": "Einen Dorfbewohner zurückhalten oder einen Weg öffnen; danach Leni aus der Gefahrenzone bringen.",
+          "clueReactions": [
+            {
+              "clueID": "C10",
+              "reaction": "Sie hält das Fragment fest und weicht kurz nicht zurück.",
+              "reveals": "Sie versteht, dass Erinnern eine konkrete Gegenhandlung ist.",
+              "nextAction": "Eine Öffnung schaffen, sobald die Gruppe sich entscheidet.",
+              "targetState": "verbündet"
+            }
+          ]
         },
         {
           "sceneId": "S08",
-          "when": "Nach dem persönlichen Nachhall der Spielerfiguren, wenn Elara verbündet wurde.",
-          "playAs": "Erschöpft und praktisch. Sie denkt bereits daran, was mit dem Gasthaus und den Überlebenden geschieht.",
-          "openingLine": "Heute bleibt keine Tür mehr von außen verriegelt.",
-          "turn": "Ein Satz reicht. Danach hört man wieder gewöhnliche Geräusche im Gasthaus."
+          "presence": {
+            "mode": "state",
+            "instruction": "Nach dem Ende nur einführen, wenn Elara verbündet wurde.",
+            "absentInstruction": "Wenn Elara nicht verbündet ist, bleibt ihr Nachhall im Gasthaus.",
+            "afterClueID": null,
+            "minimumStateIndex": 2,
+            "requiredEndingIDs": [
+              "E01",
+              "E02",
+              "E03"
+            ]
+          },
+          "reason": "Sie muss das Gasthaus und die Überlebenden praktisch neu ordnen.",
+          "mood": "Erschöpft, sachlich und erleichtert, aber nicht sentimental.",
+          "goal": "Sicherheit herstellen: Türen von innen, Namen sichtbar, Leni geschützt.",
+          "behavior": "Eine sichtbare Alltagsmaßnahme statt einer Erklärung.",
+          "nextAction": "Nach dem Spieler-Nachhall eine konkrete Folge zeigen und in den Alltag zurückgehen.",
+          "clueReactions": []
         }
       ],
       "cueIds": [
@@ -346,30 +546,102 @@
         "H08"
       ],
       "prompts": [
-        "Sagt: Öffnen, erinnern, brechen.",
-        "Verwechselt absichtlich die Richtung zur Eiche, wenn Gruber in der Nähe ist."
+        "Sprich in Bildern nur so lange, bis die Gruppe ein konkretes Detail nennt.",
+        "Wenn Gruber in der Nähe ist, verweigere ihm die Richtung zur Eiche."
       ],
       "appearances": [
         {
           "sceneId": "S05",
-          "when": "Am Waldrand, nachdem Leni ihre Zeichnung gezeigt hat oder die Gruppe der nicht menschlichen Spur folgt.",
-          "playAs": "Zuerst sprunghaft und misstrauisch. Sobald jemand seine Details mit den Beweisen verbindet, wird er plötzlich sehr genau.",
-          "openingLine": "Öffnen. Erinnern. Brechen. Mehr Wege hat das Holz nie gekannt.",
-          "turn": "Er gibt H08. H09 wird später im Rathausarchiv als Spielerhandout ausgegeben; Elias kann die drei Verben daraus nur einordnen, wenn die Gruppe danach fragt."
+          "presence": {
+            "mode": "conditional",
+            "instruction": "Am sicheren Waldrand einführen, wenn Leni H07 zeigt oder die Gruppe der nicht menschlichen Spur folgt.",
+            "absentInstruction": "Wenn weder Zeichnung noch Spur aufgegriffen werden, bleibt Elias außerhalb der Szene.",
+            "afterClueID": null,
+            "afterGuideStepID": "S05_READ",
+            "minimumStateIndex": null,
+            "requiredEndingIDs": []
+          },
+          "reason": "Er beobachtet, ob die Gruppe die Spur mit richtigen Details verbindet.",
+          "mood": "Sprunghaft und misstrauisch, bei präzisen Fragen sehr genau.",
+          "goal": "Die drei Auswege verständlich machen, ohne zu entscheiden.",
+          "behavior": "Keine Rätselrede ohne konkreten Anhaltspunkt.",
+          "nextAction": "Auf ein Beweisdetail eingehen, dann H08 geben; H09 bleibt im späteren Archiv.",
+          "clueReactions": [
+            {
+              "clueID": "C08",
+              "reaction": "Er prüft die Zeichnung auf einzelne Formen und korrigiert nur sachliche Irrtümer.",
+              "reveals": "Die Prozession und die Eiche sind ein geplanter Weg.",
+              "nextAction": "H08 erst nach der Verbindung von Zeichnung und Spur übergeben.",
+              "targetState": "offen"
+            },
+            {
+              "clueID": "C09",
+              "reaction": "Bei den drei Verben wird er klar und langsam.",
+              "reveals": "Öffnen, erinnern und brechen sind echte Alternativen.",
+              "nextAction": "Eine Spielerfigur die Kosten jeder Alternative benennen lassen.",
+              "targetState": "offen"
+            },
+            {
+              "clueID": "C11",
+              "reaction": "Er erkennt den alten Forstweg und wirkt kurz erleichtert.",
+              "reveals": "Der Weg zur Eiche ist verborgen, aber begehbar.",
+              "nextAction": "H10 nutzen und Elias im Dorf zurücklassen.",
+              "targetState": "offen"
+            }
+          ]
         },
         {
           "sceneId": "S07",
-          "when": "Er löst sich kurz vor der Eiche aus der Prozession, wenn die Gruppe die drei Wege noch nicht sicher verstanden hat.",
-          "playAs": "Angespannt, aber zum ersten Mal eindeutig. Er erklärt keinen vierten Ausweg und nimmt den Spielern die Entscheidung nicht ab.",
-          "openingLine": "Wählt selbst. Aber wählt, bevor Gruber wieder für alle spricht.",
-          "turn": "Er benennt auf Nachfrage genau einen noch unklaren Preis und hält sich dann aus der Entscheidung heraus."
+          "presence": {
+            "mode": "afterClue",
+            "instruction": "Kurz vor der Eiche aus der Prozession lösen, sobald C09 bestätigt ist und die Gruppe klären muss.",
+            "absentInstruction": "Wenn C09 nicht bestätigt ist, nicht automatisch einsetzen; die Gruppe kann selbst entscheiden.",
+            "afterClueID": "C09",
+            "minimumStateIndex": null,
+            "requiredEndingIDs": []
+          },
+          "reason": "Er will verhindern, dass Unklarheit zur falschen Handlung führt.",
+          "mood": "Angespannt, erstmals eindeutig und ohne Rätselspiel.",
+          "goal": "Eine fehlende Information ergänzen, aber keine vierte Option erfinden.",
+          "behavior": "Nur auf eine konkrete offene Kostenfrage reagieren.",
+          "nextAction": "Genau einen noch unklaren Preis benennen und danach aus der Entscheidung gehen.",
+          "clueReactions": [
+            {
+              "clueID": "C09",
+              "reaction": "Er bestätigt die Reihenfolge der drei Verben und wartet auf die Deutung der Gruppe.",
+              "reveals": "Die Reihenfolge ist keine vierte Lösung.",
+              "nextAction": "Die Entscheidung an die Spieler zurückgeben.",
+              "targetState": "entschlossen"
+            },
+            {
+              "clueID": "C10",
+              "reaction": "Er erkennt, dass das Fragment den Preis und nicht nur die Handlung beschreibt.",
+              "reveals": "Jeder Weg verändert Dorf, Namen oder Reliquie.",
+              "nextAction": "Nur die offene Kostenfrage beantworten, dann schweigen.",
+              "targetState": "entschlossen"
+            }
+          ]
         },
         {
           "sceneId": "S08",
-          "when": "Nur wenn Elias überlebt hat und sein Nachhall noch offen ist.",
-          "playAs": "Nüchtern und müde. Seine rätselhafte Art ist vorbei.",
-          "openingLine": "Jetzt muss niemand mehr so tun, als hätte das Holz von selbst gesprochen.",
-          "turn": "Lass ihn Verantwortung übernehmen, aber nicht die letzte Szene an sich ziehen."
+          "presence": {
+            "mode": "ending",
+            "instruction": "Nur zeigen, wenn Elias den Wald verlassen hat und ein Ende gewählt wurde.",
+            "absentInstruction": "Wenn Elias nicht beteiligt war, bleibt sein Nachhall aus.",
+            "afterClueID": "C09",
+            "minimumStateIndex": null,
+            "requiredEndingIDs": [
+              "E01",
+              "E02",
+              "E03"
+            ]
+          },
+          "reason": "Er muss Verantwortung für seine frühere Hilfe übernehmen.",
+          "mood": "Nüchtern und müde; die rätselhafte Art ist vorbei.",
+          "goal": "Eine konkrete Wiedergutmachung beginnen.",
+          "behavior": "Eine Handlung zeigen, nicht die Schlussbotschaft erklären.",
+          "nextAction": "Kurz Verantwortung übernehmen und dann zurücktreten.",
+          "clueReactions": []
         }
       ],
       "cueIds": [
@@ -400,30 +672,88 @@
         "H04"
       ],
       "prompts": [
-        "Liest die entscheidende Zeile erst, wenn jemand nach dem Sinn des Gastrechts fragt.",
-        "Sagt nicht, ob er Gruber anzeigen würde."
+        "Lies die Gastrecht-Zeile erst bei einer Frage nach ihrem Sinn.",
+        "Bestätige Fakten, aber entscheide nicht, ob Gruber bestraft wird."
       ],
       "appearances": [
         {
           "sceneId": "S03",
-          "when": "An der Sakristeitür, sobald die Gruppe das ausgeschnittene Blatt im Kirchenbuch bemerkt.",
-          "playAs": "Vorsichtig und beschämt. Er reagiert besser auf die Frage nach dem Sinn des Gastrechts als auf eine direkte Anschuldigung.",
-          "openingLine": "Ein fehlendes Blatt ist manchmal lauter als eine ganze Predigt.",
-          "turn": "Bei der richtigen Frage liest er H04 vor oder gibt es heraus. Eine Probe entscheidet nur über sein Geständnis, nie über den Hinweis."
+          "presence": {
+            "mode": "always",
+            "instruction": "An der Sakristeitür zeigen, sobald die Gruppe das ausgeschnittene Blatt bemerkt.",
+            "absentInstruction": "Außerhalb der Kirche nicht vorziehen.",
+            "afterClueID": null,
+            "afterGuideStepID": "S03_READ",
+            "minimumStateIndex": null,
+            "requiredEndingIDs": []
+          },
+          "reason": "Er hat den fehlenden Teil des Kirchenbuchs bewahrt und muss entscheiden, ob er schweigt.",
+          "mood": "Vorsichtig und beschämt; direkte Anschuldigungen machen ihn defensiv.",
+          "goal": "Den Sinn des Gastrechts offenlegen, ohne sich freizusprechen.",
+          "behavior": "Auf die Frage nach dem Gastrecht H04 vorlegen oder vorlesen.",
+          "nextAction": "Danach die Frage an die Gruppe zurückgeben; eine Probe betrifft nur sein Geständnis.",
+          "clueReactions": [
+            {
+              "clueID": "C05",
+              "reaction": "Er hält das Kirchenbuch mit beiden Händen und korrigiert die bisherige Lesart.",
+              "reveals": "Der ursprüngliche Eid schützt Gäste bis zum Hahnenschrei.",
+              "nextAction": "H04 auf den Tisch legen und nicht weiter auslegen.",
+              "targetState": "beschämt"
+            }
+          ]
         },
         {
           "sceneId": "S06",
-          "when": "Wenn die Gruppe ihn zuvor gewonnen hat oder im Archiv eine Bestätigung des alten Eids braucht.",
-          "playAs": "Beschämt, aber jetzt bereit, Gruber öffentlich zu widersprechen.",
-          "openingLine": "Ich habe zu lange geschwiegen. Der Eid schützte die Gäste, nicht das Dorf vor ihnen.",
-          "turn": "Er bestätigt das Gastrecht und bleibt danach zurück, um andere Dorfbewohner aus der Prozession herauszuhalten. Er geht nicht zur Eiche."
+          "presence": {
+            "mode": "afterClue",
+            "instruction": "Nur einführen, wenn C05 bestätigt ist. Falk wird gerufen, weil das Gastrecht als Gegenbeweis gebraucht wird.",
+            "absentInstruction": "Wenn C05 fehlt, bleibt Falk in der Kirche; die frühere Aussage reicht als Hinweis.",
+            "afterClueID": "C05",
+            "minimumStateIndex": null,
+            "requiredEndingIDs": []
+          },
+          "reason": "Er will sein jahrelanges Schweigen nicht Grubers Version überlassen.",
+          "mood": "Beschämt, aber bereit, sichtbar zu widersprechen.",
+          "goal": "Das Gastrecht von Grubers Opferlogik trennen.",
+          "behavior": "H05 und H09 jeweils bestätigen, die Verbindung aber nicht selbst formulieren.",
+          "nextAction": "Danach im Dorf bleiben und andere von der Prozession abhalten.",
+          "clueReactions": [
+            {
+              "clueID": "C06",
+              "reaction": "Er erkennt, dass die Buchhaltung den Eid praktisch umkehrt.",
+              "reveals": "Milde Winter wurden mit Gästen bezahlt, die geschützt sein sollten.",
+              "nextAction": "Seine Bestätigung neben H05 stellen und die Gruppe kombinieren lassen.",
+              "targetState": "bereit"
+            },
+            {
+              "clueID": "C10",
+              "reaction": "Er behandelt das Fragment als spätere Verfälschung des ursprünglichen Eids.",
+              "reveals": "Die drei Folgen sind nicht dasselbe wie das Gastrecht.",
+              "nextAction": "Die Unterscheidung festhalten und nichts vorwegnehmen.",
+              "targetState": "bereit"
+            }
+          ]
         },
         {
           "sceneId": "S08",
-          "when": "Wenn der Epilog zeigt, wie Krähenfels mit seiner Schuld umgeht.",
-          "playAs": "Ohne Predigtton. Er nennt das Schweigen beim Namen.",
-          "openingLine": "Ein Eid wird nicht wahr, nur weil man ihn im Kirchenbuch stehen lässt.",
-          "turn": "Ein kurzer Satz genügt. Danach beginnt er, die fehlenden Namen abzuschreiben."
+          "presence": {
+            "mode": "ending",
+            "instruction": "Im Epilog nur zeigen, wenn C05 bestätigt ist und ein Ende gewählt wurde.",
+            "absentInstruction": "Wenn Falks Schweigen nicht thematisiert wurde, bleibt sein Nachhall aus.",
+            "afterClueID": "C05",
+            "minimumStateIndex": null,
+            "requiredEndingIDs": [
+              "E01",
+              "E02",
+              "E03"
+            ]
+          },
+          "reason": "Er muss die fehlenden Namen und sein eigenes Schweigen bearbeiten.",
+          "mood": "Still, beschämt und ohne Predigtton.",
+          "goal": "Die Geschichte des Gastrechts wieder lesbar machen.",
+          "behavior": "Mit einer konkreten Reparatur der Aufzeichnungen beginnen.",
+          "nextAction": "Nach dem persönlichen Nachhall die fehlenden Namen abschreiben und dann schweigen.",
+          "clueReactions": []
         }
       ],
       "cueIds": [
@@ -454,30 +784,88 @@
         "H06"
       ],
       "prompts": [
-        "Schlägt einmal auf den Amboss, sobald Gruber erwähnt wird.",
-        "Verlangt eine klare Entscheidung, bevor sie das Eisen herausgibt."
+        "Prüfe die Absicht hinter der Eisenfrage, nicht die Höflichkeit.",
+        "Gib das alte Eisen nur bei einer klaren Entscheidung heraus."
       ],
       "appearances": [
         {
           "sceneId": "S04",
-          "when": "Sobald die Gruppe die Schmiede betritt. Marta legt den Hammer erst ab, wenn jemand sagt, weshalb er ihr Eisen braucht.",
-          "playAs": "Kurz, direkt und ohne Aberglauben. Sie prüft Absicht, nicht Höflichkeit.",
-          "openingLine": "Wer altes Eisen will, sagt zuerst, woran es brechen soll.",
-          "turn": "Bei einer klaren Absicht zeigt sie H06 und gibt das nötige Eisen. Der Hinweis bleibt auch bei einem Fehlschlag erhalten."
+          "presence": {
+            "mode": "always",
+            "instruction": "Sobald die Gruppe die Schmiede betritt, am Amboss zeigen.",
+            "absentInstruction": "Nicht in anderen Ermittlungsorten einsetzen.",
+            "afterClueID": null,
+            "afterGuideStepID": "S04_READ",
+            "minimumStateIndex": null,
+            "requiredEndingIDs": []
+          },
+          "reason": "Sie kennt die Reliquie aus ihrer Arbeit und will nicht noch einmal Werkzeug für Gruber liefern.",
+          "mood": "Kühl, direkt und praktisch.",
+          "goal": "Herausfinden, ob die Gruppe eine konkrete Handlung plant.",
+          "behavior": "Eine klare Absicht verlangen, bevor sie Material zeigt.",
+          "nextAction": "H06 und das nötige Eisen geben; der Hinweis bleibt auch nach einem Fehlschlag erhalten.",
+          "clueReactions": [
+            {
+              "clueID": "C07",
+              "reaction": "Sie prüft die Zeichnung auf Nägel und Feuerstellen und wird sichtbar hilfreich.",
+              "reveals": "Die drei Nägel halten Geweih und Holzherz zusammen.",
+              "nextAction": "H06 und das alte Eisen bereitlegen; die Probe macht eine Spielerfigur.",
+              "targetState": "helfend"
+            }
+          ]
         },
         {
           "sceneId": "S07",
-          "when": "Mit der Prozession oder kurz danach, falls die Gruppe ihr Vertrauen gewonnen und das Eisen noch nicht erhalten hat.",
-          "playAs": "Praktisch unter Druck. Sie diskutiert nicht mehr über Schuld, sondern schafft eine Möglichkeit zu handeln.",
-          "openingLine": "Wenn ihr brechen wollt, dann jetzt. Ein zweites Feuer bekommt ihr nicht.",
-          "turn": "Sie gibt das alte Eisen oder hält einen Dorfbewohner zurück. Die eigentliche Probe macht eine Spielerfigur."
+          "presence": {
+            "mode": "state",
+            "instruction": "Mit der Prozession nur zeigen, wenn Marta auf Haltung „helfend“ steht und das Eisen noch fehlt.",
+            "absentInstruction": "Bei kühl oder prüfend bleibt Marta in der Schmiede.",
+            "afterClueID": null,
+            "minimumStateIndex": 2,
+            "requiredEndingIDs": []
+          },
+          "reason": "Sie bringt die letzte praktische Möglichkeit zur Eiche.",
+          "mood": "Unter Druck konzentriert und ohne Interesse an Schulddebatten.",
+          "goal": "Handlungsfähigkeit herstellen, nicht die Heldin werden.",
+          "behavior": "Material und Weg freimachen, dann die Spieler handeln lassen.",
+          "nextAction": "Das Eisen übergeben oder einen Dorfbewohner zurückhalten.",
+          "clueReactions": [
+            {
+              "clueID": "C07",
+              "reaction": "Sie sieht auf die drei Nägel und entscheidet, dass weiteres Reden Zeit kostet.",
+              "reveals": "Das Werkzeug ist für eine konkrete Bindung gedacht.",
+              "nextAction": "Das Eisen in Reichweite legen und die Gruppe handeln lassen.",
+              "targetState": "helfend"
+            },
+            {
+              "clueID": "C10",
+              "reaction": "Sie behandelt die Feuerzeile als Arbeitsanweisung, nicht als Prophezeiung.",
+              "reveals": "Feuer und altes Eisen gehören nur zum Weg des Brechens.",
+              "nextAction": "Nur Material für diesen Weg anbieten, ohne andere abzuwerten.",
+              "targetState": "helfend"
+            }
+          ]
         },
         {
           "sceneId": "S08",
-          "when": "Wenn Marta im Finale geholfen hat oder das Dorf neu aufgebaut werden muss.",
-          "playAs": "Knapp wie zuvor, aber nicht mehr prüfend.",
-          "openingLine": "Morgen schmiede ich Nägel für Türen, die von innen aufgehen.",
-          "turn": "Beende ihren Nachhall mit Arbeit statt Erklärung."
+          "presence": {
+            "mode": "state",
+            "instruction": "Im Epilog nur zeigen, wenn Marta geholfen hat und ein Ende gewählt wurde.",
+            "absentInstruction": "Wenn sie nicht geholfen hat, bleibt ihr Nachhall bei der Arbeit.",
+            "afterClueID": null,
+            "minimumStateIndex": 2,
+            "requiredEndingIDs": [
+              "E01",
+              "E02",
+              "E03"
+            ]
+          },
+          "reason": "Sie muss Werkzeug, Türen und Vertrauen im Dorf praktisch machen.",
+          "mood": "Knapp, erschöpft und nicht mehr prüfend.",
+          "goal": "Mit einer sichtbaren Arbeit beginnen.",
+          "behavior": "Reparieren statt erklären.",
+          "nextAction": "Eine Reparatur oder neue Tür anfangen und die Szene den Spielerfiguren überlassen.",
+          "clueReactions": []
         }
       ],
       "cueIds": [
@@ -508,30 +896,95 @@
         "H07"
       ],
       "prompts": [
-        "Gibt die Zeichnung nur einer Figur, die sie ernst nimmt.",
-        "Bleibt außer Gefahr und wird nie allein zum Wald geschickt."
+        "Nimm Lenis Beobachtung ernst und stelle höchstens eine konkrete Rückfrage.",
+        "Halte Leni aus dem Wald und aus der Gefahrenszene heraus."
       ],
       "appearances": [
         {
           "sceneId": "S02",
-          "when": "Nach dem ersten Gespräch mit Elara oder wenn jemand Schritte über dem Gastraum bemerkt.",
-          "playAs": "Scheu, aufmerksam und konkreter als die Erwachsenen. Sie beantwortet eine ernst gemeinte Frage, aber keine Verhörserie.",
-          "openingLine": "Nachts gehen sie nicht zur Kirche. Sie gehen dorthin, wo die Äste wie Hörner aussehen.",
-          "turn": "Sie zeigt H07 hier noch nicht. Sie verrät nur, dass sie etwas vom Dachfenster aus beobachtet hat."
+          "presence": {
+            "mode": "conditional",
+            "instruction": "Nach dem ersten sicheren Gespräch mit Elara oder wenn Schritte über dem Gastraum bemerkt werden.",
+            "absentInstruction": "Wenn die Gruppe sie bedrängt, bleibt Leni im Dachgeschoss.",
+            "afterClueID": null,
+            "afterGuideStepID": "S02_GM",
+            "minimumStateIndex": null,
+            "requiredEndingIDs": []
+          },
+          "reason": "Sie beobachtet die Erwachsenen, weil diese ihre Angst vor der Prozession verstecken.",
+          "mood": "Scheu, aufmerksam und sachlicher als die Erwachsenen.",
+          "goal": "Prüfen, ob eine Figur zuhört, ohne sie auszufragen.",
+          "behavior": "Eine konkrete Frage knapp beantworten.",
+          "nextAction": "H07 noch nicht zeigen; nur die Beobachtung vom Dachfenster nennen.",
+          "clueReactions": [
+            {
+              "clueID": "C03",
+              "reaction": "Sie erkennt einen der gestrichenen Namen wieder und wird vorsichtiger.",
+              "reveals": "Die Namen gehören zu Menschen, die tatsächlich im Gasthaus waren.",
+              "nextAction": "Eine Spur für S05 vormerken, aber H07 zurückhalten.",
+              "targetState": "aufmerksam"
+            },
+            {
+              "clueID": "C04",
+              "reaction": "Sie schaut zur Treppe und zieht sich aus dem Gespräch zurück.",
+              "reveals": "Sie hat das Verriegeln durch Geräusche oder vom Dachfenster mitbekommen.",
+              "nextAction": "Elara in die Nähe holen und keine Befragung erzwingen.",
+              "targetState": "aufmerksam"
+            }
+          ]
         },
         {
           "sceneId": "S05",
-          "when": "Am sicheren Waldrand, wenn eine Spielerfigur Leni ernst nimmt und Elara oder eine andere erwachsene Person in der Nähe bleibt.",
-          "playAs": "Leise, aber sicher in dem, was sie gesehen hat.",
-          "openingLine": "Ich habe sie gezeichnet, damit später niemand sagen kann, es sei nur der Schnee gewesen.",
-          "turn": "Sie gibt H07 und bleibt danach im Dorf. Sie geht weder allein in den Wald noch mit zur Alten Eiche."
+          "presence": {
+            "mode": "afterClue",
+            "instruction": "Am sicheren Waldrand nur zeigen, wenn C03 bestätigt ist und eine erwachsene Vertrauensperson bei ihr bleibt.",
+            "absentInstruction": "Ohne C03 oder ohne Begleitung bleibt Leni im Dorf.",
+            "afterClueID": "C03",
+            "minimumStateIndex": null,
+            "requiredEndingIDs": []
+          },
+          "reason": "Sie bringt ihre Zeichnung an einen Ort, an dem sie nicht in Gefahr gerät.",
+          "mood": "Leise, sicher in den Details und nicht mehr bereit, sich wegschicken zu lassen.",
+          "goal": "H07 übergeben und die Prozession räumlich einordnen.",
+          "behavior": "Eine konkrete Beobachtung markieren, dann auf Abstand gehen.",
+          "nextAction": "H07 geben und danach mit Elara ins Dorf zurückkehren.",
+          "clueReactions": [
+            {
+              "clueID": "C08",
+              "reaction": "Sie zeigt auf die vier Gestalten und korrigiert jede Vermischung mit der Kirche.",
+              "reveals": "Die Prozession geht zur Alten Eiche, nicht zur Kirche.",
+              "nextAction": "H07 in die Mitte legen und Leni aus der Szene nehmen.",
+              "targetState": "mutig"
+            },
+            {
+              "clueID": "C11",
+              "reaction": "Sie erkennt den Weg hinter dem Gasthaus und merkt sich, wo die Erwachsenen abbiegen.",
+              "reveals": "Die Karte führt zur Eiche, ohne Leni dorthin zu schicken.",
+              "nextAction": "H10 nutzen und Leni zurückbringen.",
+              "targetState": "mutig"
+            }
+          ]
         },
         {
           "sceneId": "S08",
-          "when": "Im Gasthaus oder am Dorfplatz, nachdem die Gefahr vorbei ist.",
-          "playAs": "Vorsichtig erleichtert. Sie braucht keine Erklärung der Erwachsenen mehr.",
-          "openingLine": "Heute Morgen sind die Spuren nur Spuren.",
-          "turn": "Leni bleibt sicher. Ihr kurzer Satz kann den Epilog schließen, wenn kein anderer Nachhall besser passt."
+          "presence": {
+            "mode": "ending",
+            "instruction": "Im Epilog nur im sicheren Gasthaus oder am Dorfplatz zeigen, nie an der Eiche.",
+            "absentInstruction": "Leni bleibt außerhalb des Nachhalls, wenn die Gefahr nicht beendet ist.",
+            "afterClueID": null,
+            "minimumStateIndex": null,
+            "requiredEndingIDs": [
+              "E01",
+              "E02",
+              "E03"
+            ]
+          },
+          "reason": "Sie soll erleben, dass Beobachten nicht länger heimliches Überleben sein muss.",
+          "mood": "Vorsichtig erleichtert und endlich nicht mehr auf der Hut.",
+          "goal": "Einen normalen Morgen erleben, ohne Erklärerin des Endes zu werden.",
+          "behavior": "Eine kleine sichere Handlung ausführen.",
+          "nextAction": "Leni nicht als Lösungserklärerin einsetzen; der Epilog bleibt bei den Spielerfiguren.",
+          "clueReactions": []
         }
       ],
       "cueIds": [
@@ -868,7 +1321,7 @@
         "S04",
         "S05"
       ],
-      "readAloud": "Krähenfels liegt unter Schnee wie ein zugedecktes Geheimnis. Im schwarzen Keiler brennt Licht. Bürgermeister Gruber öffnet selbst und sagt, ihr hättet Glück gehabt.",
+      "readAloud": "Krähenfels liegt unter Schnee wie ein zugedecktes Geheimnis. Im Schwarzen Keiler brennt Licht. Bürgermeister Gruber öffnet selbst, mustert die Reisenden und hält die Tür offen.",
       "gmNotes": [
         "Gruber nennt die Gruppe Gäste und verriegelt später die Zimmer.",
         "Elara hilft nur, wenn jemand bemerkt, dass sie Salz an die Schwelle streut."
@@ -2133,13 +2586,14 @@
           "body": "Der Auftrag liegt unter dem Sitz. Zeige H01. Die frischen Kerben an der Achse und Grubers genaue Umleitung sind Pflichtinformationen und werden nicht weggewürfelt.",
           "actionLabel": "H01 zeigen",
           "materialInstruction": "Jetzt H01 öffnen und zeigen. Über den Share-Button kannst du das Bild direkt verschicken oder sichern.",
-          "clueID": "C01",
           "clueIDs": [
             "C01",
             "C02"
           ],
-          "handoutID": "H01",
-          "sceneID": "S01"
+          "sceneID": "S01",
+          "handoutIDs": [
+            "H01"
+          ]
         },
         {
           "id": "S01_NEXT",
@@ -2200,13 +2654,12 @@
           "body": "Zeige H03, sobald jemand nach früheren Gästen, roten Strichen oder der verschlossenen Tür fragt. H02 ist ein optionaler Zeitungsbeleg und bestätigt dieselbe Spur C03 aus einer zweiten Quelle. C03 und C04 sind garantiert. Bei einem passenden Gespräch nennt Elara den letzten gestrichenen Namen.",
           "actionLabel": "H03 zeigen",
           "materialInstruction": "Bei Fragen nach früheren Gästen oder der Tür H03 zeigen. H02 nur als optionalen Zusatzbeleg für C03 öffnen; es ersetzt nicht H03.",
-          "clueID": "C03",
           "clueIDs": [
             "C03",
             "C04"
           ],
-          "handoutID": "H03",
           "handoutIDs": [
+            "H03",
             "H02"
           ],
           "npcIDs": [
@@ -2498,14 +2951,13 @@
           "body": "Zeige H07, H08 und H10 in dieser Reihenfolge. Sie führen zur Eiche und erklären die drei Handlungsmöglichkeiten. Spiele SFX06 nur bei dem Moment, in dem die Spur scheinbar hinter der Gruppe weitergeht. Die Spur selbst ist sicher; ein Würfelwurf bestimmt nur Zeit und Kälte.",
           "actionLabel": "Drei Hinweise zeigen",
           "materialInstruction": "Jetzt H07, danach H08 und zuletzt H10 öffnen. Diese Reihenfolge auch beim Verschicken beibehalten.",
-          "clueID": "C08",
           "clueIDs": [
             "C08",
             "C09",
             "C11"
           ],
-          "handoutID": "H07",
           "handoutIDs": [
+            "H07",
             "H08",
             "H10"
           ],
@@ -2611,22 +3063,36 @@
           "sceneID": "S06"
         },
         {
-          "id": "S06_CLUE",
           "kind": "clue",
-          "title": "Winterbuchhaltung und Ritualfragment",
-          "body": "Zeige zuerst H05 und danach H09. H05 verbindet Winter und Opfer; H09 nennt die drei Folgen des Pakts. Beide Hinweise werden erst nach ihrer tatsächlichen Ausgabe bestätigt.",
-          "actionLabel": "H05 und H09 zeigen",
-          "materialInstruction": "Jetzt H05 zeigen und anschließend H09 als Spielerhandout ausgeben. Lies die drei Zeilen nur vor, wenn die Gruppe das Blatt nicht gemeinsam lesen möchte.",
+          "sceneID": "S06",
+          "npcIDs": [
+            "N01",
+            "N02",
+            "N04"
+          ],
+          "id": "S06_H05",
+          "title": "Winterbuchhaltung sichern",
+          "body": "Gib H05 zuerst aus. Die Gruppe soll die milden Winter direkt mit den gestrichenen Namen verbinden, bevor das Ritualfragment auftaucht.",
+          "actionLabel": "H05 zeigen",
+          "materialInstruction": "Nur H05 zeigen und die Gruppe kurz selbst lesen lassen. Noch kein H09 ausgeben.",
           "clueID": "C06",
-          "clueIDs": [
-            "C06",
-            "C10"
+          "handoutID": "H05"
+        },
+        {
+          "kind": "clue",
+          "sceneID": "S06",
+          "npcIDs": [
+            "N01",
+            "N02",
+            "N04"
           ],
-          "handoutID": "H05",
-          "handoutIDs": [
-            "H09"
-          ],
-          "sceneID": "S06"
+          "id": "S06_H09",
+          "title": "Ritualfragment ausgeben",
+          "body": "Erst wenn H05 auf dem Tisch liegt, H09 als Spielerhandout ausgeben. Das Blatt beschreibt drei Folgen, nicht drei automatische Lösungen.",
+          "actionLabel": "H09 zeigen",
+          "materialInstruction": "H09 jetzt als Spielerhandout ausgeben. Lies nur den Papier-Fallback vor, wenn die Gruppe das Blatt nicht gemeinsam lesen möchte.",
+          "clueID": "C10",
+          "handoutID": "H09"
         },
         {
           "id": "S06_ROLL",
@@ -2659,7 +3125,7 @@
           "id": "S06_TRIGGER",
           "kind": "trigger",
           "title": "Die Prozession setzt sich in Bewegung",
-          "body": "Wenn die Gruppe die Fakten verbindet oder die Zeit verstreicht, starte M02 leise und spiele SFX07 einmal. Danach gibt es keine weitere Ermittlungsrunde mehr.",
+          "body": "Wenn beide Archiv-Hinweise bestätigt und die Fakten verbunden sind oder die Zeit verstreicht, starte M02 leise und spiele SFX07 einmal. Danach gibt es keine weitere Ermittlungsrunde mehr.",
           "actionLabel": "Prozession starten",
           "audioCueID": "SFX07",
           "sceneID": "S06"

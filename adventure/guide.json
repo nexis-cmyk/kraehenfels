@@ -59,11 +59,11 @@
     {
       "id": "item-wool-blanket",
       "title": "Wolldecke",
-    "locationID": "coach-seat",
-    "detail": "Dicke, feuchte Wolle. Sie hält eine Figur im Wald oder am Schrein noch einmal warm.",
-    "playerCardDetail": "Dicke, feuchte Wolle. Schwer, aber zuverlässig gegen Kälte.",
-    "playerCardAsset": "item-wool-blanket.png",
-    "playerCardUses": [
+      "locationID": "coach-seat",
+      "detail": "Dicke, feuchte Wolle. Sie hält eine Figur im Wald oder am Schrein noch einmal warm.",
+      "playerCardDetail": "Dicke, feuchte Wolle. Schwer, aber zuverlässig gegen Kälte.",
+      "playerCardAsset": "item-wool-blanket.png",
+      "playerCardUses": [
         "Einmal nach einem Fehlschlag einsetzen, wenn Kälte oder Wärmeverlust die Folge wäre."
       ],
       "initialUses": 1,
@@ -87,11 +87,11 @@
     {
       "id": "item-bandage-pouch",
       "title": "Verbandtasche",
-    "locationID": "coach-seat",
-    "detail": "Leinen, saubere Binden und eine kleine Flasche Branntwein.",
-    "playerCardDetail": "Leinen, saubere Binden und eine kleine Flasche Branntwein.",
-    "playerCardAsset": "item-bandage-pouch.png",
-    "playerCardUses": [
+      "locationID": "coach-seat",
+      "detail": "Leinen, saubere Binden und eine kleine Flasche Branntwein.",
+      "playerCardDetail": "Leinen, saubere Binden und eine kleine Flasche Branntwein.",
+      "playerCardAsset": "item-bandage-pouch.png",
+      "playerCardUses": [
         "Vor einer passenden Erste-Hilfe-Probe einsetzen: Zielwert +10.",
         "Zwei Anwendungen."
       ],
@@ -112,11 +112,11 @@
     {
       "id": "item-hemp-rope",
       "title": "Hanfseil",
-    "locationID": "luggage-net",
-    "detail": "Ein kräftiges Seil, lang genug für eine Rettung an der Böschung oder eine riskante Waldaktion.",
-    "playerCardDetail": "Ein kräftiges Seil, lang genug zum Retten, Klettern oder Sichern.",
-    "playerCardAsset": "item-hemp-rope.png",
-    "playerCardUses": [
+      "locationID": "luggage-net",
+      "detail": "Ein kräftiges Seil, lang genug für eine Rettung an der Böschung oder eine riskante Waldaktion.",
+      "playerCardDetail": "Ein kräftiges Seil, lang genug zum Retten, Klettern oder Sichern.",
+      "playerCardAsset": "item-hemp-rope.png",
+      "playerCardUses": [
         "Vor einer passenden Rettungs-, Kletter- oder Sicherungsprobe einsetzen: Zielwert +10.",
         "Eine Anwendung."
       ],
@@ -138,11 +138,11 @@
     {
       "id": "item-storm-lantern",
       "title": "Sturmlaterne mit Öl",
-    "locationID": "luggage-net",
-    "detail": "Eine windgeschützte Laterne mit genug Öl für zwei Einsätze. Sie macht Schnee, Spuren und Feuer sichtbar.",
-    "playerCardDetail": "Eine windgeschützte Laterne mit genug Öl für zwei Einsätze.",
-    "playerCardAsset": "item-storm-lantern.png",
-    "playerCardUses": [
+      "locationID": "luggage-net",
+      "detail": "Eine windgeschützte Laterne mit genug Öl für zwei Einsätze. Sie macht Schnee, Spuren und Feuer sichtbar.",
+      "playerCardDetail": "Eine windgeschützte Laterne mit genug Öl für zwei Einsätze.",
+      "playerCardAsset": "item-storm-lantern.png",
+      "playerCardUses": [
         "Vor einer passenden Probe bei Dunkelheit, schlechten Spuren oder offenem Feuer einsetzen: Zielwert +10.",
         "Zwei Anwendungen."
       ],
@@ -177,11 +177,11 @@
     {
       "id": "item-tool-roll",
       "title": "Werkzeugrolle",
-    "locationID": "driver-box",
-    "detail": "Zange, Schraubendreher und ein kleiner Schlüsselbund aus der Fahrerkiste.",
-    "playerCardDetail": "Zange, Schraubendreher und ein kleiner Schlüsselbund aus der Fahrerkiste.",
-    "playerCardAsset": "item-tool-roll.png",
-    "playerCardUses": [
+      "locationID": "driver-box",
+      "detail": "Zange, Schraubendreher und ein kleiner Schlüsselbund aus der Fahrerkiste.",
+      "playerCardDetail": "Zange, Schraubendreher und ein kleiner Schlüsselbund aus der Fahrerkiste.",
+      "playerCardAsset": "item-tool-roll.png",
+      "playerCardUses": [
         "Vor einer passenden Probe zum Öffnen, Reparieren oder Lösen eines Mechanismus einsetzen: Zielwert +10.",
         "Eine Anwendung."
       ],
@@ -202,11 +202,11 @@
     {
       "id": "item-revolver",
       "title": "Alter Revolver",
-    "locationID": "driver-box",
-    "detail": "Ein abgenutzter Revolver mit drei Patronen. Er schafft Raum, löst aber weder den Pakt noch ersetzt er Eisen und Feuer.",
-    "playerCardDetail": "Ein abgenutzter Revolver mit drei Patronen. Übernatürliche Probleme löst er nicht allein.",
-    "playerCardAsset": "item-revolver.png",
-    "playerCardUses": [
+      "locationID": "driver-box",
+      "detail": "Ein abgenutzter Revolver mit drei Patronen. Er schafft Raum, löst aber weder den Pakt noch ersetzt er Eisen und Feuer.",
+      "playerCardDetail": "Ein abgenutzter Revolver mit drei Patronen. Übernatürliche Probleme löst er nicht allein.",
+      "playerCardAsset": "item-revolver.png",
+      "playerCardUses": [
         "Vor einem passenden Schuss einsetzen, der Abstand oder Zeit schaffen soll: Zielwert +10.",
         "Drei Patronen."
       ],
@@ -289,22 +289,22 @@
           "success": "Die Figur verliert keine zusätzliche Wärme oder Zeit.",
           "failure": "Die Hilfe gelingt trotzdem, kostet aber Zeit oder eine kleine Verletzung.",
           "failureConsequences": [
-                {
-                  "id": "time-loss",
-                  "title": "Zeit verlieren",
-                  "detail": "Die Hilfe gelingt, aber die Gruppe braucht länger für den Aufbruch.",
-                  "effect": {
-                    "timeDelta": 1
-                  }
-                },
-                {
-                  "id": "minor-injury",
-                  "title": "Kleine Verletzung",
-                  "detail": "Die Hilfe gelingt, aber eine Figur zieht sich dabei eine kleine Verletzung zu.",
-                  "effect": {
-                    "injuryDelta": 1
-                  }
-                }
+            {
+              "id": "time-loss",
+              "title": "Zeit verlieren",
+              "detail": "Die Hilfe gelingt, aber die Gruppe braucht länger für den Aufbruch.",
+              "effect": {
+                "timeDelta": 1
+              }
+            },
+            {
+              "id": "minor-injury",
+              "title": "Kleine Verletzung",
+              "detail": "Die Hilfe gelingt, aber eine Figur zieht sich dabei eine kleine Verletzung zu.",
+              "effect": {
+                "injuryDelta": 1
+              }
+            }
           ],
           "critical": "Die Gruppe findet sofort einen sicheren Weg zum Auftrag."
         },
@@ -335,13 +335,14 @@
         "body": "Der Auftrag liegt unter dem Sitz. Zeige H01. Die frischen Kerben an der Achse und Grubers genaue Umleitung sind Pflichtinformationen und werden nicht weggewürfelt.",
         "actionLabel": "H01 zeigen",
         "materialInstruction": "Jetzt H01 öffnen und zeigen. Über den Share-Button kannst du das Bild direkt verschicken oder sichern.",
-        "clueID": "C01",
         "clueIDs": [
           "C01",
           "C02"
         ],
-        "handoutID": "H01",
-        "sceneID": "S01"
+        "sceneID": "S01",
+        "handoutIDs": [
+          "H01"
+        ]
       },
       {
         "id": "S01_NEXT",
@@ -402,13 +403,12 @@
         "body": "Zeige H03, sobald jemand nach früheren Gästen, roten Strichen oder der verschlossenen Tür fragt. H02 ist ein optionaler Zeitungsbeleg und bestätigt dieselbe Spur C03 aus einer zweiten Quelle. C03 und C04 sind garantiert. Bei einem passenden Gespräch nennt Elara den letzten gestrichenen Namen.",
         "actionLabel": "H03 zeigen",
         "materialInstruction": "Bei Fragen nach früheren Gästen oder der Tür H03 zeigen. H02 nur als optionalen Zusatzbeleg für C03 öffnen; es ersetzt nicht H03.",
-        "clueID": "C03",
         "clueIDs": [
           "C03",
           "C04"
         ],
-        "handoutID": "H03",
         "handoutIDs": [
+          "H03",
           "H02"
         ],
         "npcIDs": [
@@ -442,12 +442,12 @@
             },
             {
               "id": "door-delay",
-                  "title": "Zeit verlieren",
-                  "detail": "Die Tür geht erst nach einer Verzögerung auf; die Bedrohung steigt.",
-                  "effect": {
-                    "threatDelta": 1,
-                    "timeDelta": 1
-                  }
+              "title": "Zeit verlieren",
+              "detail": "Die Tür geht erst nach einer Verzögerung auf; die Bedrohung steigt.",
+              "effect": {
+                "threatDelta": 1,
+                "timeDelta": 1
+              }
             }
           ],
           "critical": "Die Gruppe entdeckt zusätzlich, wer den Riegel angebracht hat."
@@ -563,8 +563,12 @@
             "id": "archive",
             "title": "Rathausarchiv",
             "detail": "Wird nach Kirche, Schmiede und Waldspur freigeschaltet.",
-            "destinationSceneID": "S06"
-            ,"requiresCompletedSceneIDs": ["S03", "S04", "S05"]
+            "destinationSceneID": "S06",
+            "requiresCompletedSceneIDs": [
+              "S03",
+              "S04",
+              "S05"
+            ]
           }
         ],
         "sceneID": "S03"
@@ -655,8 +659,12 @@
             "id": "archive",
             "title": "Rathausarchiv",
             "detail": "Buchhaltung und Ritualfragment suchen.",
-            "destinationSceneID": "S06"
-            ,"requiresCompletedSceneIDs": ["S03", "S04", "S05"]
+            "destinationSceneID": "S06",
+            "requiresCompletedSceneIDs": [
+              "S03",
+              "S04",
+              "S05"
+            ]
           }
         ],
         "sceneID": "S04"
@@ -692,14 +700,13 @@
         "body": "Zeige H07, H08 und H10 in dieser Reihenfolge. Sie führen zur Eiche und erklären die drei Handlungsmöglichkeiten. Spiele SFX06 nur bei dem Moment, in dem die Spur scheinbar hinter der Gruppe weitergeht. Die Spur selbst ist sicher; ein Würfelwurf bestimmt nur Zeit und Kälte.",
         "actionLabel": "Drei Hinweise zeigen",
         "materialInstruction": "Jetzt H07, danach H08 und zuletzt H10 öffnen. Diese Reihenfolge auch beim Verschicken beibehalten.",
-        "clueID": "C08",
         "clueIDs": [
           "C08",
           "C09",
           "C11"
         ],
-        "handoutID": "H07",
         "handoutIDs": [
+          "H07",
           "H08",
           "H10"
         ],
@@ -725,21 +732,21 @@
           "failure": "Die Gruppe erreicht sie trotzdem, verliert aber Wärme oder die Prozession gewinnt Zeit.",
           "failureConsequences": [
             {
-                  "id": "forest-cold",
-                  "title": "Wärme verlieren",
-                  "detail": "Die Gruppe erreicht die Eiche, aber die Kälte setzt ihr zu.",
-                  "effect": {
-                    "warmthDelta": -1
-                  }
-                },
-                {
-                  "id": "procession-gains-time",
-                  "title": "Prozession gewinnt Zeit",
-                  "detail": "Die Gruppe erreicht die Eiche, doch die Prozession kommt näher.",
-                  "effect": {
-                    "timeDelta": 1,
-                    "threatDelta": 1
-                  }
+              "id": "forest-cold",
+              "title": "Wärme verlieren",
+              "detail": "Die Gruppe erreicht die Eiche, aber die Kälte setzt ihr zu.",
+              "effect": {
+                "warmthDelta": -1
+              }
+            },
+            {
+              "id": "procession-gains-time",
+              "title": "Prozession gewinnt Zeit",
+              "detail": "Die Gruppe erreicht die Eiche, doch die Prozession kommt näher.",
+              "effect": {
+                "timeDelta": 1,
+                "threatDelta": 1
+              }
             }
           ],
           "critical": "Die Gruppe entdeckt einen sicheren Zugang und einen zusätzlichen Rückzugsweg."
@@ -757,8 +764,12 @@
             "id": "archive",
             "title": "Rathausarchiv",
             "detail": "Die Winterbuchhaltung prüfen.",
-            "destinationSceneID": "S06"
-            ,"requiresCompletedSceneIDs": ["S03", "S04", "S05"]
+            "destinationSceneID": "S06",
+            "requiresCompletedSceneIDs": [
+              "S03",
+              "S04",
+              "S05"
+            ]
           },
           {
             "id": "church",
@@ -801,22 +812,36 @@
         "sceneID": "S06"
       },
       {
-        "id": "S06_CLUE",
         "kind": "clue",
-        "title": "Winterbuchhaltung und Ritualfragment",
-        "body": "Zeige zuerst H05 und danach H09. H05 verbindet Winter und Opfer; H09 nennt die drei Folgen des Pakts. Beide Hinweise werden erst nach ihrer tatsächlichen Ausgabe bestätigt.",
-        "actionLabel": "H05 und H09 zeigen",
-        "materialInstruction": "Jetzt H05 zeigen und anschließend H09 als Spielerhandout ausgeben. Lies die drei Zeilen nur vor, wenn die Gruppe das Blatt nicht gemeinsam lesen möchte.",
+        "sceneID": "S06",
+        "npcIDs": [
+          "N01",
+          "N02",
+          "N04"
+        ],
+        "id": "S06_H05",
+        "title": "Winterbuchhaltung sichern",
+        "body": "Gib H05 zuerst aus. Die Gruppe soll die milden Winter direkt mit den gestrichenen Namen verbinden, bevor das Ritualfragment auftaucht.",
+        "actionLabel": "H05 zeigen",
+        "materialInstruction": "Nur H05 zeigen und die Gruppe kurz selbst lesen lassen. Noch kein H09 ausgeben.",
         "clueID": "C06",
-        "clueIDs": [
-          "C06",
-          "C10"
+        "handoutID": "H05"
+      },
+      {
+        "kind": "clue",
+        "sceneID": "S06",
+        "npcIDs": [
+          "N01",
+          "N02",
+          "N04"
         ],
-        "handoutID": "H05",
-        "handoutIDs": [
-          "H09"
-        ],
-        "sceneID": "S06"
+        "id": "S06_H09",
+        "title": "Ritualfragment ausgeben",
+        "body": "Erst wenn H05 auf dem Tisch liegt, H09 als Spielerhandout ausgeben. Das Blatt beschreibt drei Folgen, nicht drei automatische Lösungen.",
+        "actionLabel": "H09 zeigen",
+        "materialInstruction": "H09 jetzt als Spielerhandout ausgeben. Lies nur den Papier-Fallback vor, wenn die Gruppe das Blatt nicht gemeinsam lesen möchte.",
+        "clueID": "C10",
+        "handoutID": "H09"
       },
       {
         "id": "S06_ROLL",
@@ -849,7 +874,7 @@
         "id": "S06_TRIGGER",
         "kind": "trigger",
         "title": "Die Prozession setzt sich in Bewegung",
-        "body": "Wenn die Gruppe die Fakten verbindet oder die Zeit verstreicht, starte M02 leise und spiele SFX07 einmal. Danach gibt es keine weitere Ermittlungsrunde mehr.",
+        "body": "Wenn beide Archiv-Hinweise bestätigt und die Fakten verbunden sind oder die Zeit verstreicht, starte M02 leise und spiele SFX07 einmal. Danach gibt es keine weitere Ermittlungsrunde mehr.",
         "actionLabel": "Prozession starten",
         "audioCueID": "SFX07",
         "sceneID": "S06"
@@ -942,40 +967,40 @@
           "failure": "Zeit, Wärme oder Vertrauen gehen verloren; der nächste Versuch bleibt möglich.",
           "failureConsequences": [
             {
-                  "id": "finale-time",
-                  "title": "Zeit verlieren",
-                  "detail": "Der nächste Versuch beginnt zu spät; der Wald gewinnt Raum.",
-                  "endingIDs": [
-                    "E01",
-                    "E03"
-                  ],
-                  "effect": {
-                    "timeDelta": 1
-                  }
+              "id": "finale-time",
+              "title": "Zeit verlieren",
+              "detail": "Der nächste Versuch beginnt zu spät; der Wald gewinnt Raum.",
+              "endingIDs": [
+                "E01",
+                "E03"
+              ],
+              "effect": {
+                "timeDelta": 1
+              }
             },
             {
-                  "id": "finale-warmth",
-                  "title": "Wärme verlieren",
-                  "detail": "Die Kälte nimmt der Gruppe Kraft; der nächste Versuch bleibt möglich.",
-                  "endingIDs": [
-                    "E02",
-                    "E03"
-                  ],
-                  "effect": {
-                    "warmthDelta": -1
-                  }
+              "id": "finale-warmth",
+              "title": "Wärme verlieren",
+              "detail": "Die Kälte nimmt der Gruppe Kraft; der nächste Versuch bleibt möglich.",
+              "endingIDs": [
+                "E02",
+                "E03"
+              ],
+              "effect": {
+                "warmthDelta": -1
+              }
             },
             {
-                  "id": "finale-trust",
-                  "title": "Vertrauen verlieren",
-                  "detail": "Die Gruppe verliert Vertrauen in ihren gemeinsamen Plan; der nächste Versuch bleibt möglich.",
-                  "endingIDs": [
-                    "E01",
-                    "E02"
-                  ],
-                  "effect": {
-                    "trustDelta": -1
-                  }
+              "id": "finale-trust",
+              "title": "Vertrauen verlieren",
+              "detail": "Die Gruppe verliert Vertrauen in ihren gemeinsamen Plan; der nächste Versuch bleibt möglich.",
+              "endingIDs": [
+                "E01",
+                "E02"
+              ],
+              "effect": {
+                "trustDelta": -1
+              }
             }
           ],
           "critical": "Ein NPC schließt sich sichtbar an.",

@@ -117,7 +117,7 @@ def build_start(path: Path, data: dict) -> None:
     paragraph(c, "Ein detektivischer Folk-Horror für drei Reisende und eine Spielleitung. Schwarzwald, November 1890. Eure Kutsche hat die Straße verlassen. Das Dorf wartet bereits.", 18 * mm, 22 * mm, width - 36 * mm, 55 * mm, text_style("start", 12, 16, FROST))
     c.setFillColor(QUIET)
     c.setFont("Helvetica", 8)
-    c.drawString(18 * mm, 12 * mm, "How to be a Hero · W100 · Content 4.0.0")
+    c.drawString(18 * mm, 12 * mm, f"How to be a Hero · W100 · Content {data.get('meta', {}).get('version', 'dev')}")
     c.showPage()
     page_title(c, "Spielstart", "Für die Spielleitung · 20 Minuten Vorbereitung")
     y = height - 55 * mm
@@ -623,7 +623,7 @@ def build_handouts(path: Path, ids: list[str], data: dict, spoiler: bool = False
         page_title(c, "SL-Spoiler-Handouts", "Keine separaten Spoiler-Handouts")
         width, height = c._pagesize
         body = (
-            "Für Content 4.0.0 gibt es keine zusätzlichen SL-only-Handouts. "
+            f"Für Content {data.get('meta', {}).get('version', 'dev')} gibt es keine zusätzlichen SL-only-Handouts. "
             "Alle zehn Handouts, einschließlich des Archiv-Fragments, sind für die Spielenden "
             "freigegeben und liegen vollständig in 02_Handouts.pdf. "
             "Die Geheimnisse der Geschichte stehen ausschließlich in den "

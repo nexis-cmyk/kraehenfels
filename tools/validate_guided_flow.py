@@ -24,7 +24,10 @@ def main() -> None:
     scene_ids = {scene["id"] for scene in manifest["scenes"]}
     scenes_by_id = {scene["id"]: scene for scene in manifest["scenes"]}
     steps_by_scene = guide.get("steps", {})
-    step_ids = {step["id"] for steps in steps_by_scene.values() for step in steps}
+    all_steps = [step for steps in steps_by_scene.values() for step in steps]
+    step_ids = {step["id"] for step in all_steps}
+    if len(step_ids) != len(all_steps):
+        fail("guided step ids must be globally unique")
     step_scenes = set(steps_by_scene)
     if not step_ids:
         fail("no guided steps found")
@@ -110,6 +113,8 @@ def main() -> None:
         fail("guide must use player-supplied characters, not fixed story characters")
     destinations: set[str] = set()
     for scene_id, steps in steps_by_scene.items():
+        clue_references: list[str] = []
+        handout_references: list[str] = []
         for step in steps:
             if step.get("sceneID") != scene_id:
                 fail(f"step {step['id']} has sceneID {step.get('sceneID')}, expected {scene_id}")
@@ -121,6 +126,8 @@ def main() -> None:
                     fail(f"guided flow references missing handout {handout_id}")
                 if handout_id and handout_id not in set(scenes_by_id[scene_id].get("handoutIds", [])):
                     fail(f"{step['id']} exposes {handout_id} outside its scene handout list")
+                if handout_id:
+                    handout_references.append(handout_id)
             referenced_npcs = [step.get("npcID"), *step.get("npcIDs", [])]
             invalid_npcs = {npc_id for npc_id in referenced_npcs if npc_id and npc_id not in npc_ids}
             if invalid_npcs:
@@ -172,6 +179,8 @@ def main() -> None:
                     fail(f"guided flow references missing clue {clue_id}")
                 if clue_id and clue_id not in set(scenes_by_id[scene_id].get("clueIds", [])):
                     fail(f"{step['id']} exposes {clue_id} outside its scene clue list")
+                if clue_id:
+                    clue_references.append(clue_id)
             required_scenes = set()
             for option in step.get("options", []):
                 required = option.get("requiresCompletedSceneIDs", [])
@@ -183,19 +192,23 @@ def main() -> None:
                 if not archive or set(archive.get("requiresCompletedSceneIDs", [])) != {"S03", "S04", "S05"}:
                     fail(f"{step['id']} must gate S06 behind S03, S04 and S05")
             if step["id"] == "S07_DANGER":
-                    for ending_id in sorted(ending_ids):
-                        available = [
-                            consequence
-                            for consequence in consequences
-                            if not consequence.get("endingIDs") or ending_id in consequence["endingIDs"]
-                        ]
-                        if len(available) != 2:
-                            fail(f"S07_DANGER must expose exactly two consequences for {ending_id}")
+                for ending_id in sorted(ending_ids):
+                    available = [
+                        consequence
+                        for consequence in consequences
+                        if not consequence.get("endingIDs") or ending_id in consequence["endingIDs"]
+                    ]
+                    if len(available) != 2:
+                        fail(f"S07_DANGER must expose exactly two consequences for {ending_id}")
+        if len(clue_references) != len(set(clue_references)):
+            fail(f"{scene_id} contains duplicate clue references in its guided steps")
+        if len(handout_references) != len(set(handout_references)):
+            fail(f"{scene_id} contains duplicate handout references in its guided steps")
 
     if not destinations <= scene_ids:
         fail(f"guided flow references missing destination scenes: {sorted(destinations - scene_ids)}")
 
-    required_steps = {"S01_READ", "S01_ITEMS", "S01_DISTRIBUTE", "S01_CLUE", "S02_CHOICE", "S06_TRIGGER", "S07_DANGER", "S08_NEXT"}
+    required_steps = {"S01_READ", "S01_ITEMS", "S01_DISTRIBUTE", "S01_CLUE", "S02_CHOICE", "S06_H05", "S06_H09", "S06_TRIGGER", "S07_DANGER", "S08_NEXT"}
     if not required_steps <= step_ids:
         fail(f"required guide steps missing: {sorted(required_steps - step_ids)}")
 
@@ -215,13 +228,25 @@ def main() -> None:
     if set(victories) != ending_ids or any(not isinstance(value, str) or not value for value in victories.values()):
         fail("combat victory text must cover exactly all three endings")
 
+    s06_steps = [step["id"] for step in steps_by_scene.get("S06", [])]
+    if "S06_CLUE" in step_ids:
+        fail("S06_CLUE is obsolete; archive evidence must use S06_H05 and S06_H09")
+    if s06_steps.index("S06_H05") >= s06_steps.index("S06_H09"):
+        fail("S06_H05 must be shown before S06_H09")
+    s06_h05 = next(step for step in steps_by_scene["S06"] if step["id"] == "S06_H05")
+    s06_h09 = next(step for step in steps_by_scene["S06"] if step["id"] == "S06_H09")
+    if s06_h05.get("clueID") != "C06" or s06_h05.get("handoutID") != "H05":
+        fail("S06_H05 must expose C06/H05")
+    if s06_h09.get("clueID") != "C10" or s06_h09.get("handoutID") != "H09":
+        fail("S06_H09 must expose C10/H09")
+
     material_steps = {
         "S01_READ", "S01_ITEMS", "S01_DISTRIBUTE", "S01_CLUE",
         "S02_READ", "S02_ACT", "S02_CLUE",
         "S03_READ", "S03_CLUE",
         "S04_READ", "S04_CLUE",
         "S05_READ", "S05_CLUE",
-        "S06_READ", "S06_CLUE", "S06_NEXT",
+        "S06_READ", "S06_H05", "S06_H09", "S06_NEXT",
         "S07_READ", "S07_CHOICE",
         "S08_READ",
     }

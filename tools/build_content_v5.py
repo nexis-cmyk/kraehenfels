@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the shared 4.0 content manifest from the adventure sources."""
+"""Build the shared 5.1 content manifest from the adventure sources."""
 
 from __future__ import annotations
 
@@ -98,7 +98,7 @@ def main() -> None:
     manifest.pop("rules", None)
     manifest["guide"] = json.loads(GUIDE.read_text(encoding="utf-8"))
     manifest["rules"] = json.loads(RULES.read_text(encoding="utf-8"))
-    manifest["meta"]["version"] = "4.0.0"
+    manifest["meta"]["version"] = "5.1.0"
     manifest["audioCues"] = AUDIO_CUES
     cues = {item["id"]: item for item in AUDIO_CUES}
     for scene in manifest["scenes"]:
@@ -122,7 +122,7 @@ def main() -> None:
     for output in NATIVE_OUTPUTS:
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(payload, encoding="utf-8")
-    print("Built shared 4.0.0 content, guided flow, and rules for native app and web preview.")
+    print("Built shared 5.1.0 content, guided flow, and rules for native app and web preview.")
 
 
 if __name__ == "__main__":

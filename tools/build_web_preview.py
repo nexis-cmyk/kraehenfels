@@ -46,7 +46,11 @@ def sync_selected(source: Path, target: Path, names: set[str]) -> int:
 def main() -> None:
     manifest = json.loads((ROOT / "content" / "manifest.json").read_text(encoding="utf-8"))
     version = manifest.get("meta", {}).get("version", "dev")
-    shell_version = f"{version}-r11"
+    # Keep the browser shell and its service-worker cache on the same release
+    # marker as the guided-flow module. Bump the marker whenever the UI or
+    # interaction contract changes so installed previews cannot serve stale
+    # NPC direction or navigation code.
+    shell_version = f"{version}-r1"
     sync_file(ROOT / "content" / "manifest.json", WEB / "data" / "manifest.json")
     index = WEB / "index.html"
     index_source = index.read_text(encoding="utf-8")
@@ -90,7 +94,7 @@ def main() -> None:
     service_worker_source = service_worker.read_text(encoding="utf-8")
     # Bump the shell suffix when the web layout changes so an installed service
     # worker cannot keep serving a previous HTML/CSS/JS shell.
-    cache_name = f"kraehenfels-web-v{version}-shell17"
+    cache_name = f"kraehenfels-web-v{version}-shell18"
     service_worker_source, replacements = re.subn(
         r'const CACHE = "[^"]+";',
         f'const CACHE = "{cache_name}";',

@@ -410,22 +410,13 @@ struct NPCDossierView: View {
                                     Text("\(appearance.sceneId) · \(sceneTitle(for: appearance.sceneId))")
                                         .font(.caption.weight(.bold))
                                         .foregroundStyle(FrostTheme.cobalt)
-                                    Text(appearance.when)
-                                        .font(.caption)
-                                        .foregroundStyle(.white.opacity(0.9))
-                                        .fixedSize(horizontal: false, vertical: true)
-                                    Text("So spielen: \(appearance.playAs)")
-                                        .font(.caption)
-                                        .foregroundStyle(FrostTheme.quiet)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                    Text("„\(appearance.openingLine)“")
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(FrostTheme.warning)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                    Text("Danach: \(appearance.turn)")
-                                        .font(.caption)
-                                        .foregroundStyle(.white.opacity(0.82))
-                                        .fixedSize(horizontal: false, vertical: true)
+                                    NPCDirectionView(
+                                        npc: npc,
+                                        appearance: appearance,
+                                        sceneID: appearance.sceneId,
+                                        showAllReactions: true,
+                                        showAllDirections: true
+                                    )
                                 }
                                 if appearance.id != npc.appearances.last?.id {
                                     Divider().overlay(FrostTheme.quiet.opacity(0.25))
@@ -437,12 +428,6 @@ struct NPCDossierView: View {
                                     .foregroundStyle(.white.opacity(0.9))
                                     .fixedSize(horizontal: false, vertical: true)
                             }
-                            Picker("Haltung", selection: Binding(get: { session.npcStates[npc.id, default: 0] }, set: { session.setNPCState(npc.id, state: $0) })) {
-                                ForEach(Array(npc.states.enumerated()), id: \.offset) { index, state in
-                                    Text(state.capitalized).tag(index)
-                                }
-                            }
-                            .pickerStyle(.segmented)
                         }
                     }
                     DisclosureGroup(isExpanded: $showSpoilers) {

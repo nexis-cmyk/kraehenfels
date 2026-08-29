@@ -149,7 +149,30 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .npc-appearance { display: grid; gap: var(--space-sm); margin-top: var(--space-md); padding: var(--space-md); border: 1px solid color-mix(in oklch, var(--cobalt), transparent 55%); border-radius: 0.75rem; background: color-mix(in oklch, var(--ink-soft), var(--cobalt) 7%); }
 .npc-appearance p { margin: 0; color: oklch(0.9 0.018 150); font-size: 0.8rem; line-height: 1.45; }
 .npc-appearance span { display: block; margin-bottom: 0.18rem; color: var(--quiet); font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 0.64rem; font-weight: 800; letter-spacing: 0.07em; }
-.npc-appearance blockquote { margin: 0.1rem 0; padding-left: 0.75rem; border-left: 2px solid var(--rust); color: oklch(0.86 0.07 45); font-size: 0.88rem; font-weight: 700; line-height: 1.45; }
+.npc-appearance-status { display: flex; align-items: center; gap: .45rem; padding-bottom: .55rem; border-bottom: 1px solid color-mix(in oklch, var(--line), transparent 22%); color: var(--cobalt); }
+.npc-appearance-status span { margin: 0; color: inherit; font-family: inherit; font-size: .85rem; line-height: 1; }
+.npc-appearance-status b { color: inherit; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.npc-appearance.is-absent { border-color: color-mix(in oklch, var(--rust), transparent 48%); background: color-mix(in oklch, var(--rust), transparent 91%); }
+.npc-appearance.is-absent .npc-appearance-status { color: var(--rust); }
+.npc-direction-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem .9rem; }
+.npc-direction-grid p { min-width: 0; }
+.npc-direction-grid p span, .npc-reactions-heading span, .npc-presenter span { margin-bottom: .16rem; }
+.npc-reactions { display: grid; gap: .55rem; padding-top: .7rem; border-top: 1px solid color-mix(in oklch, var(--line), transparent 22%); }
+.npc-reactions-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; }
+.npc-reactions-heading small { color: var(--quiet); font-size: .7rem; }
+.npc-reaction { display: grid; gap: .45rem; padding: .7rem; border: 1px solid color-mix(in oklch, var(--line), transparent 18%); border-radius: .55rem; background: color-mix(in oklch, var(--panel), transparent 5%); }
+.npc-reaction.is-confirmed { border-color: color-mix(in oklch, var(--cobalt), transparent 32%); background: color-mix(in oklch, var(--cobalt), transparent 90%); }
+.npc-reaction-title { display: flex; align-items: baseline; justify-content: space-between; gap: .65rem; }
+.npc-reaction-title strong { color: var(--cobalt); font-size: .78rem; }
+.npc-reaction-title small { color: var(--quiet); font-size: .68rem; white-space: nowrap; }
+.npc-reaction p { color: var(--frost); font-size: .76rem; line-height: 1.42; }
+.npc-reaction p span { color: var(--quiet); font-size: .61rem; }
+.npc-presenter { display: grid; grid-template-columns: auto minmax(8rem, 15rem); align-items: center; gap: .55rem; color: var(--quiet); font-size: .7rem; font-weight: 700; }
+.npc-presenter select { min-height: 2.35rem; width: 100%; border: 1px solid var(--line); border-radius: .45rem; background: var(--ink-soft); color: var(--frost); padding: .35rem .5rem; }
+.npc-reaction-confirm { justify-self: start; min-height: 2.35rem; padding: .45rem .65rem; font-size: .72rem; }
+.npc-reaction-confirmed { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; color: var(--cobalt); font-size: .72rem; font-weight: 750; }
+.npc-reaction-confirmed .text-button { min-height: 2.35rem; padding-block: .35rem; color: var(--quiet); font-size: .72rem; }
+.npc-absent { color: var(--rust) !important; font-size: .78rem !important; }
 .npc-state { display: grid; gap: 0.35rem; max-width: 18rem; margin-top: var(--space-sm); color: var(--quiet); font-size: 0.7rem; font-weight: 750; text-transform: uppercase; letter-spacing: 0.06em; }
 .npc-state select { min-height: 2.75rem; border: 1px solid var(--line); border-radius: 0.55rem; background: var(--ink-soft); color: var(--frost); padding: 0.45rem 0.6rem; font: inherit; text-transform: none; letter-spacing: normal; }
 .npc-spoiler { display: grid; gap: var(--space-sm); margin-top: var(--space-md); padding-top: var(--space-sm); border-top: 1px solid color-mix(in oklch, var(--rust), transparent 65%); }
@@ -573,7 +596,7 @@ body { background: var(--ink); padding-bottom: calc(4.65rem + env(safe-area-inse
 .guide-npc-heading span, .guide-npc-entry p { color: var(--quiet); font-size: .72rem; }
 .guide-npc-entry p { margin: 0; line-height: 1.4; }
 .guide-npc-entry p b { color: var(--cobalt); font-size: .65rem; letter-spacing: .06em; }
-.guide-npc-entry blockquote { margin: .25rem 0; padding-left: .6rem; border-left: 2px solid var(--rust); color: var(--frost); font-family: ui-serif, Georgia, serif; font-size: .88rem; }
+.guide-npc-entry blockquote { margin: .25rem 0; padding: .5rem .65rem; border: 1px solid color-mix(in oklch, var(--line), transparent 15%); border-radius: .45rem; color: var(--frost); font-family: ui-serif, Georgia, serif; font-size: .88rem; }
 .guide-locked-option { margin: 1rem 0 0; padding: .7rem; border-radius: .55rem; background: color-mix(in oklch, var(--rust), transparent 86%); color: var(--rust); font-size: .78rem; }
 .combat-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
 .combat-toolbar > span:not(.eyebrow) { margin-right: auto; color: var(--quiet); font-size: .76rem; }
@@ -599,7 +622,7 @@ body { background: var(--ink); padding-bottom: calc(4.65rem + env(safe-area-inse
 .combat-outcome p, .combat-outcome small { margin: 0; color: var(--quiet); font-size: .74rem; }
 
 @media (max-width: 48rem) {
-  .guide-state-grid, .combat-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .guide-state-grid, .combat-fields, .npc-direction-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .finale-mode-options { grid-template-columns: 1fr; }
 }
 
@@ -612,6 +635,9 @@ body { background: var(--ink); padding-bottom: calc(4.65rem + env(safe-area-inse
 
 @media (max-width: 42rem) {
   .roll-inputs { grid-template-columns: 1fr; }
+  .npc-direction-grid { grid-template-columns: 1fr; }
+  .npc-presenter { grid-template-columns: 1fr; gap: .25rem; }
+  .npc-reaction-title { align-items: start; flex-direction: column; gap: .15rem; }
 }
 
 .guide-footer {
