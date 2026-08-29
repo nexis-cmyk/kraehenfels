@@ -356,6 +356,21 @@ struct NPCAppearance: Codable, Hashable, Identifiable {
         clueReactions = try container.decodeIfPresent([NPCClueReaction].self, forKey: .clueReactions) ?? []
     }
 
+    /// Encode only the current structured direction schema. Legacy dialogue
+    /// keys remain decode-only so old saved content can still be opened, but
+    /// newly written manifests never reintroduce those fields.
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(sceneId, forKey: .sceneId)
+        try container.encode(presence, forKey: .presence)
+        try container.encode(reason, forKey: .reason)
+        try container.encode(mood, forKey: .mood)
+        try container.encode(goal, forKey: .goal)
+        try container.encode(behavior, forKey: .behavior)
+        try container.encode(nextAction, forKey: .nextAction)
+        try container.encode(clueReactions, forKey: .clueReactions)
+    }
+
     private enum CodingKeys: String, CodingKey {
         case sceneId, presence, reason, mood, goal, behavior, nextAction, clueReactions
         case when, playAs, turn
