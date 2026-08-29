@@ -487,4 +487,31 @@ final class ContentStoreTests: XCTestCase {
 
         XCTAssertEqual(session.itemUseRecords.map(\.sceneID), ["S02"])
     }
+
+    @MainActor
+    func testDependentPathResetFollowsInvestigationOrder() {
+        let suiteName = "kraehenfels.tests.investigation-reset-order"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let session = SessionStore(defaults: defaults)
+        session.beginGuidedSession()
+        session.completedSceneIDs = ["S03", "S04", "S05", "S06", "S07", "S08"]
+        session.completedGuideStepIDs = ["S03_CLUE", "S04_CLUE", "S05_CLUE", "S06_CLUE"]
+        session.checkedClueIDs = ["C01", "C02"]
+
+        session.resetDependentPath(from: "S04")
+
+        XCTAssertTrue(session.completedSceneIDs.contains("S03"))
+        XCTAssertTrue(session.completedSceneIDs.contains("S04"))
+        XCTAssertFalse(session.completedSceneIDs.contains("S05"))
+        XCTAssertFalse(session.completedSceneIDs.contains("S06"))
+        XCTAssertFalse(session.completedSceneIDs.contains("S07"))
+        XCTAssertFalse(session.completedSceneIDs.contains("S08"))
+        XCTAssertTrue(session.completedGuideStepIDs.contains("S03_CLUE"))
+        XCTAssertTrue(session.completedGuideStepIDs.contains("S04_CLUE"))
+        XCTAssertFalse(session.completedGuideStepIDs.contains("S05_CLUE"))
+        XCTAssertFalse(session.completedGuideStepIDs.contains("S06_CLUE"))
+        XCTAssertEqual(session.checkedClueIDs, ["C01", "C02"])
+    }
 }

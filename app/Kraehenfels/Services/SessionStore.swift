@@ -489,13 +489,18 @@ final class SessionStore: ObservableObject {
     }
 
     func resetDependentPath(from sceneID: String) {
-        // S03, S04 and S05 are parallel investigations. Resetting one of
-        // them must never erase the evidence already completed in a sibling.
+        // S03, S04 and S05 are selectable investigation scenes, but the
+        // guided path still has a deterministic order for rollback. A reset
+        // starts at the selected scene's next point in that order and clears
+        // only later scene progress. Found clues remain global evidence and
+        // are intentionally preserved.
         let dependentScenes: Set<String>
         switch sceneID {
         case "S01": dependentScenes = ["S02", "S03", "S04", "S05", "S06", "S07", "S08"]
         case "S02": dependentScenes = ["S03", "S04", "S05", "S06", "S07", "S08"]
-        case "S03", "S04", "S05": dependentScenes = ["S06", "S07", "S08"]
+        case "S03": dependentScenes = ["S04", "S05", "S06", "S07", "S08"]
+        case "S04": dependentScenes = ["S05", "S06", "S07", "S08"]
+        case "S05": dependentScenes = ["S06", "S07", "S08"]
         case "S06": dependentScenes = ["S07", "S08"]
         case "S07": dependentScenes = ["S08"]
         default: dependentScenes = []
