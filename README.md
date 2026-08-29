@@ -15,11 +15,11 @@ Das Repository enthält:
 
 ## iPad-Build und AltStore
 
-Der native Code steht auf `v5.0.0` (Build `11`). Als AltStore-Release ist derzeit `v4.3.0` (Build `10`) veröffentlicht und direkt installierbar. Die App ist für iPad ausgelegt. macOS oder GitHub Actions erzeugen die unsignierte IPA. AltStore signiert sie bei der Installation mit deinem Apple-Account.
+Der native Release `v5.0.0` (Build `11`) ist veröffentlicht und direkt über AltStore installierbar. Die App ist für iPad ausgelegt. macOS oder GitHub Actions erzeugen die unsignierte IPA. AltStore signiert sie bei der Installation mit deinem Apple-Account.
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
 - [Release-Übersicht](https://github.com/nexis-cmyk/kraehenfels/releases)
-- [AltStore-Feed für den veröffentlichten Release v4.3.0](https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.3.0/source.generated.json)
+- [AltStore-Feed für den veröffentlichten Release v5.0.0](https://github.com/nexis-cmyk/kraehenfels/releases/download/v5.0.0/source.generated.json)
 - [Dauerhafter AltStore-Feed](https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json)
 
 Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-Account signiert. Eine kurze Windows-Anleitung steht in [`altstore/README.md`](altstore/README.md).

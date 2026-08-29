@@ -11,13 +11,13 @@
       "bundleIdentifier": "de.kraehenfels.spielleitung",
       "developerName": "Krähenfels",
       "subtitle": "Die letzte Kutsche",
-      "version": "4.3.0",
-      "buildVersion": "10",
-      "versionDate": "2026-08-28",
-      "versionDescription": "Release 4.3.0",
-      "downloadURL": "https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.3.0/Kraehenfels.ipa",
-      "size": 87586332,
-      "sha256": "0229fcc36d2a699f97b4184fd820c775befb4f05594954eca7a1007a149bfa64",
+      "version": "5.0.0",
+      "buildVersion": "11",
+      "versionDate": "2026-08-29",
+      "versionDescription": "Release 5.0.0",
+      "downloadURL": "https://github.com/nexis-cmyk/kraehenfels/releases/download/v5.0.0/Kraehenfels.ipa",
+      "size": 87819307,
+      "sha256": "0a126d867a51072090196c7594e8eb1a5e8e8e63b8cb2b9b08c65785e2bab8de",
       "localizedDescription": "Geführter Szenenleitstand mit Vorlesetexten, NPCs, Pflichtspuren, Szenenbildern, papiergebundenen Hinweisen, lokalen Tischnotizen, manuellem Nachtstand und einem getrennten Soundboard für Atmosphäre, Musik und Effekte.",
       "iconURL": "https://raw.githubusercontent.com/nexis-cmyk/kraehenfels/main/altstore/icon.png",
       "tintColor": "#6EAF7A",
@@ -27,13 +27,13 @@
       },
       "versions": [
         {
-          "version": "4.3.0",
-          "buildVersion": "10",
-          "date": "2026-08-28",
-          "localizedDescription": "Release 4.3.0",
-          "downloadURL": "https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.3.0/Kraehenfels.ipa",
-          "size": 87586332,
-          "sha256": "0229fcc36d2a699f97b4184fd820c775befb4f05594954eca7a1007a149bfa64"
+          "version": "5.0.0",
+          "buildVersion": "11",
+          "date": "2026-08-29",
+          "localizedDescription": "Release 5.0.0",
+          "downloadURL": "https://github.com/nexis-cmyk/kraehenfels/releases/download/v5.0.0/Kraehenfels.ipa",
+          "size": 87819307,
+          "sha256": "0a126d867a51072090196c7594e8eb1a5e8e8e63b8cb2b9b08c65785e2bab8de"
         }
       ]
     }
