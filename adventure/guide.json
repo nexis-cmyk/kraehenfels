@@ -3,7 +3,7 @@
     {
       "id": "print",
       "title": "Drucksachen",
-      "detail": "Spielerkarte, Detailkarten, Handouts H01–H10, drei eigene Figurenbögen und die sechs Gegenstandskarten."
+      "detail": "Spielerkarte, Detailkarten, Handouts H01–H10, drei eigene Figurenbögen und die sechs Gegenstandskarten. H09 wird im Rathausarchiv nach H05 als Spielerhandout ausgegeben."
     },
     {
       "id": "dice",
@@ -18,7 +18,7 @@
     {
       "id": "spoilers",
       "title": "Spoiler trennen",
-      "detail": "H09 und die SL-Karte bleiben bei dir. Spieler sehen nur die Spielerkarte."
+      "detail": "Die SL-Karte und die Endkarten bleiben bei dir. H09 ist ein Spielerhandout und wird erst in S06 ausgegeben."
     },
     {
       "id": "safety",
@@ -238,6 +238,23 @@
   ],
   "playerBriefing": "Ihr seid Reisende im Schwarzwald des Jahres 1890. Eine manipulierte Kutschenpanne zwingt euch nach Krähenfels. Ihr wisst noch nichts von einem Pakt. Ihr dürft jederzeit Fragen stellen, Orte wählen und eigene Lösungen versuchen.",
   "hiddenFromPlayers": "Knochenhirsch, Opferbuch, verdrehter Pakt und die drei Enden.",
+  "combat": {
+    "enemy": {
+      "id": "enemy-bone-stag",
+      "name": "Knochenhirsch",
+      "maxLP": 120,
+      "initiative": 7,
+      "attackSkill": 65,
+      "damageDice": "7W10",
+      "parryable": false,
+      "notes": "Übernatürliches Wesen. Schusswaffen und kritische Angriffe sind nicht parierbar; der Kampf endet, sobald die gewählte Bindung gebrochen oder das Wesen ausgeschaltet ist."
+    },
+    "victoryByEnding": {
+      "E01": "Die Gruppe hält den Knochenhirsch bis zum öffentlichen Widerruf auf Abstand.",
+      "E02": "Die Gruppe schützt die Erneuerung des Gastrechts bis zur letzten Zeile.",
+      "E03": "Die Gruppe schafft eine Öffnung für Eisen und Feuer; danach bricht die Bindung."
+    }
+  },
   "steps": {
     "S01": [
       {
@@ -272,16 +289,22 @@
           "success": "Die Figur verliert keine zusätzliche Wärme oder Zeit.",
           "failure": "Die Hilfe gelingt trotzdem, kostet aber Zeit oder eine kleine Verletzung.",
           "failureConsequences": [
-            {
-              "id": "time-loss",
-              "title": "Zeit verlieren",
-              "detail": "Die Hilfe gelingt, aber die Gruppe braucht länger für den Aufbruch."
-            },
-            {
-              "id": "minor-injury",
-              "title": "Kleine Verletzung",
-              "detail": "Die Hilfe gelingt, aber eine Figur zieht sich dabei eine kleine Verletzung zu."
-            }
+                {
+                  "id": "time-loss",
+                  "title": "Zeit verlieren",
+                  "detail": "Die Hilfe gelingt, aber die Gruppe braucht länger für den Aufbruch.",
+                  "effect": {
+                    "timeDelta": 1
+                  }
+                },
+                {
+                  "id": "minor-injury",
+                  "title": "Kleine Verletzung",
+                  "detail": "Die Hilfe gelingt, aber eine Figur zieht sich dabei eine kleine Verletzung zu.",
+                  "effect": {
+                    "injuryDelta": 1
+                  }
+                }
           ],
           "critical": "Die Gruppe findet sofort einen sicheren Weg zum Auftrag."
         },
@@ -313,6 +336,10 @@
         "actionLabel": "H01 zeigen",
         "materialInstruction": "Jetzt H01 öffnen und zeigen. Über den Share-Button kannst du das Bild direkt verschicken oder sichern.",
         "clueID": "C01",
+        "clueIDs": [
+          "C01",
+          "C02"
+        ],
         "handoutID": "H01",
         "sceneID": "S01"
       },
@@ -372,10 +399,14 @@
         "id": "S02_CLUE",
         "kind": "clue",
         "title": "Gästebuch und Riegel",
-        "body": "Zeige H03, sobald jemand nach früheren Gästen, roten Strichen oder der verschlossenen Tür fragt. H02 ist ein optionaler Zeitungsbeleg und darf zusätzlich gezeigt werden. C03 und C04 sind garantiert. Bei einem passenden Gespräch nennt Elara den letzten gestrichenen Namen.",
+        "body": "Zeige H03, sobald jemand nach früheren Gästen, roten Strichen oder der verschlossenen Tür fragt. H02 ist ein optionaler Zeitungsbeleg und bestätigt dieselbe Spur C03 aus einer zweiten Quelle. C03 und C04 sind garantiert. Bei einem passenden Gespräch nennt Elara den letzten gestrichenen Namen.",
         "actionLabel": "H03 zeigen",
-        "materialInstruction": "Bei Fragen nach früheren Gästen oder der Tür H03 zeigen. H02 nur als zusätzlichen Zeitungsbeleg verwenden.",
+        "materialInstruction": "Bei Fragen nach früheren Gästen oder der Tür H03 zeigen. H02 nur als optionalen Zusatzbeleg für C03 öffnen; es ersetzt nicht H03.",
         "clueID": "C03",
+        "clueIDs": [
+          "C03",
+          "C04"
+        ],
         "handoutID": "H03",
         "handoutIDs": [
           "H02"
@@ -411,11 +442,12 @@
             },
             {
               "id": "door-delay",
-              "title": "Zeit verlieren",
-              "detail": "Die Tür geht erst nach einer Verzögerung auf; die Bedrohung steigt.",
-              "effect": {
-                "threatDelta": 1
-              }
+                  "title": "Zeit verlieren",
+                  "detail": "Die Tür geht erst nach einer Verzögerung auf; die Bedrohung steigt.",
+                  "effect": {
+                    "threatDelta": 1,
+                    "timeDelta": 1
+                  }
             }
           ],
           "critical": "Die Gruppe entdeckt zusätzlich, wer den Riegel angebracht hat."
@@ -512,7 +544,7 @@
         "id": "S03_NEXT",
         "kind": "next",
         "title": "Zurück ins Ermittlungszentrum",
-        "body": "Markiere Kirche als besucht. Danach darf die Gruppe zur Schmiede, zur Waldspur oder – falls zwei Orte besucht sind – ins Archiv wechseln.",
+        "body": "Markiere die Kirche als besucht. Danach darf die Gruppe zur Schmiede oder zur Waldspur wechseln. Das Archiv öffnet erst, wenn alle drei Ermittlungsorte abgeschlossen sind.",
         "actionLabel": "Ort wählen",
         "options": [
           {
@@ -530,8 +562,9 @@
           {
             "id": "archive",
             "title": "Rathausarchiv",
-            "detail": "Nur empfehlen, wenn zwei Ermittlungsorte besucht sind.",
+            "detail": "Wird nach Kirche, Schmiede und Waldspur freigeschaltet.",
             "destinationSceneID": "S06"
+            ,"requiresCompletedSceneIDs": ["S03", "S04", "S05"]
           }
         ],
         "sceneID": "S03"
@@ -603,7 +636,7 @@
         "id": "S04_NEXT",
         "kind": "next",
         "title": "Zurück ins Ermittlungszentrum",
-        "body": "Markiere die Schmiede als besucht und biete Waldspur, Kirche oder – nach zwei Orten – das Archiv an.",
+        "body": "Markiere die Schmiede als besucht und biete Waldspur oder Kirche an. Das Archiv öffnet erst nach allen drei Ermittlungsorten.",
         "actionLabel": "Ort wählen",
         "options": [
           {
@@ -623,6 +656,7 @@
             "title": "Rathausarchiv",
             "detail": "Buchhaltung und Ritualfragment suchen.",
             "destinationSceneID": "S06"
+            ,"requiresCompletedSceneIDs": ["S03", "S04", "S05"]
           }
         ],
         "sceneID": "S04"
@@ -659,6 +693,11 @@
         "actionLabel": "Drei Hinweise zeigen",
         "materialInstruction": "Jetzt H07, danach H08 und zuletzt H10 öffnen. Diese Reihenfolge auch beim Verschicken beibehalten.",
         "clueID": "C08",
+        "clueIDs": [
+          "C08",
+          "C09",
+          "C11"
+        ],
         "handoutID": "H07",
         "handoutIDs": [
           "H08",
@@ -686,14 +725,21 @@
           "failure": "Die Gruppe erreicht sie trotzdem, verliert aber Wärme oder die Prozession gewinnt Zeit.",
           "failureConsequences": [
             {
-              "id": "forest-cold",
-              "title": "Wärme verlieren",
-              "detail": "Die Gruppe erreicht die Eiche, aber die Kälte setzt ihr zu."
-            },
-            {
-              "id": "procession-gains-time",
-              "title": "Prozession gewinnt Zeit",
-              "detail": "Die Gruppe erreicht die Eiche, doch die Prozession kommt näher."
+                  "id": "forest-cold",
+                  "title": "Wärme verlieren",
+                  "detail": "Die Gruppe erreicht die Eiche, aber die Kälte setzt ihr zu.",
+                  "effect": {
+                    "warmthDelta": -1
+                  }
+                },
+                {
+                  "id": "procession-gains-time",
+                  "title": "Prozession gewinnt Zeit",
+                  "detail": "Die Gruppe erreicht die Eiche, doch die Prozession kommt näher.",
+                  "effect": {
+                    "timeDelta": 1,
+                    "threatDelta": 1
+                  }
             }
           ],
           "critical": "Die Gruppe entdeckt einen sicheren Zugang und einen zusätzlichen Rückzugsweg."
@@ -704,7 +750,7 @@
         "id": "S05_NEXT",
         "kind": "next",
         "title": "Zur nächsten Ermittlungsstation",
-        "body": "Markiere die Waldspur als besucht. Wenn noch Tatsachen fehlen, führt der nächste sinnvolle Schritt ins Archiv – die App schaltet es nach zwei Ermittlungsorten frei. Die Eiche bleibt bis zur Wahrheitsphase ein Ziel, kein Finale.",
+        "body": "Markiere die Waldspur als besucht. Nach allen drei Ermittlungsorten führt der nächste Schritt ins Archiv. Die Eiche bleibt bis zur Wahrheitsphase ein Ziel, kein Finale.",
         "actionLabel": "Ort wählen",
         "options": [
           {
@@ -712,6 +758,7 @@
             "title": "Rathausarchiv",
             "detail": "Die Winterbuchhaltung prüfen.",
             "destinationSceneID": "S06"
+            ,"requiresCompletedSceneIDs": ["S03", "S04", "S05"]
           },
           {
             "id": "church",
@@ -757,11 +804,18 @@
         "id": "S06_CLUE",
         "kind": "clue",
         "title": "Winterbuchhaltung und Ritualfragment",
-        "body": "Zeige H05. H09 bleibt ein SL-Spoiler und wird nur gezeigt oder vorgelesen, wenn die Gruppe die drei Folgen noch nicht aus anderen Spuren kennt. C06 und C10 werden dadurch bestätigt.",
-        "actionLabel": "H05 zeigen",
-        "materialInstruction": "Jetzt H05 zeigen. H09 bleibt geschlossen und wird nur als SL-Spoiler genutzt, wenn die Verbindung sonst fehlt.",
+        "body": "Zeige zuerst H05 und danach H09. H05 verbindet Winter und Opfer; H09 nennt die drei Folgen des Pakts. Beide Hinweise werden erst nach ihrer tatsächlichen Ausgabe bestätigt.",
+        "actionLabel": "H05 und H09 zeigen",
+        "materialInstruction": "Jetzt H05 zeigen und anschließend H09 als Spielerhandout ausgeben. Lies die drei Zeilen nur vor, wenn die Gruppe das Blatt nicht gemeinsam lesen möchte.",
         "clueID": "C06",
+        "clueIDs": [
+          "C06",
+          "C10"
+        ],
         "handoutID": "H05",
+        "handoutIDs": [
+          "H09"
+        ],
         "sceneID": "S06"
       },
       {
@@ -888,31 +942,40 @@
           "failure": "Zeit, Wärme oder Vertrauen gehen verloren; der nächste Versuch bleibt möglich.",
           "failureConsequences": [
             {
-              "id": "finale-time",
-              "title": "Zeit verlieren",
-              "detail": "Der nächste Versuch beginnt zu spät; der Wald gewinnt Raum.",
-              "endingIDs": [
-                "E01",
-                "E03"
-              ]
+                  "id": "finale-time",
+                  "title": "Zeit verlieren",
+                  "detail": "Der nächste Versuch beginnt zu spät; der Wald gewinnt Raum.",
+                  "endingIDs": [
+                    "E01",
+                    "E03"
+                  ],
+                  "effect": {
+                    "timeDelta": 1
+                  }
             },
             {
-              "id": "finale-warmth",
-              "title": "Wärme verlieren",
-              "detail": "Die Kälte nimmt der Gruppe Kraft; der nächste Versuch bleibt möglich.",
-              "endingIDs": [
-                "E02",
-                "E03"
-              ]
+                  "id": "finale-warmth",
+                  "title": "Wärme verlieren",
+                  "detail": "Die Kälte nimmt der Gruppe Kraft; der nächste Versuch bleibt möglich.",
+                  "endingIDs": [
+                    "E02",
+                    "E03"
+                  ],
+                  "effect": {
+                    "warmthDelta": -1
+                  }
             },
             {
-              "id": "finale-trust",
-              "title": "Vertrauen verlieren",
-              "detail": "Die Gruppe verliert Vertrauen in ihren gemeinsamen Plan; der nächste Versuch bleibt möglich.",
-              "endingIDs": [
-                "E01",
-                "E02"
-              ]
+                  "id": "finale-trust",
+                  "title": "Vertrauen verlieren",
+                  "detail": "Die Gruppe verliert Vertrauen in ihren gemeinsamen Plan; der nächste Versuch bleibt möglich.",
+                  "endingIDs": [
+                    "E01",
+                    "E02"
+                  ],
+                  "effect": {
+                    "trustDelta": -1
+                  }
             }
           ],
           "critical": "Ein NPC schließt sich sichtbar an.",
@@ -925,7 +988,7 @@
         "id": "S07_COMBAT",
         "kind": "gmInfo",
         "title": "Optional: Kampf am Tisch",
-        "body": "Wenn du Kampfmodus wählst, öffne die Kampf-Kurzreferenz. Sie führt durch Initiative, Angriff, Parade, Schaden und LP-Zustände. Für den Knochenhirsch sind im Kanon keine festen Werte vorgegeben; passe sie an die Gruppe an oder nutze den geführten Modus.",
+        "body": "Wenn du Kampfmodus wählst, öffne den Kampf-Tracker. Er führt durch Initiative, Angriff, Parade, Schaden und LP-Zustände und verwendet die festgelegten Werte des Knochenhirschs (120 LP, Initiative 7, Angriff 65, Schaden 7W10, nicht parierbar). Der Kampf bleibt für alle drei Enden optional.",
         "actionLabel": "Kampfmodus verstanden",
         "sceneID": "S07"
       },

@@ -6,7 +6,7 @@
     "system": "How to be a Hero",
     "setting": "Schwarzwald, November 1890",
     "language": "de",
-    "version": "3.3.0",
+    "version": "4.0.0",
     "minimumIOS": "17.0"
   },
   "phases": [
@@ -85,7 +85,8 @@
       "title": "Die Panne war geplant",
       "details": "Die Kutsche wurde auf Grubers Umleitung gelenkt und an der Achse beschädigt.",
       "clueIds": [
-        "C01"
+        "C01",
+        "C02"
       ],
       "fallback": "Die Achse zeigt frische, gerade Kerben. Gruber kennt die genaue Ankunftszeit."
     },
@@ -94,7 +95,8 @@
       "title": "Gäste verschwinden",
       "details": "Frühere Reisende wurden als Gäste aufgenommen und kamen nicht wieder heraus.",
       "clueIds": [
-        "C03"
+        "C03",
+        "C04"
       ],
       "fallback": "Elara nennt einen Namen, der im Gästebuch durchgestrichen wurde."
     },
@@ -353,7 +355,7 @@
           "when": "Am Waldrand, nachdem Leni ihre Zeichnung gezeigt hat oder die Gruppe der nicht menschlichen Spur folgt.",
           "playAs": "Zuerst sprunghaft und misstrauisch. Sobald jemand seine Details mit den Beweisen verbindet, wird er plötzlich sehr genau.",
           "openingLine": "Öffnen. Erinnern. Brechen. Mehr Wege hat das Holz nie gekannt.",
-          "turn": "Er gibt H08. H09 bleibt eine reine SL-Hilfe und wird nur sinngemäß genutzt, wenn die Gruppe feststeckt."
+          "turn": "Er gibt H08. H09 wird später im Rathausarchiv als Spielerhandout ausgegeben; Elias kann die drei Verben daraus nur einordnen, wenn die Gruppe danach fragt."
         },
         {
           "sceneId": "S07",
@@ -746,10 +748,11 @@
     {
       "id": "H09",
       "title": "Fragment des alten Rituals",
-      "format": "A4 Spoilerblatt",
-      "spoiler": true,
-      "fallback": "Nur bei Bedarf vorlesen",
+      "format": "A4 Spielerhandout",
+      "spoiler": false,
+      "fallback": "Lies die drei Zeilen vor: Öffnen heißt das Dorf verweigert dem Eidbrecher seine Stimmen. Erinnern heißt die Namen der Gäste an der Eiche zurückzugeben. Brechen heißt Feuer und altes Eisen gegen die Geweihreliquie zu führen.",
       "asset": "handout-h09-ritual.pdf",
+      "previewAsset": "handout-h09.png",
       "linkedClueIds": [
         "C10"
       ]
@@ -1133,7 +1136,7 @@
       "readAloud": "Kurz vor Mitternacht steht das Dorf still. Auf dem Tisch liegen Gästebuch, Kirchenbuch und Buchhaltung. Drei verschiedene Hände haben dieselbe Lüge geschrieben.",
       "gmNotes": [
         "H05 kann im Rathaus oder in Grubers Büro gefunden werden.",
-        "H09 bleibt hinter dem Spoilerschalter, bis die Gruppe feststeckt."
+        "H09 wird hier als reguläres Spielerhandout ausgegeben. Öffne es erst, wenn H05 auf dem Tisch liegt, damit die Reihenfolge der Beweise erhalten bleibt."
       ],
       "npcIds": [
         "N01",
@@ -1154,7 +1157,7 @@
       "escalation": 4,
       "checklist": [
         "H05 ausgeben",
-        "H09 nur bei Bedarf öffnen",
+        "H09 als Spielerhandout ausgeben",
         "Gruber als Verdächtigen markieren",
         "Prozession ankündigen"
       ],

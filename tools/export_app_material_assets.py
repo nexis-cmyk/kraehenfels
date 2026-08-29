@@ -19,11 +19,12 @@ HANDOUT_PAGES = {
     "handout-h02.png": "page-07.png",
     "handout-h03.png": "page-08.png",
     "handout-h04.png": "page-10.png",
-    "handout-h05.png": "page-17.png",
+    "handout-h05.png": "page-18.png",
     "handout-h06.png": "page-12.png",
     "handout-h07.png": "page-13.png",
     "handout-h08.png": "page-14.png",
-    "handout-h10.png": "page-15.png",
+    "handout-h09.png": "page-15.png",
+    "handout-h10.png": "page-16.png",
 }
 
 # Coordinates are the six rounded cards on the A4 item-card sheet at 993 x 1404 px.
@@ -60,7 +61,7 @@ def export_item_cards() -> None:
 
 
 def export_ending_cards() -> None:
-    source_path = RENDER_DIR / "page-19.png"
+    source_path = RENDER_DIR / "page-20.png"
     if not source_path.exists():
         raise FileNotFoundError(f"Missing rendered ending-card page: {source_path}")
     ENDING_DIR.mkdir(parents=True, exist_ok=True)

@@ -1,5 +1,5 @@
 import { AudioEngine } from "./audio-engine.js";
-import { evaluateRoll, guideKindLabels } from "./guided-flow.js?v=3.3.0-r7";
+import { evaluateRoll, guideKindLabels } from "./guided-flow.js?v=4.0.0-r11";
 
 const app = document.querySelector("#app");
 const sceneNav = document.querySelector("#scene-nav");
@@ -25,6 +25,11 @@ function normalizedFinaleCount(value) {
   return Number.isFinite(count) ? Math.min(Math.max(Math.trunc(count), 0), 2) : 0;
 }
 
+function normalizedTrack(value, maximum = 5) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.min(Math.max(Math.trunc(number), 0), maximum) : 0;
+}
+
 const stored = (key, fallback) => {
   try {
     return JSON.parse(localStorage.getItem(key)) ?? fallback;
@@ -36,6 +41,9 @@ const stored = (key, fallback) => {
 const state = {
   manifest: null,
   view: "home",
+  detail: null,
+  detailStack: [],
+  detailReturnView: "home",
   currentSceneId: localStorage.getItem("kraehenfels.currentScene") || "S01",
   completed: new Set(stored("kraehenfels.completed", [])),
   clues: new Set(stored("kraehenfels.clues", [])),
@@ -48,6 +56,10 @@ const state = {
   sceneNotes: stored("kraehenfels.sceneNotes", {}),
   nightPhase: normalizedNightPhase(localStorage.getItem("kraehenfels.nightPhase")),
   threatLevel: Math.min(5, Math.max(0, Number(localStorage.getItem("kraehenfels.threatLevel") || 0))),
+  time: normalizedTrack(localStorage.getItem("kraehenfels.time"), 5),
+  warmth: normalizedTrack(localStorage.getItem("kraehenfels.warmth") ?? 3, 5),
+  trust: normalizedTrack(localStorage.getItem("kraehenfels.trust") ?? 3, 5),
+  injuries: normalizedTrack(localStorage.getItem("kraehenfels.injuries"), 3),
   npcStates: stored("kraehenfels.npcStates", {}),
   selectedHooks: stored("kraehenfels.selectedHooks", {}),
   gmMode: stored("kraehenfels.gmMode", false),
@@ -68,12 +80,15 @@ const state = {
   finaleSuccesses: normalizedFinaleCount(localStorage.getItem("kraehenfels.finaleSuccesses")),
   finaleFailures: normalizedFinaleCount(localStorage.getItem("kraehenfels.finaleFailures")),
   finaleOutcome: localStorage.getItem("kraehenfels.finaleOutcome") || "",
+  finaleMode: localStorage.getItem("kraehenfels.finaleMode") === "combat" ? "combat" : "guided",
+  combatState: stored("kraehenfels.combatState", null),
   audioRatings: stored("kraehenfels.audioRatings", {}),
   endingID: localStorage.getItem("kraehenfels.endingID") || "",
   rollOpen: false,
   pendingRoll: null,
   selectedConsequenceID: "",
   selectedItemEffectIDs: {},
+  sessionSchema: localStorage.getItem("kraehenfels.sessionSchema") || "",
   spoilersOpen: false,
   statusTone: "ok",
 };
@@ -88,6 +103,10 @@ function persist() {
   localStorage.setItem("kraehenfels.sceneNotes", JSON.stringify(state.sceneNotes));
   localStorage.setItem("kraehenfels.nightPhase", String(state.nightPhase));
   localStorage.setItem("kraehenfels.threatLevel", String(state.threatLevel));
+  localStorage.setItem("kraehenfels.time", String(state.time));
+  localStorage.setItem("kraehenfels.warmth", String(state.warmth));
+  localStorage.setItem("kraehenfels.trust", String(state.trust));
+  localStorage.setItem("kraehenfels.injuries", String(state.injuries));
   localStorage.setItem("kraehenfels.npcStates", JSON.stringify(state.npcStates));
   localStorage.setItem("kraehenfels.selectedHooks", JSON.stringify(state.selectedHooks));
   localStorage.setItem("kraehenfels.gmMode", JSON.stringify(state.gmMode));
@@ -102,6 +121,10 @@ function persist() {
   localStorage.setItem("kraehenfels.finaleSuccesses", String(state.finaleSuccesses));
   localStorage.setItem("kraehenfels.finaleFailures", String(state.finaleFailures));
   localStorage.setItem("kraehenfels.finaleOutcome", state.finaleOutcome);
+  localStorage.setItem("kraehenfels.finaleMode", state.finaleMode);
+  if (state.combatState) localStorage.setItem("kraehenfels.combatState", JSON.stringify(state.combatState));
+  else localStorage.removeItem("kraehenfels.combatState");
+  localStorage.setItem("kraehenfels.sessionSchema", "v7");
   localStorage.setItem("kraehenfels.audioRatings", JSON.stringify(state.audioRatings));
   localStorage.setItem("kraehenfels.endingID", state.endingID);
 }
@@ -156,10 +179,11 @@ function renderNavigation() {
   sceneNav.innerHTML = scenes.map((scene) => {
     const active = scene.id === state.currentSceneId;
     const complete = state.completed.has(scene.id);
-    return `<button class="scene-link ${active ? "is-active" : ""}" data-scene="${scene.id}" type="button" aria-current="${active ? "page" : "false"}">
+    const available = canEnterScene(scene.id);
+    return `<button class="scene-link ${active ? "is-active" : ""} ${available ? "" : "is-locked"}" data-scene="${scene.id}" type="button" aria-current="${active ? "page" : "false"}" ${available ? "" : "disabled"}>
       <span class="scene-link-id">${scene.id}</span>
       <span class="scene-link-copy"><strong>${escapeHtml(scene.shortTitle)}</strong><small>${escapeHtml(scene.duration)}</small></span>
-      <span class="scene-link-state" aria-label="${complete ? "abgeschlossen" : "offen"}">${complete ? "✓" : "›"}</span>
+      <span class="scene-link-state" aria-label="${complete ? "abgeschlossen" : available ? "offen" : "gesperrt"}">${complete ? "✓" : available ? "›" : "🔒"}</span>
     </button>`;
   }).join("");
 }
@@ -200,7 +224,7 @@ function renderNPC(npc, sceneID) {
   const spoiler = state.spoilersOpen ? `<div class="npc-spoiler">
       ${npc.knows?.length ? `<p><span>WEISS</span>${npc.knows.map(escapeHtml).join("<br>")}</p>` : ""}
       ${npc.hides?.length ? `<p><span>VERSCHWEIGT</span>${npc.hides.map(escapeHtml).join("<br>")}</p>` : ""}
-      ${npc.givesHandoutIds?.length ? `<p class="gives-handout"><span>GIBT</span>${npc.givesHandoutIds.map((id) => `${id} · ${escapeHtml(handoutById(id)?.title ?? "")}`).join("<br>")}</p>` : ""}
+      ${npc.givesHandoutIds?.length ? `<div class="gives-handout"><span>GIBT</span><div class="npc-handout-links">${npc.givesHandoutIds.map(guideReferenceMarkup).join("")}</div></div>` : ""}
     </div>` : "";
   const stateIndex = Number(state.npcStates[npc.id] || 0);
   const states = npc.states?.length ? `<label class="npc-state"><span>Haltung</span><select data-npc-state="${npc.id}">${npc.states.map((label, index) => `<option value="${index}" ${index === stateIndex ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}</select></label>` : "";
@@ -213,17 +237,23 @@ function renderNPC(npc, sceneID) {
 function renderFrame(view, scene) {
   const isHome = view === "home";
   topbarBack.hidden = isHome;
-  const backLabel = view === "guided" ? (state.guideHistory.length ? "Zurück" : "Übersicht") : "Krähenfels";
-  topbarBack.dataset.action = view === "guided" ? "guide-back" : "home";
+  const detailItem = state.detail?.kind === "handout" ? handoutById(state.detail.id) : state.detail?.kind === "clue" ? clueById(state.detail.id) : null;
+  const backLabel = view === "guided" ? (state.guideHistory.length ? "Zurück" : "Übersicht") : view === "detail" ? "Zurück" : "Krähenfels";
+  topbarBack.dataset.action = view === "guided" ? "guide-back" : view === "detail" ? "detail-back" : "home";
   topbarBack.querySelector("span:last-child").textContent = backLabel;
-  screenTitle.textContent = isHome ? "Krähenfels" : view === "gm-start" ? "Spielleiter-Modus" : scene.shortTitle;
+  topbarBack.setAttribute("aria-label", view === "detail" ? "Zur vorherigen Ansicht" : backLabel === "Zurück" ? "Zum vorherigen Spielleiterschritt" : `Zur ${backLabel}`);
+  screenTitle.textContent = isHome ? "Krähenfels" : view === "gm-start" ? "Spielleiter-Modus" : view === "detail" ? detailItem ? `${detailItem.id} · ${detailItem.title}` : "Detail" : scene.shortTitle;
   document.body.dataset.view = view;
   topbarMenuPanel.hidden = true;
   topbarMenu.setAttribute("aria-expanded", "false");
 }
 
 function guideStepsFor(sceneID) {
-  return state.manifest?.guide?.steps?.[sceneID] || [];
+  const steps = state.manifest?.guide?.steps?.[sceneID] || [];
+  if (sceneID !== "S07") return steps;
+  return state.finaleMode === "combat"
+    ? steps.filter((step) => step.id !== "S07_DANGER")
+    : steps.filter((step) => step.id !== "S07_COMBAT");
 }
 
 function guideItems() {
@@ -291,6 +321,39 @@ function resetItemState() {
   state.selectedItemEffectIDs = {};
 }
 
+function migrateActiveLegacySession() {
+  const preservedNames = [...state.playerNames];
+  const preservedSessionNote = state.sessionNote;
+  const preservedSceneNotes = { ...state.sceneNotes };
+  state.gmMode = true;
+  state.playerNames = preservedNames;
+  state.sessionNote = preservedSessionNote;
+  state.sceneNotes = preservedSceneNotes;
+  state.currentSceneId = "S06";
+  state.completed = new Set(["S01", "S02", "S03", "S04", "S05"]);
+  state.clues = new Set();
+  state.checklist = new Set();
+  state.npcStates = {};
+  state.selectedHooks = {};
+  state.setupChecks = new Set();
+  state.guidedIndexes = { S06: 0 };
+  state.guideHistory = [];
+  state.guidedRolls = {};
+  state.guidedRollHistory = [];
+  state.finaleSuccesses = 0;
+  state.finaleFailures = 0;
+  state.finaleOutcome = "";
+  state.finaleMode = "guided";
+  state.combatState = null;
+  state.endingID = "";
+  state.time = 0;
+  state.warmth = 3;
+  state.trust = 3;
+  state.injuries = 0;
+  resetItemState();
+  persist();
+}
+
 function currentGuideIndex(sceneID) {
   const steps = guideStepsFor(sceneID);
   return Math.min(Math.max(Number(state.guidedIndexes[sceneID] || 0), 0), Math.max(0, steps.length - 1));
@@ -298,6 +361,23 @@ function currentGuideIndex(sceneID) {
 
 function currentGuideStep(sceneID) {
   return guideStepsFor(sceneID)[currentGuideIndex(sceneID)];
+}
+
+function optionAvailable(option) {
+  const required = option?.requiresCompletedSceneIDs || [];
+  return required.every((sceneID) => state.completed.has(sceneID) || sceneID === state.currentSceneId);
+}
+
+function canEnterScene(sceneID, includeCurrent = false) {
+  const completed = (id) => state.completed.has(id) || (includeCurrent && id === state.currentSceneId);
+  if (sceneID === state.currentSceneId || state.completed.has(sceneID)) return true;
+  if (sceneID === "S01") return true;
+  if (sceneID === "S02") return completed("S01");
+  if (["S03", "S04", "S05"].includes(sceneID)) return completed("S02");
+  if (sceneID === "S06") return ["S03", "S04", "S05"].every(completed);
+  if (sceneID === "S07") return completed("S06");
+  if (sceneID === "S08") return completed("S07");
+  return false;
 }
 
 function availableRollConsequences(step) {
@@ -316,12 +396,19 @@ function rollOutcomeText(result, roll) {
 }
 
 function consequenceEffectText(effect = {}) {
-  if (Number.isFinite(Number(effect.threatDelta))) {
-    const value = Number(effect.threatDelta);
-    return `Dorfspannung ${value >= 0 ? "+" : ""}${value}`;
-  }
-  if (Number.isFinite(Number(effect.minimumThreat))) return `Dorfspannung mindestens ${Number(effect.minimumThreat)}`;
-  return "";
+  const parts = [];
+  const delta = (key, label) => {
+    if (!Number.isFinite(Number(effect[key]))) return;
+    const value = Number(effect[key]);
+    parts.push(`${label} ${value >= 0 ? "+" : ""}${value}`);
+  };
+  delta("threatDelta", "Dorfspannung");
+  if (Number.isFinite(Number(effect.minimumThreat))) parts.push(`Dorfspannung mindestens ${Number(effect.minimumThreat)}`);
+  delta("timeDelta", "Zeit");
+  delta("warmthDelta", "Wärme");
+  delta("trustDelta", "Vertrauen");
+  delta("injuryDelta", "Verletzungen");
+  return parts.join(" · ");
 }
 
 function applyConsequence(consequence) {
@@ -332,6 +419,14 @@ function applyConsequence(consequence) {
   if (Number.isFinite(Number(effect.minimumThreat))) {
     state.threatLevel = Math.min(5, Math.max(state.threatLevel, Number(effect.minimumThreat)));
   }
+  const delta = (key, property, maximum) => {
+    if (!Number.isFinite(Number(effect[key]))) return;
+    state[property] = normalizedTrack(state[property] + Number(effect[key]), maximum);
+  };
+  delta("timeDelta", "time", 5);
+  delta("warmthDelta", "warmth", 5);
+  delta("trustDelta", "trust", 5);
+  delta("injuryDelta", "injuries", 3);
 }
 
 function consumeItemSelections(step, selections) {
@@ -413,6 +508,129 @@ function clearFinaleRolls() {
   state.itemUseRecords = state.itemUseRecords.filter((record) => record.stepID !== "S07_DANGER");
 }
 
+function ensureCombat() {
+  const config = state.manifest?.guide?.combat;
+  if (!config?.enemy) return null;
+  if (state.combatState && state.combatState.endingID === state.endingID) return state.combatState;
+  const spentShots = state.itemUseRecords.filter((record) => record.itemID === "item-revolver").length;
+  const participants = state.playerNames.map((name, index) => ({
+    id: `player-${index}`,
+    name: name.trim() || `Figur ${index + 1}`,
+    kind: "player",
+    maxLP: 100,
+    currentLP: 100,
+    initiative: 0,
+    attackSkill: 50,
+    damageDice: "1W10",
+    ammunition: Number(state.itemOwners["item-revolver"]) === index ? Math.max(0, 3 - spentShots) : 0,
+    geistesblitze: 0,
+    parryable: true,
+    hasActed: false,
+  }));
+  participants.push({
+    id: config.enemy.id,
+    name: config.enemy.name,
+    kind: "enemy",
+    maxLP: Number(config.enemy.maxLP) || 120,
+    currentLP: Number(config.enemy.maxLP) || 120,
+    initiative: Number(config.enemy.initiative) || 7,
+    attackSkill: Number(config.enemy.attackSkill) || 65,
+    damageDice: config.enemy.damageDice || "7W10",
+    ammunition: 0,
+    geistesblitze: 0,
+    parryable: Boolean(config.enemy.parryable),
+    hasActed: false,
+  });
+  state.combatState = {
+    isActive: true,
+    round: 1,
+    turnIndex: 0,
+    endingID: state.endingID || "",
+    participants,
+    log: [`Kampf gestartet · ${config.enemy.name} · Ziel: ${state.endingID || "unbekanntes Ende"}`],
+    outcome: null,
+  };
+  persist();
+  return state.combatState;
+}
+
+function combatParticipant(id) {
+  return state.combatState?.participants?.find((participant) => participant.id === id);
+}
+
+function updateCombatParticipant(id, updater) {
+  if (!state.combatState) return;
+  const participants = state.combatState.participants.map((participant) => {
+    if (participant.id !== id) return participant;
+    const next = { ...participant };
+    updater(next);
+    next.currentLP = Math.min(Math.max(Math.trunc(Number(next.currentLP) || 0), 0), next.maxLP);
+    next.initiative = Math.max(0, Math.trunc(Number(next.initiative) || 0));
+    next.ammunition = Math.max(0, Math.trunc(Number(next.ammunition) || 0));
+    next.geistesblitze = Math.max(0, Math.trunc(Number(next.geistesblitze) || 0));
+    return next;
+  });
+  state.combatState = { ...state.combatState, participants };
+  persist();
+  render();
+}
+
+function sortCombatByInitiative() {
+  if (!state.combatState) return;
+  const participants = [...state.combatState.participants].sort((a, b) => {
+    if (a.initiative === b.initiative) return a.kind === "player" && b.kind !== "player" ? -1 : 1;
+    return b.initiative - a.initiative;
+  }).map((participant) => ({ ...participant, hasActed: false }));
+  state.combatState = { ...state.combatState, participants, turnIndex: 0, log: [...state.combatState.log, "Initiative sortiert"].slice(-100) };
+  persist();
+  render();
+}
+
+function nextCombatTurn() {
+  const current = state.combatState;
+  if (!current?.isActive || !current.participants.length) return;
+  const participants = current.participants.map((participant) => ({ ...participant }));
+  const safeIndex = participants.findIndex((participant, index) => index === current.turnIndex && participant.currentLP > 0);
+  const currentIndex = safeIndex >= 0 ? safeIndex : Math.max(0, current.turnIndex);
+  if (participants[currentIndex]) participants[currentIndex].hasActed = true;
+  let nextIndex = participants.findIndex((participant, index) => index > currentIndex && participant.currentLP > 0);
+  let round = current.round;
+  let log = [...current.log];
+  if (nextIndex < 0) {
+    round += 1;
+    participants.forEach((participant) => { participant.hasActed = false; });
+    nextIndex = participants.findIndex((participant) => participant.currentLP > 0);
+    log.push(`Runde ${round} beginnt`);
+  }
+  state.combatState = { ...current, participants, round, turnIndex: nextIndex >= 0 ? nextIndex : 0, log: log.slice(-100) };
+  persist();
+  render();
+}
+
+function finishCombat(outcome) {
+  if (!state.combatState || state.combatState.outcome) return;
+  state.combatState = {
+    ...state.combatState,
+    isActive: false,
+    outcome,
+    log: [...state.combatState.log, `Kampf beendet · ${outcome}`].slice(-100),
+  };
+  persist();
+  render();
+}
+
+function setFinaleMode(mode) {
+  const nextMode = mode === "combat" ? "combat" : "guided";
+  if (state.finaleMode === nextMode) return;
+  state.finaleMode = nextMode;
+  clearFinaleRolls();
+  resetFinaleProgress();
+  state.combatState = null;
+  state.guidedIndexes.S07 = Math.min(currentGuideIndex("S07"), Math.max(0, guideStepsFor("S07").length - 1));
+  persist();
+  render();
+}
+
 function pushGuidePosition() {
   state.guideHistory.push({ sceneID: state.currentSceneId, stepIndex: currentGuideIndex(state.currentSceneId) });
 }
@@ -421,8 +639,9 @@ function advanceGuideStep() {
   const steps = guideStepsFor(state.currentSceneId);
   const step = currentGuideStep(state.currentSceneId);
   if (step?.id === "S01_DISTRIBUTE" && !distributionComplete()) return false;
+  if (step?.id === "S07_COMBAT" && !state.combatState?.outcome) return false;
   if (step?.id === "S01_ITEMS") discoverItems();
-  if (step?.clueID) state.clues.add(step.clueID);
+  [step?.clueID, ...(step?.clueIDs || [])].filter(Boolean).forEach((clueID) => state.clues.add(clueID));
   pushGuidePosition();
   state.guidedIndexes[state.currentSceneId] = Math.min(currentGuideIndex(state.currentSceneId) + 1, Math.max(0, steps.length - 1));
   state.rollOpen = false;
@@ -446,6 +665,8 @@ function resetDependentPath(destination) {
   if (index < order.indexOf("S07")) {
     state.endingID = "";
     resetFinaleProgress();
+    state.combatState = null;
+    state.finaleMode = "guided";
   }
 }
 
@@ -467,6 +688,39 @@ function goBackInGuide() {
   document.querySelector("#scene-content").focus();
 }
 
+function clearDetailNavigation() {
+  state.detail = null;
+  state.detailStack = [];
+  state.detailReturnView = state.view === "detail" ? (state.gmMode ? "guided" : "scene") : state.view;
+}
+
+function openDetail(kind, id) {
+  const item = kind === "handout" ? handoutById(id) : clueById(id);
+  if (!item) return;
+  if (state.view === "detail" && state.detail) {
+    state.detailStack.push(state.detail);
+  } else {
+    state.detailReturnView = state.view;
+    state.detailStack = [];
+  }
+  state.detail = { kind, id };
+  state.view = "detail";
+  render();
+  document.querySelector("#scene-content")?.focus();
+}
+
+function closeDetail() {
+  if (state.detailStack.length) {
+    state.detail = state.detailStack.pop();
+  } else {
+    state.detail = null;
+    state.view = state.detailReturnView || (state.gmMode ? "guided" : "scene");
+    state.detailReturnView = "home";
+  }
+  render();
+  document.querySelector("#scene-content")?.focus();
+}
+
 function guideReference(id) {
   if (!id) return "";
   const handout = handoutById(id);
@@ -478,10 +732,74 @@ function guideReference(id) {
   return id;
 }
 
+function guideReferenceMarkup(id) {
+  const label = escapeHtml(guideReference(id));
+  if (handoutById(id)) return `<button class="guide-reference" data-open-handout="${escapeHtml(id)}" type="button">${label}<span aria-hidden="true">›</span></button>`;
+  if (clueById(id)) return `<button class="guide-reference" data-open-clue="${escapeHtml(id)}" type="button">${label}<span aria-hidden="true">›</span></button>`;
+  return `<span class="guide-reference">${label}</span>`;
+}
+
 function guideReferences(step) {
-  const ids = [...new Set([step.handoutID, ...(step.handoutIDs || []), step.clueID, step.npcID, ...(step.npcIDs || [])].filter(Boolean))];
+  const ids = [...new Set([
+    step.handoutID,
+    ...(step.handoutIDs || []),
+    step.clueID,
+    ...(step.clueIDs || []),
+    step.npcID,
+    ...(step.npcIDs || []),
+  ].filter(Boolean))];
   if (!ids.length) return "";
-  return `<div class="guide-references"><span class="eyebrow">Direkt griffbereit</span><div>${ids.map((id) => `<span class="guide-reference">${escapeHtml(guideReference(id))}</span>`).join("")}</div></div>`;
+  return `<div class="guide-references"><span class="eyebrow">Direkt griffbereit</span><div>${ids.map(guideReferenceMarkup).join("")}</div></div>`;
+}
+
+function renderDetailBackButton() {
+  return `<button class="button button-quiet detail-back" data-action="detail-back" type="button"><span aria-hidden="true">←</span> Zurück</button>`;
+}
+
+function renderHandoutDetail(handout) {
+  const locked = Boolean(handout.spoiler && !state.spoilersOpen);
+  const linkedClues = (handout.linkedClueIds || []).map(clueById).filter(Boolean);
+  const preview = !locked && handout.previewAsset
+    ? `<figure class="detail-preview"><img src="./assets/materials/handouts/${encodeURIComponent(handout.previewAsset)}" alt="Vorschau: ${escapeHtml(handout.title)}" loading="eager"><figcaption>Spieleransicht · ${escapeHtml(handout.format)}</figcaption></figure>`
+    : "";
+  const linkedCluesMarkup = !locked && linkedClues.length
+    ? `<section class="detail-panel" aria-labelledby="detail-linked-clues"><div class="section-heading"><div><h2 id="detail-linked-clues">Verknüpfte Hinweise</h2><p>Diese Informationen gehören zu diesem Handout.</p></div><span>${linkedClues.length}</span></div><div class="detail-link-list">${linkedClues.map((clue) => `<button class="detail-link" data-open-clue="${escapeHtml(clue.id)}" type="button"><span><strong>${escapeHtml(clue.id)} · ${escapeHtml(clue.title)}</strong><small>${state.clues.has(clue.id) ? "als gefunden markiert" : "noch nicht markiert"}</small></span><span aria-hidden="true">›</span></button>`).join("")}</div></section>`
+    : "";
+  return `<div class="detail-view handout-detail">
+    ${renderDetailBackButton()}
+    <section class="detail-heading" aria-labelledby="detail-title">
+      <div class="detail-heading-meta"><span class="eyebrow">${handout.spoiler ? "SL-SPOILER" : "SPIELERHANDOUT"}</span><span>${escapeHtml(handout.id)}</span></div>
+      <h1 id="detail-title">${escapeHtml(handout.title)}</h1>
+      <p>${escapeHtml(handout.format)}</p>
+    </section>
+    ${locked ? `<section class="detail-locked" aria-live="polite"><strong>Dieses Handout bleibt bis zum Spoiler-Schalter verborgen.</strong><p>Öffne zuerst „Spoiler zeigen“, wenn du den Inhalt für die Spielleitung brauchst.</p><button class="button button-quiet" data-action="spoilers" type="button">Spoiler zeigen</button></section>` : `${preview}<section class="detail-panel" aria-labelledby="detail-fallback-title"><div class="section-heading"><div><h2 id="detail-fallback-title">Papier-Fallback</h2><p>Wenn das gedruckte Stück fehlt, gib genau diese Information weiter.</p></div></div><p class="detail-copy">${escapeHtml(handout.fallback)}</p>${handout.asset ? `<small class="detail-meta">Druckreferenz: ${escapeHtml(handout.asset)}</small>` : ""}</section>`}
+    ${linkedCluesMarkup}
+  </div>`;
+}
+
+function renderClueDetail(clue) {
+  const handout = clue.handoutId ? handoutById(clue.handoutId) : null;
+  const fact = clue.factId ? state.manifest.facts.find((entry) => entry.id === clue.factId) : null;
+  const found = state.clues.has(clue.id);
+  return `<div class="detail-view clue-detail">
+    ${renderDetailBackButton()}
+    <section class="detail-heading" aria-labelledby="detail-title">
+      <div class="detail-heading-meta"><span class="eyebrow">HINWEIS${clue.required ? " · PFLICHT" : ""}</span><span>${escapeHtml(clue.id)}</span></div>
+      <h1 id="detail-title">${escapeHtml(clue.title)}</h1>
+      <p>${found ? "Dieser Hinweis ist am Tisch bereits als gefunden markiert." : "Prüfe den Hinweis am Tisch und markiere ihn erst danach als gefunden."}</p>
+    </section>
+    <section class="detail-panel" aria-labelledby="clue-detail-title"><div class="section-heading"><div><h2 id="clue-detail-title">Was die Gruppe erfährt</h2><p>Diese Formulierung bleibt spielbar und eindeutig.</p></div></div><p class="detail-copy">${escapeHtml(clue.details)}</p><button class="button ${found ? "button-quiet" : "button-primary"} detail-toggle" data-clue="${escapeHtml(clue.id)}" type="button" aria-pressed="${found}">${found ? "Als offen markieren" : "Als gefunden markieren"}</button></section>
+    ${handout ? `<section class="detail-panel" aria-labelledby="clue-handout-title"><div class="section-heading"><div><h2 id="clue-handout-title">Dazugehöriges Handout</h2><p>Öffne das Material, ohne den Fortschritt zu verlassen.</p></div></div><button class="detail-link" data-open-handout="${escapeHtml(handout.id)}" type="button"><span><strong>${escapeHtml(handout.id)} · ${escapeHtml(handout.title)}</strong><small>${escapeHtml(handout.format)}</small></span><span aria-hidden="true">›</span></button></section>` : ""}
+    ${fact ? `<section class="detail-panel" aria-labelledby="clue-fact-title"><div class="section-heading"><div><h2 id="clue-fact-title">Akte</h2><p>Diese Schlussfolgerung wird mit den verknüpften Hinweisen bestätigt.</p></div></div><p class="detail-copy">${escapeHtml(fact.title)}</p></section>` : ""}
+  </div>`;
+}
+
+function renderDetailView() {
+  const detail = state.detail;
+  if (!detail) return `<div class="detail-view"><p class="quiet-copy">Keine Detailansicht geöffnet.</p>${renderDetailBackButton()}</div>`;
+  const item = detail.kind === "handout" ? handoutById(detail.id) : clueById(detail.id);
+  if (!item) return `<div class="detail-view"><p class="quiet-copy">Dieses Material ist nicht mehr verfügbar.</p>${renderDetailBackButton()}</div>`;
+  return detail.kind === "handout" ? renderHandoutDetail(item) : renderClueDetail(item);
 }
 
 function itemOwnerSelect(item, label = "Besitz") {
@@ -589,6 +907,50 @@ function renderFinaleProgress() {
   return `<div class="roll-finale"><div><strong>Geführte Gefahrenszene</strong><b>${state.finaleSuccesses} : ${state.finaleFailures}</b></div><progress max="2" value="${state.finaleSuccesses}"></progress><small>${escapeHtml(status)}</small></div>`;
 }
 
+function renderGuideState() {
+  const track = (key, label, maximum, value) => `<label class="guide-state-control"><span>${label} <b>${value}/${maximum}</b></span><input data-state="${key}" type="range" min="0" max="${maximum}" step="1" value="${value}" aria-label="${label}"></label>`;
+  return `<section class="guide-state-panel" aria-label="Lage im Blick"><div class="section-heading"><h3>Lage im Blick</h3><span>wird mit Konsequenzen geführt</span></div><div class="guide-state-grid">${track("time", "Zeit", 5, state.time)}${track("warmth", "Wärme", 5, state.warmth)}${track("trust", "Vertrauen", 5, state.trust)}${track("injuries", "Verletzungen", 3, state.injuries)}</div></section>`;
+}
+
+function renderFinaleModePicker() {
+  return `<div class="finale-mode-picker"><span class="eyebrow">FINALE-MODUS</span><div class="finale-mode-options"><button class="mode-option ${state.finaleMode === "guided" ? "is-selected" : ""}" data-guide-action="finale-mode" data-mode="guided" type="button" aria-pressed="${state.finaleMode === "guided"}"><strong>Geführte Gefahrenszene</strong><small>Zwei Erfolge vor zwei Fehlschlägen.</small></button><button class="mode-option ${state.finaleMode === "combat" ? "is-selected" : ""}" data-guide-action="finale-mode" data-mode="combat" type="button" aria-pressed="${state.finaleMode === "combat"}"><strong>Voller Kampf</strong><small>Initiative, LP, Angriff und Parade am Tisch.</small></button></div></div>`;
+}
+
+function renderGuideNPCs(step) {
+  const ids = [...new Set([step.npcID, ...(step.npcIDs || [])].filter(Boolean))];
+  if (!ids.length) return "";
+  const entries = ids.map((id) => {
+    const npc = npcById(id);
+    if (!npc) return "";
+    const appearance = npc.appearances?.find((entry) => entry.sceneId === step.sceneID);
+    if (!appearance) return "";
+    return `<article class="guide-npc-entry"><div class="guide-npc-heading"><strong>${escapeHtml(npc.name)}</strong><span>${escapeHtml(npc.role)}</span></div><p><b>AUFTRITT</b> ${escapeHtml(appearance.when)}</p><p><b>SO SPIELEN</b> ${escapeHtml(appearance.playAs)}</p><blockquote>„${escapeHtml(appearance.openingLine)}“</blockquote><p><b>DANACH</b> ${escapeHtml(appearance.turn)}</p></article>`;
+  }).filter(Boolean).join("");
+  return entries ? `<section class="guide-npcs"><div class="section-heading"><h3>Jetzt relevante NPCs</h3><span>nur dieser Schritt</span></div>${entries}</section>` : "";
+}
+
+function combatStatusLabel(participant) {
+  if (participant.currentLP <= 0) return "ausgeschaltet";
+  if (participant.currentLP < 10) return "bewusstlos";
+  if (participant.currentLP < participant.maxLP / 2) return "angeschlagen";
+  return "handlungsfähig";
+}
+
+function renderCombatTracker() {
+  const combat = ensureCombat();
+  if (!combat) return `<div class="combat-empty">Keine Kampfkonfiguration geladen.</div>`;
+  const currentID = combat.participants[combat.turnIndex]?.id;
+  const participants = combat.participants.map((participant) => `<article class="combat-participant ${participant.id === currentID ? "is-current" : ""} ${participant.currentLP <= 0 ? "is-defeated" : ""}">
+    <div class="combat-participant-heading"><strong>${escapeHtml(participant.name)}</strong><span>${participant.kind === "enemy" ? "Gegner" : "Spielerfigur"}</span><b>${escapeHtml(combatStatusLabel(participant))}</b></div>
+    <div class="combat-fields"><label>LP<input data-combat-field="currentLP" data-combat-id="${escapeHtml(participant.id)}" type="number" min="0" max="${participant.maxLP}" value="${participant.currentLP}"></label><label>Initiative<input data-combat-field="initiative" data-combat-id="${escapeHtml(participant.id)}" type="number" min="0" max="30" value="${participant.initiative}"></label><label>Geistesblitze<input data-combat-field="geistesblitze" data-combat-id="${escapeHtml(participant.id)}" type="number" min="0" max="9" value="${participant.geistesblitze}"></label>${participant.kind === "player" ? `<label>Patronen<input data-combat-field="ammunition" data-combat-id="${escapeHtml(participant.id)}" type="number" min="0" max="12" value="${participant.ammunition}"></label>` : ""}</div>
+    <div class="combat-participant-actions"><button class="button button-quiet" data-combat-action="log-attack" data-combat-id="${escapeHtml(participant.id)}" type="button">Angriff notieren</button>${participant.parryable ? `<button class="button button-quiet" data-combat-action="log-parry" data-combat-id="${escapeHtml(participant.id)}" type="button">Parade</button>` : ""}${participant.kind === "player" && participant.ammunition > 0 ? `<button class="button button-quiet" data-combat-action="spend-ammo" data-combat-id="${escapeHtml(participant.id)}" type="button">Schuss abstreichen</button>` : ""}</div>
+  </article>`).join("");
+  const outcome = combat.outcome
+    ? `<div class="combat-outcome ${combat.outcome === "victory" ? "is-victory" : "is-defeat"}"><strong>${combat.outcome === "victory" ? "Sieg bestätigt" : "Niederlage bestätigt"}</strong>${state.endingID && state.manifest.guide.combat?.victoryByEnding?.[state.endingID] ? `<p>${escapeHtml(state.manifest.guide.combat.victoryByEnding[state.endingID])}</p>` : ""}<small>Schließe den Tracker und bestätige danach den Schritt „Zum Nachhall“.</small></div>`
+    : `<div class="combat-result-actions"><button class="button button-primary" data-combat-action="finish" data-outcome="victory" type="button">Sieg bestätigen</button><button class="button button-quiet" data-combat-action="finish" data-outcome="defeat" type="button">Niederlage bestätigen</button></div>`;
+  return `<div class="combat-tracker"><div class="combat-toolbar"><span class="eyebrow">RUNDE ${combat.round}</span><span>Am Zug: <b>${escapeHtml(combat.participants[combat.turnIndex]?.name || "—")}</b></span><button class="button button-quiet" data-combat-action="sort" type="button">Initiative sortieren</button><button class="button button-primary" data-combat-action="next" type="button" ${combat.isActive ? "" : "disabled"}>Nächster Zug</button></div><div class="combat-participants">${participants}</div><div class="combat-log"><div class="combat-log-input"><input data-combat-log type="text" placeholder="Ereignis notieren …"><button class="button button-quiet" data-combat-action="log" type="button">Eintragen</button></div>${combat.log.slice(-10).reverse().map((entry) => `<p>${escapeHtml(entry)}</p>`).join("")}</div>${outcome}</div>`;
+}
+
 function renderRulesSection() {
   const rules = state.manifest.rules || [];
   return `<section class="content-section rules-section" aria-labelledby="rules-title">
@@ -603,31 +965,39 @@ function renderGuideStep(step) {
   const index = currentGuideIndex(state.currentSceneId);
   const steps = guideStepsFor(state.currentSceneId);
   const cue = step.audioCueID ? cueById(step.audioCueID) : null;
-  const options = step.options || [];
+  const allOptions = step.options || [];
+  const options = allOptions.filter(optionAvailable);
   let action = "";
-  if (step.roll) action = renderRollPanel(step);
-  else if (options.length) action = `<div class="guide-options">${options.map((option) => `<button class="guide-option" data-guide-option="${option.id}" data-destination="${option.destinationSceneID || ""}" data-ending="${option.endingID || ""}" type="button"><strong>${escapeHtml(option.title)}</strong><small>${escapeHtml(option.detail)}</small><span aria-hidden="true">›</span></button>`).join("")}</div>`;
+  if (step.id === "S07_COMBAT") action = `${renderCombatTracker()}${state.combatState?.outcome ? `<button class="button button-primary guide-action" data-guide-action="advance" type="button">Zum Nachhall weiter<span aria-hidden="true">›</span></button>` : ""}`;
+  else if (step.roll) action = renderRollPanel(step);
+  else if (allOptions.length) action = options.length ? `<div class="guide-options">${options.map((option) => `<button class="guide-option" data-guide-option="${option.id}" data-destination="${option.destinationSceneID || ""}" data-ending="${option.endingID || ""}" type="button"><strong>${escapeHtml(option.title)}</strong><small>${escapeHtml(option.detail)}</small><span aria-hidden="true">›</span></button>`).join("")}</div>` : `<p class="guide-locked-option">Noch keine Option freigeschaltet. Schließe zuerst die erforderlichen Ermittlungsorte ab.</p>`;
   else if (step.kind === "readAloud") action = `<button class="button button-primary guide-action" data-guide-action="read" data-cue="${cue?.id || ""}" type="button">${cue ? "Sound vorbereiten und vorlesen" : "Vorgelesen – weiter"}<span aria-hidden="true">›</span></button>`;
   else if (step.kind === "itemDistribution") action = `<button class="button button-primary guide-action" data-guide-action="advance" type="button" ${distributionComplete() ? "" : "disabled"}>${escapeHtml(step.actionLabel || "Verteilung abschließen")}<span aria-hidden="true">›</span></button>`;
+  else if (step.kind === "clue" && [step.handoutID, ...(step.handoutIDs || [])].filter(Boolean).length) {
+    const handoutIDs = [...new Set([step.handoutID, ...(step.handoutIDs || [])].filter(Boolean))];
+    action = `<div class="guide-action-stack">${handoutIDs.map((id) => `<button class="button button-primary guide-action" data-open-handout="${escapeHtml(id)}" type="button">${escapeHtml(step.actionLabel || `${id} zeigen`)}<span aria-hidden="true">↗</span></button>`).join("")}<button class="button button-quiet guide-action" data-guide-action="advance" type="button">Handout gezeigt · weiter<span aria-hidden="true">›</span></button></div>`;
+  }
   else action = `<button class="button button-primary guide-action" data-guide-action="advance" type="button">${escapeHtml(step.actionLabel || "Weiter")}<span aria-hidden="true">›</span></button>`;
-  const clueLine = step.clueID ? `<div class="guide-clue-note"><span>HINWEIS</span> Dieser Hinweis ist garantiert und darf nicht an einem Würfelwurf scheitern.</div>` : "";
+  const clueLine = [step.clueID, ...(step.clueIDs || [])].filter(Boolean).length ? `<div class="guide-clue-note"><span>HINWEIS</span> Dieser Hinweis ist garantiert und darf nicht an einem Würfelwurf scheitern.</div>` : "";
   const itemPanel = step.kind === "itemSearch" ? renderItemFindings() : step.kind === "itemDistribution" ? renderItemDistribution() : "";
   return `<div class="guided-scene-view">
     <div class="guide-progress-row"><span>SCHRITT ${index + 1} VON ${steps.length}</span><b>${escapeHtml(scene.shortTitle)}</b></div>
     <div class="guide-progress-track"><i style="width:${((index + 1) / Math.max(1, steps.length)) * 100}%"></i></div>
     <section class="guide-scene-hero" style="--scene-art: url('./assets/art/${encodeURIComponent(scene.art)}')"><div><span>${escapeHtml(scene.id)} · ${escapeHtml(scene.duration)}</span><h2>${escapeHtml(scene.title)}</h2><p>${escapeHtml(scene.goal)}</p></div></section>
+    ${renderGuideState()}
     <section class="guide-step-card kind-${step.kind}">
       <div class="guide-kind"><span>${escapeHtml(guideKindLabels[step.kind] || "SPIELLEITER-SCHRITT")}</span>${step.roll?.required ? "<b>PFLICHT</b>" : ""}</div>
       <h2>${escapeHtml(step.title)}</h2>
       <p class="guide-step-body">${escapeHtml(step.body)}</p>
+      ${step.id === "S07_GM" ? renderFinaleModePicker() : ""}
       ${step.roll ? `<div class="roll-brief"><span class="eyebrow">WANN WIRD GEWÜRFELT?</span><strong>${escapeHtml(step.roll.actor)}</strong><p>${escapeHtml(step.roll.ability)} · ${escapeHtml(step.roll.target)}</p><small>${escapeHtml(step.roll.modifier)}</small></div>` : ""}
       ${step.id === "S07_DANGER" ? renderFinaleProgress() : ""}
-      ${clueLine}${itemPanel}${guideReferences(step)}
+      ${clueLine}${itemPanel}${renderGuideNPCs(step)}${guideReferences(step)}
       ${action}
     </section>
     <div class="guide-footer">
       <button class="button button-quiet" data-guide-action="back" type="button"><span aria-hidden="true">←</span> ${state.guideHistory.length ? "Zurück" : "Übersicht"}</button>
-      <span>${options.length ? "Wähle oben den nächsten Schritt." : "Der nächste Schritt bleibt unten sichtbar."}</span>
+      <span>${allOptions.length ? "Wähle oben den nächsten Schritt." : "Der nächste Schritt bleibt unten sichtbar."}</span>
     </div>
     <div class="guide-quick-actions"><button class="quick-action" data-action="materials" type="button">▱ Materialien</button><button class="quick-action" data-action="inventory" type="button">□ Ausrüstung</button><button class="quick-action" data-action="rules" type="button">▧ Regeln</button><button class="quick-action" data-action="audio-check" type="button">≋ Soundplan</button><button class="quick-action" data-action="dossier" type="button">⌕ Fakten</button></div>
     <section class="guide-table-note"><div><span class="eyebrow">TISCHNOTIZ</span><p>Was ist gerade passiert? Was bleibt offen?</p></div><textarea data-scene-note="${scene.id}" rows="3" placeholder="Kurz notieren …">${escapeHtml(state.sceneNotes[scene.id] || "")}</textarea></section>
@@ -683,8 +1053,9 @@ function renderHome(scene) {
       <div class="home-section-heading"><h2 id="home-scenes-title">Szenen</h2><span>${scenes.length} Abschnitte</span></div>
       <div class="home-scene-list">${scenes.map((item) => {
         const complete = state.completed.has(item.id);
-        const gmJump = item.id !== "S01" && !complete;
-        return `<button class="home-scene-row ${item.id === scene.id ? "is-current" : ""}" data-scene="${item.id}" type="button"><span class="home-scene-id">${item.id}</span><span class="home-scene-copy"><strong>${escapeHtml(item.title)}</strong><small class="${gmJump ? "is-warning" : ""}">${escapeHtml(item.duration)} · ${complete ? "abgeschlossen" : gmJump ? "GM-Sprung" : "empfohlen"}</small></span><span class="home-chevron" aria-hidden="true">›</span></button>`;
+        const available = canEnterScene(item.id);
+        const gmJump = available && item.id !== "S01" && !complete;
+        return `<button class="home-scene-row ${item.id === scene.id ? "is-current" : ""} ${available ? "" : "is-locked"}" data-scene="${item.id}" type="button" ${available ? "" : "disabled"}><span class="home-scene-id">${item.id}</span><span class="home-scene-copy"><strong>${escapeHtml(item.title)}</strong><small class="${gmJump ? "is-warning" : ""}">${escapeHtml(item.duration)} · ${complete ? "abgeschlossen" : available ? (gmJump ? "bereit" : "empfohlen") : "gesperrt"}</small></span><span class="home-chevron" aria-hidden="true">${available ? "›" : "🔒"}</span></button>`;
       }).join("")}</div>
     </section>
 
@@ -724,11 +1095,18 @@ function render() {
     app.innerHTML = renderGuidedScene(scene);
     return;
   }
+  if (state.view === "detail") {
+    renderFrame("detail", scene);
+    app.innerHTML = renderDetailView();
+    return;
+  }
   const soundboard = cues.length ? `
     <section class="soundboard" aria-labelledby="soundboard-title">
       <div class="section-heading soundboard-heading"><div><h2 id="soundboard-title">Soundboard</h2><p>Preset für die Stimmung. Effekte bleiben bewusst einzeln.</p></div><button class="button button-primary" data-action="preset" type="button">Szene starten</button></div>
       <div class="audio-mix" aria-label="Lautstärken">
         ${[["master", "Gesamt"], ["ambient", "Atmosphäre"], ["music", "Musik"], ["sfx", "Effekte"]].map(([key, label]) => `<label>${label}<input data-volume="${key}" type="range" min="0" max="1" step="0.01" value="${audio.settings[key]}"></label>`).join("")}
+        <label class="audio-toggle"><input data-audio-safety type="checkbox" ${audio.safetyMode ? "checked" : ""}> Sicherheitslautstärke</label>
+        <label class="audio-toggle"><input data-audio-duck type="checkbox" ${audio.readAloudDuck ? "checked" : ""}> Musik beim Vorlesen absenken</label>
       </div>
       <div class="cue-list">${cues.map(renderCue).join("")}</div>
     </section>` : `
@@ -778,7 +1156,7 @@ function render() {
 
       <section class="content-section clue-section">
         <div class="section-heading"><h2>Hinweise</h2><span class="counter">${clues.filter((clue) => state.clues.has(clue.id)).length} / ${clues.length}</span></div>
-        ${clues.length ? clues.map((clue) => `<button class="check-row" data-clue="${clue.id}" type="button" aria-pressed="${state.clues.has(clue.id)}"><span class="checkmark">${state.clues.has(clue.id) ? "✓" : ""}</span><span><strong>${escapeHtml(clue.title)}</strong><small>${escapeHtml(clue.details)}</small></span>${clue.required ? `<em>PFLICHT</em>` : ""}</button>`).join("") : `<p class="quiet-copy">Keine Pflicht-Hinweise. Lass die Erscheinung auf die Gruppe reagieren.</p>`}
+        ${clues.length ? clues.map((clue) => { const found = state.clues.has(clue.id); return `<div class="clue-row"><button class="check-row" data-open-clue="${escapeHtml(clue.id)}" type="button" aria-label="Hinweis ${escapeHtml(clue.id)} · ${escapeHtml(clue.title)} öffnen"><span class="checkmark">${found ? "✓" : ""}</span><span><strong>${escapeHtml(clue.title)}</strong><small>${escapeHtml(clue.details)}</small></span>${clue.required ? `<em>PFLICHT</em>` : ""}<span class="check-row-chevron" aria-hidden="true">›</span></button><button class="clue-toggle" data-clue="${escapeHtml(clue.id)}" type="button" aria-pressed="${found}" title="${found ? "Hinweis als offen markieren" : "Hinweis als gefunden markieren"}"><span class="checkmark">${found ? "✓" : ""}</span><span class="visually-hidden">${found ? "Als offen markieren" : "Als gefunden markieren"}</span></button></div>`; }).join("") : `<p class="quiet-copy">Keine Pflicht-Hinweise. Lass die Erscheinung auf die Gruppe reagieren.</p>`}
       </section>
     </div>
 
@@ -799,7 +1177,7 @@ function render() {
     <div class="content-grid lower-grid">
       <section class="content-section handout-section">
         <div class="section-heading"><h2>Handouts</h2><span>Ausgabe am Tisch</span></div>
-        <div class="handout-list">${handouts.map((handout) => `<div class="handout-row ${handout.spoiler && !state.spoilersOpen ? "is-locked" : ""}"><span>${handout.spoiler && !state.spoilersOpen ? "🔒" : "▤"}</span><div><strong>${handout.id} · ${escapeHtml(handout.title)}</strong><small>${handout.spoiler && !state.spoilersOpen ? "SL-Spoiler. Erst im Leitstand öffnen." : `${handout.format} · ${escapeHtml(handout.fallback)}`}</small></div></div>`).join("")}</div>
+        <div class="handout-list">${handouts.map((handout) => { const locked = handout.spoiler && !state.spoilersOpen; return `<button class="handout-row ${locked ? "is-locked" : ""}" data-open-handout="${escapeHtml(handout.id)}" type="button" aria-label="${locked ? "Gesperrtes Handout" : "Handout"} ${escapeHtml(handout.id)} öffnen"><span>${locked ? "🔒" : "▤"}</span><div><strong>${escapeHtml(handout.id)} · ${escapeHtml(handout.title)}</strong><small>${locked ? "SL-Spoiler. Erst im Leitstand öffnen." : `${escapeHtml(handout.format)} · ${escapeHtml(handout.fallback)}`}</small></div><span class="handout-chevron" aria-hidden="true">›</span></button>`; }).join("")}</div>
       </section>
       <section class="content-section stuck-section">
         <div class="section-heading"><h2>Wenn sie feststecken</h2><span>Gib nur einen Impuls</span></div>
@@ -827,7 +1205,14 @@ function render() {
 document.addEventListener("click", async (event) => {
   const sceneButton = event.target.closest("[data-scene]");
   if (sceneButton) {
-    state.currentSceneId = sceneButton.dataset.scene;
+    const destination = sceneButton.dataset.scene;
+    if (!canEnterScene(destination)) {
+      audioStatus.textContent = "Diese Szene ist noch gesperrt. Schließe zuerst die vorherigen Abschnitte ab.";
+      audioStatus.dataset.tone = "warning";
+      return;
+    }
+    clearDetailNavigation();
+    state.currentSceneId = destination;
     state.view = state.gmMode ? "guided" : "scene";
     state.rollOpen = false;
     state.pendingRoll = null;
@@ -849,6 +1234,16 @@ document.addEventListener("click", async (event) => {
   }
   const cueButton = event.target.closest("[data-cue-play]");
   if (cueButton) return audio.play(cueById(cueButton.dataset.cuePlay));
+  const handoutButton = event.target.closest("[data-open-handout]");
+  if (handoutButton) {
+    openDetail("handout", handoutButton.dataset.openHandout);
+    return;
+  }
+  const clueDetailButton = event.target.closest("[data-open-clue]");
+  if (clueDetailButton) {
+    openDetail("clue", clueDetailButton.dataset.openClue);
+    return;
+  }
   const clueButton = event.target.closest("[data-clue]");
   if (clueButton) return toggleSet(state.clues, clueButton.dataset.clue);
   const checklistButton = event.target.closest("[data-check]");
@@ -874,6 +1269,7 @@ document.addEventListener("click", async (event) => {
       audioStatus.dataset.tone = "warning";
       return;
     }
+    clearDetailNavigation();
     state.gmMode = true;
     state.completed.clear();
     state.clues.clear();
@@ -892,6 +1288,8 @@ document.addEventListener("click", async (event) => {
     state.finaleSuccesses = 0;
     state.finaleFailures = 0;
     state.finaleOutcome = "";
+    state.finaleMode = "guided";
+    state.combatState = null;
     state.endingID = "";
     resetItemState();
     state.view = "guided";
@@ -904,6 +1302,10 @@ document.addEventListener("click", async (event) => {
     document.querySelector("#scene-content").focus();
     return;
   }
+  if (guideAction === "finale-mode") {
+    setFinaleMode(event.target.closest("[data-mode]")?.dataset.mode || "guided");
+    return;
+  }
   if (guideAction === "back") {
     goBackInGuide();
     return;
@@ -912,6 +1314,7 @@ document.addEventListener("click", async (event) => {
     if (currentGuideStep(state.currentSceneId)?.id === "S08_NEXT") {
       state.completed.add("S08");
       state.gmMode = false;
+      clearDetailNavigation();
       state.view = "home";
       persist();
       render();
@@ -1009,14 +1412,26 @@ document.addEventListener("click", async (event) => {
   }
   const guideOption = event.target.closest("[data-guide-option]");
   if (guideOption) {
+    const option = (currentGuideStep(state.currentSceneId)?.options || []).find((candidate) => candidate.id === guideOption.dataset.guideOption);
+    if (!option || !optionAvailable(option)) {
+      audioStatus.textContent = "Diese Option ist noch nicht freigeschaltet.";
+      audioStatus.dataset.tone = "warning";
+      return;
+    }
     const destination = guideOption.dataset.destination;
     const ending = guideOption.dataset.ending;
     if (ending) {
       state.endingID = ending;
       clearFinaleRolls();
       resetFinaleProgress();
+      if (state.combatState && state.combatState.endingID !== ending) state.combatState = null;
     }
     if (destination) {
+      if (!canEnterScene(destination, true)) {
+        audioStatus.textContent = "Dieser Abschnitt bleibt gesperrt, bis alle erforderlichen Ermittlungsorte abgeschlossen sind.";
+        audioStatus.dataset.tone = "warning";
+        return;
+      }
       const currentScene = state.currentSceneId;
       const needsConfirmation = state.completed.has(destination);
       if (needsConfirmation && !window.confirm("Gefundene Hinweise und Tischnotizen bleiben erhalten. Spätere Szenen werden ab dem neuen Ziel zurückgesetzt. Pfad neu setzen?")) return;
@@ -1037,12 +1452,58 @@ document.addEventListener("click", async (event) => {
     render();
     return;
   }
+  const combatAction = event.target.closest("[data-combat-action]");
+  if (combatAction) {
+    const actionName = combatAction.dataset.combatAction;
+    const participantID = combatAction.dataset.combatId;
+    if (actionName === "sort") sortCombatByInitiative();
+    if (actionName === "next") nextCombatTurn();
+    if (actionName === "finish") finishCombat(combatAction.dataset.outcome === "victory" ? "victory" : "defeat");
+    if (actionName === "spend-ammo" && participantID) {
+      const participant = combatParticipant(participantID);
+      if (participant && participant.ammunition > 0) {
+        updateCombatParticipant(participantID, (next) => { next.ammunition -= 1; });
+        if (state.combatState) {
+          state.combatState = { ...state.combatState, log: [...state.combatState.log, `${participant.name} verwendet eine Revolverpatrone.`].slice(-100) };
+          persist();
+          render();
+        }
+      }
+    }
+    if (actionName === "log-attack" && participantID) {
+      const participant = combatParticipant(participantID);
+      if (participant && state.combatState) {
+        state.combatState = { ...state.combatState, log: [...state.combatState.log, `${participant.name} greift an · ${participant.attackSkill} · Schaden ${participant.damageDice}`].slice(-100) };
+        persist();
+        render();
+      }
+    }
+    if (actionName === "log-parry" && participantID) {
+      const participant = combatParticipant(participantID);
+      if (participant && state.combatState) {
+        state.combatState = { ...state.combatState, log: [...state.combatState.log, `${participant.name} pariert mit Handeln.`].slice(-100) };
+        persist();
+        render();
+      }
+    }
+    if (actionName === "log") {
+      const input = document.querySelector("[data-combat-log]");
+      const message = input?.value?.trim();
+      if (message && state.combatState) {
+        state.combatState = { ...state.combatState, log: [...state.combatState.log, message].slice(-100) };
+        persist();
+        render();
+      }
+    }
+    return;
+  }
   const setupButton = event.target.closest("[data-setup]");
   if (setupButton) {
     toggleSet(state.setupChecks, setupButton.dataset.setup);
     return;
   }
   if (action === "home") {
+    clearDetailNavigation();
     state.view = "home";
     state.rollOpen = false;
     state.pendingRoll = null;
@@ -1056,6 +1517,10 @@ document.addEventListener("click", async (event) => {
     goBackInGuide();
     return;
   }
+  if (action === "detail-back") {
+    closeDetail();
+    return;
+  }
   if (action === "menu") {
     const isOpen = topbarMenu.getAttribute("aria-expanded") === "true";
     topbarMenu.setAttribute("aria-expanded", String(!isOpen));
@@ -1063,6 +1528,7 @@ document.addEventListener("click", async (event) => {
     return;
   }
   if (action === "start" || action === "continue") {
+    clearDetailNavigation();
     state.view = action === "start" ? "gm-start" : state.gmMode ? "guided" : "scene";
     state.rollOpen = false;
     state.pendingRoll = null;
@@ -1138,6 +1604,26 @@ document.addEventListener("click", async (event) => {
 });
 
 document.addEventListener("change", (event) => {
+  if (event.target.matches("[data-audio-safety]")) {
+    audio.setSafetyMode(event.target.checked);
+    return;
+  }
+  if (event.target.matches("[data-audio-duck]")) {
+    audio.setReadAloudDuck(event.target.checked);
+    return;
+  }
+  if (event.target.matches("[data-combat-field]")) {
+    const id = event.target.dataset.combatId;
+    const field = event.target.dataset.combatField;
+    const value = field === "name" ? event.target.value : Number(event.target.value);
+    if (id && field) {
+      updateCombatParticipant(id, (participant) => {
+        if (field === "name") participant.name = String(value).trim() || participant.name;
+        else participant[field] = Number.isFinite(value) ? value : 0;
+      });
+    }
+    return;
+  }
   if (event.target.matches("[data-item-owner]")) {
     const itemID = event.target.dataset.itemOwner;
     if (event.target.value === "") delete state.itemOwners[itemID];
@@ -1175,6 +1661,15 @@ document.addEventListener("input", (event) => {
     persist();
     render();
   }
+  if (event.target.matches("[data-state]")) {
+    const key = event.target.dataset.state;
+    const maximum = key === "injuries" ? 3 : 5;
+    if (["time", "warmth", "trust", "injuries"].includes(key)) {
+      state[key] = normalizedTrack(event.target.value, maximum);
+      persist();
+      render();
+    }
+  }
   if (event.target.matches("[data-npc-state]")) {
     state.npcStates[event.target.dataset.npcState] = Number(event.target.value);
     persist();
@@ -1185,7 +1680,39 @@ document.querySelector("#stop-all").addEventListener("click", () => audio.stopAl
 document.querySelector("#transport-stop").addEventListener("click", () => audio.stopAll());
 document.querySelector("#audio-test").addEventListener("click", () => audio.testTone());
 document.querySelector("#reset-progress").addEventListener("click", () => {
-  state.completed.clear(); state.clues.clear(); state.checklist.clear(); state.setupChecks.clear(); state.guidedIndexes = {}; state.guideHistory = []; state.guidedRolls = {}; state.guidedRollHistory = []; state.finaleSuccesses = 0; state.finaleFailures = 0; state.finaleOutcome = ""; state.pendingRoll = null; state.selectedConsequenceID = ""; resetItemState(); state.gmMode = false; state.endingID = ""; state.currentSceneId = "S01"; state.view = "home"; persist(); render();
+  if (!window.confirm("Runde komplett zurücksetzen? Namen, Notizen und Storyfortschritt werden auf diesem Gerät gelöscht.")) return;
+  state.completed.clear();
+  state.clues.clear();
+  state.checklist.clear();
+  state.setupChecks.clear();
+  state.guidedIndexes = {};
+  state.guideHistory = [];
+  state.guidedRolls = {};
+  state.guidedRollHistory = [];
+  state.finaleSuccesses = 0;
+  state.finaleFailures = 0;
+  state.finaleOutcome = "";
+  state.finaleMode = "guided";
+  state.combatState = null;
+  state.pendingRoll = null;
+  state.selectedConsequenceID = "";
+  resetItemState();
+  state.gmMode = false;
+  state.endingID = "";
+  state.currentSceneId = "S01";
+  state.time = 0;
+  state.warmth = 3;
+  state.trust = 3;
+  state.injuries = 0;
+  state.playerNames = ["", "", ""];
+   state.sessionNote = "";
+   state.sceneNotes = {};
+   state.detail = null;
+   state.detailStack = [];
+   state.detailReturnView = "home";
+   state.view = "home";
+  persist();
+  render();
   audioStatus.textContent = "Fortschritt zurückgesetzt.";
 });
 
@@ -1195,6 +1722,7 @@ async function boot() {
     const response = await fetch("./data/manifest.json", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     state.manifest = await response.json();
+    if (state.gmMode && state.sessionSchema !== "v7") migrateActiveLegacySession();
     const hasInventoryData = ["kraehenfels.discoveredItemIDs", "kraehenfels.itemOwners", "kraehenfels.itemUseRecords"].some((key) => localStorage.getItem(key) !== null);
     if (state.gmMode && !hasInventoryData) {
       discoverItems();

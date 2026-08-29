@@ -125,6 +125,7 @@ struct MaterialsView: View {
 struct HandoutPreviewView: View {
     let handoutID: String
     @EnvironmentObject private var content: ContentStore
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ScrollView {
@@ -191,17 +192,45 @@ struct HandoutPreviewView: View {
                             }
                         }
                     }
-                    if let clue = content.manifest.clues.first(where: { $0.handoutId == handout.id }) {
+                    if !handout.linkedClueIds.isEmpty {
                         FrostCard {
                             VStack(alignment: .leading, spacing: 8) {
-                                SectionLabel(title: "Was die Spieler daraus erfahren")
-                                Text(clue.title)
-                                    .font(.headline)
-                                    .foregroundStyle(.white)
-                                Text(clue.details)
-                                    .font(.body)
+                                SectionLabel(title: "Verknüpfte Hinweise")
+                                Text("Diese Einträge zeigen, welche Spur das Handout stützt.")
+                                    .font(.caption)
                                     .foregroundStyle(FrostTheme.quiet)
                                     .fixedSize(horizontal: false, vertical: true)
+                                ForEach(handout.linkedClueIds, id: \.self) { clueID in
+                                    if let clue = content.manifest.clues.first(where: { $0.id == clueID }) {
+                                        NavigationLink(destination: ClueDetailView(clueID: clue.id)) {
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                                    Text("\(clue.id) · \(clue.title)")
+                                                        .font(.subheadline.weight(.semibold))
+                                                        .foregroundStyle(.white)
+                                                    if clue.handoutId == handout.id {
+                                                        Text("PRIMÄR")
+                                                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                                            .foregroundStyle(FrostTheme.cobalt)
+                                                    } else {
+                                                        Text("ZUSATZBELEG")
+                                                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                                            .foregroundStyle(FrostTheme.quiet)
+                                                    }
+                                                }
+                                                Text(clue.details)
+                                                    .font(.caption)
+                                                    .foregroundStyle(FrostTheme.quiet)
+                                                    .fixedSize(horizontal: false, vertical: true)
+                                            }
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                        }
+                                        .buttonStyle(.plain)
+                                        if clueID != (handout.linkedClueIds.last ?? "") {
+                                            Divider().overlay(FrostTheme.quiet.opacity(0.25))
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -224,12 +253,18 @@ struct HandoutPreviewView: View {
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle(handoutID)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Zurück", systemImage: "chevron.left") { dismiss() }
+            }
+        }
     }
 }
 
 struct ItemCardPreviewView: View {
     let item: AdventureItem
     @EnvironmentObject private var content: ContentStore
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ScrollView {
@@ -283,6 +318,11 @@ struct ItemCardPreviewView: View {
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle(item.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Zurück", systemImage: "chevron.left") { dismiss() }
+            }
+        }
     }
 
     private var locationTitle: String {
@@ -291,6 +331,7 @@ struct ItemCardPreviewView: View {
 }
 
 struct EndingCardsPreviewView: View {
+    @Environment(\.dismiss) private var dismiss
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -327,6 +368,11 @@ struct EndingCardsPreviewView: View {
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle("Endkarten")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Zurück", systemImage: "chevron.left") { dismiss() }
+            }
+        }
     }
 }
 
@@ -334,6 +380,7 @@ struct NPCDossierView: View {
     let npcID: String
     @EnvironmentObject private var content: ContentStore
     @EnvironmentObject private var session: SessionStore
+    @Environment(\.dismiss) private var dismiss
     @State private var showSpoilers = false
 
     var body: some View {
@@ -428,6 +475,11 @@ struct NPCDossierView: View {
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle("NPC")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Zurück", systemImage: "chevron.left") { dismiss() }
+            }
+        }
     }
 
     private func dossierList(title: String, items: [String], icon: String) -> some View {

@@ -3,12 +3,29 @@ export class AudioEngine {
     this.onStatus = onStatus;
     this.onChange = onChange;
     this.active = new Map();
+    const saved = this.readSettings();
     this.settings = {
       master: 0.82,
       ambient: 0.64,
       music: 0.58,
       sfx: 0.78,
+      ...saved,
     };
+    this.safetyMode = Boolean(saved.safetyMode);
+    this.readAloudDuck = false;
+  }
+
+  readSettings() {
+    try {
+      const value = JSON.parse(localStorage.getItem("kraehenfels.audioSettings") || "{}");
+      return value && typeof value === "object" ? value : {};
+    } catch {
+      return {};
+    }
+  }
+
+  saveSettings() {
+    localStorage.setItem("kraehenfels.audioSettings", JSON.stringify({ ...this.settings, safetyMode: this.safetyMode }));
   }
 
   categoryVolume(category) {
@@ -16,8 +33,11 @@ export class AudioEngine {
   }
 
   volumeFor(cue) {
-    const gain = 1 + Number(cue.gain ?? 0);
-    return Math.max(0, Math.min(1, this.settings.master * this.categoryVolume(cue.category) * gain));
+    const gain = Math.pow(10, Number(cue.gain ?? 0) / 20);
+    const safety = this.safetyMode ? 0.58 : 1;
+    const duck = this.readAloudDuck && String(cue.layer || "").startsWith("music") ? 0.3 : 1;
+    const layerVolume = cue.layer === "ambient" ? this.settings.ambient : cue.layer === "sfx" ? this.settings.sfx : this.settings.music;
+    return Math.max(0, Math.min(1, this.settings.master * layerVolume * gain * safety * duck));
   }
 
   applyVolumes() {
@@ -25,7 +45,8 @@ export class AudioEngine {
   }
 
   setVolume(category, value) {
-    this.settings[category] = Number(value);
+    this.settings[category] = Math.max(0, Math.min(1, Number(value)));
+    this.saveSettings();
     this.applyVolumes();
     this.onChange();
   }
@@ -67,7 +88,7 @@ export class AudioEngine {
 
   async playPreset(cues) {
     for (const cue of cues) {
-      if (cue.category === "sfx") continue;
+      if (cue.layer === "sfx" || cue.category === "sfx") continue;
       if (!this.active.has(cue.id)) await this.play(cue);
     }
     this.onStatus("Szenen-Preset läuft. Effekte bleiben einzeln steuerbar.", "ok");
@@ -84,8 +105,25 @@ export class AudioEngine {
   }
 
   stopAll() {
-    for (const id of [...this.active.keys()]) this.stop(id);
+    for (const { audio } of this.active.values()) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    this.active.clear();
     this.onStatus("Alle Sounds sind gestoppt.", "ok");
+    this.onChange();
+  }
+
+  setSafetyMode(enabled) {
+    this.safetyMode = Boolean(enabled);
+    this.saveSettings();
+    this.applyVolumes();
+    this.onChange();
+  }
+
+  setReadAloudDuck(enabled) {
+    this.readAloudDuck = Boolean(enabled);
+    this.applyVolumes();
     this.onChange();
   }
 

@@ -4,11 +4,11 @@ import Foundation
 
 @MainActor
 final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
-    @Published var masterVolume: Double = 0.48 { didSet { updateVolumes() } }
-    @Published var ambientVolume: Double = 0.68 { didSet { updateVolumes() } }
-    @Published var musicVolume: Double = 0.54 { didSet { updateVolumes() } }
-    @Published var effectsVolume: Double = 0.84 { didSet { updateVolumes() } }
-    @Published var safetyMode = false { didSet { updateVolumes() } }
+    @Published var masterVolume: Double = 0.48 { didSet { savePreferences(); updateVolumes() } }
+    @Published var ambientVolume: Double = 0.68 { didSet { savePreferences(); updateVolumes() } }
+    @Published var musicVolume: Double = 0.54 { didSet { savePreferences(); updateVolumes() } }
+    @Published var effectsVolume: Double = 0.84 { didSet { savePreferences(); updateVolumes() } }
+    @Published var safetyMode = false { didSet { savePreferences(); updateVolumes() } }
     @Published var readAloudDuck = false { didSet { updateVolumes() } }
 
     @Published private(set) var activeCueIDs: Set<String> = []
@@ -20,8 +20,23 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
     private var players: [String: AVAudioPlayer] = [:]
     private var cueByPlayerKey: [String: AudioCue] = [:]
     private var observers: [NSObjectProtocol] = []
+    private let preferences = UserDefaults.standard
+
+    private enum PreferenceKey {
+        static let master = "kraehenfels.audio.masterVolume"
+        static let ambient = "kraehenfels.audio.ambientVolume"
+        static let music = "kraehenfels.audio.musicVolume"
+        static let effects = "kraehenfels.audio.effectsVolume"
+        static let safety = "kraehenfels.audio.safetyMode"
+    }
 
     override init() {
+        let defaults = UserDefaults.standard
+        masterVolume = Self.normalizedVolume(defaults.object(forKey: PreferenceKey.master) as? Double ?? 0.48)
+        ambientVolume = Self.normalizedVolume(defaults.object(forKey: PreferenceKey.ambient) as? Double ?? 0.68)
+        musicVolume = Self.normalizedVolume(defaults.object(forKey: PreferenceKey.music) as? Double ?? 0.54)
+        effectsVolume = Self.normalizedVolume(defaults.object(forKey: PreferenceKey.effects) as? Double ?? 0.84)
+        safetyMode = defaults.object(forKey: PreferenceKey.safety) as? Bool ?? false
         super.init()
         observeAudioSession()
         _ = configureSession()
@@ -42,7 +57,7 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
     func play(_ cue: AudioCue) {
         switch cue.layer {
         case "ambient": playLoop(cue, replacingLayer: true)
-        case "musicBed", "musicLayer": playLoop(cue, replacingLayer: false)
+        case "musicBed", "musicLayer": playLoop(cue, replacingLayer: true)
         default: playOneShot(cue)
         }
     }
@@ -251,8 +266,17 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     private func observeAudioSession() {
         let center = NotificationCenter.default
-        observers.append(center.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main) { [weak self] _ in
-            Task { @MainActor in self?.updateSessionStatus() }
+        observers.append(center.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main) { [weak self] notification in
+            Task { @MainActor in
+                guard let self else { return }
+                _ = self.configureSession()
+                self.updateSessionStatus()
+                if let reasonValue = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
+                   let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue),
+                   reason == .oldDeviceUnavailable {
+                    self.lastEvent = "Ausgabegerät gewechselt. Die aktiven Layer bleiben gespeichert; prüfe die neue Ausgabe."
+                }
+            }
         })
         observers.append(center.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: .main) { [weak self] notification in
             Task { @MainActor in self?.handleInterruption(notification) }
@@ -289,6 +313,18 @@ final class AudioEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
             guard let cue = cueByPlayerKey[key] else { continue }
             player.setVolume(volume(for: cue), fadeDuration: 0.18)
         }
+    }
+
+    private func savePreferences() {
+        preferences.set(masterVolume, forKey: PreferenceKey.master)
+        preferences.set(ambientVolume, forKey: PreferenceKey.ambient)
+        preferences.set(musicVolume, forKey: PreferenceKey.music)
+        preferences.set(effectsVolume, forKey: PreferenceKey.effects)
+        preferences.set(safetyMode, forKey: PreferenceKey.safety)
+    }
+
+    private static func normalizedVolume(_ value: Double) -> Double {
+        min(max(value, 0), 1)
     }
 
     private func volume(for cue: AudioCue) -> Float {

@@ -171,7 +171,6 @@ struct GMStartView: View {
             && session.playerNames.allSatisfy { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 }
-
 struct GuidedGMView: View {
     let onExit: (() -> Void)?
     @EnvironmentObject private var content: ContentStore
@@ -211,6 +210,7 @@ struct GuidedGMView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 progressHeader
+                statePanel
                 if let scene = content.scene(for: session.currentSceneID) {
                     SceneArtView(resourceName: scene.art, height: 168, shareLabel: "Szenenbild teilen / sichern")
                     sceneContext(scene)
@@ -293,7 +293,7 @@ struct GuidedGMView: View {
             }
         }
         .sheet(isPresented: $showCombat) {
-            CombatReferenceView()
+            CombatTrackerView()
         }
         .sheet(isPresented: $showContext) {
             NavigationStack {
@@ -378,18 +378,31 @@ struct GuidedGMView: View {
     }
 
     private func primaryActionTitle(for step: GuideStep) -> String {
+        if step.id == "S07_COMBAT" { return "Kampf-Tracker öffnen" }
         if step.roll != nil { return "Würfelhelfer öffnen" }
         if step.kind == .readAloud { return "Sound vorbereiten und vorlesen" }
         return step.actionLabel
     }
 
     private func primaryActionSymbol(for step: GuideStep) -> String {
+        if step.id == "S07_COMBAT" { return "shield.lefthalf.filled" }
         if step.roll != nil { return "dice.fill" }
         if step.kind == .readAloud { return "quote.bubble.fill" }
         return "arrow.right"
     }
 
     private func primaryAction(for step: GuideStep) {
+        if step.id == "S07_COMBAT" {
+            if session.combatState?.outcome != nil {
+                advance(step)
+            } else {
+                if let combat = content.manifest.guide.combat {
+                    session.ensureCombat(using: combat, endingID: session.selectedEndingID)
+                }
+                showCombat = true
+            }
+            return
+        }
         if step.roll != nil {
             rollStep = step
         } else if step.kind == .readAloud {
@@ -402,6 +415,9 @@ struct GuidedGMView: View {
     private func canAdvance(_ step: GuideStep) -> Bool {
         if step.id == "S01_DISTRIBUTE" {
             return session.isItemDistributionComplete(for: content.guideItems.map(\.id))
+        }
+        if step.id == "S07_COMBAT" {
+            return session.combatState?.outcome != nil
         }
         return true
     }
@@ -548,6 +564,7 @@ struct GuidedGMView: View {
             if step.kind == .itemDistribution {
                 ItemDistributionPanel()
             }
+            npcRegiePanel(for: step)
             if step.id == "S07_GM" {
                 finaleModePicker
             }
@@ -556,9 +573,16 @@ struct GuidedGMView: View {
             }
             if step.id == "S07_COMBAT" {
                 Button {
-                    showCombat = true
+                    if session.combatState?.outcome != nil {
+                        advance(step)
+                    } else {
+                        if let combat = content.manifest.guide.combat {
+                            session.ensureCombat(using: combat, endingID: session.selectedEndingID)
+                        }
+                        showCombat = true
+                    }
                 } label: {
-                    Label("Kampf-Kurzreferenz öffnen", systemImage: "shield.lefthalf.filled")
+                    Label(session.combatState?.outcome == nil ? "Kampf-Tracker öffnen" : "Zum Nachhall weiter", systemImage: session.combatState?.outcome == nil ? "shield.lefthalf.filled" : "arrow.right.circle.fill")
                 }
                 .buttonStyle(.bordered)
                 .tint(FrostTheme.warning)
@@ -693,9 +717,10 @@ struct GuidedGMView: View {
     @ViewBuilder
     private func materialLinks(for step: GuideStep) -> some View {
         let handoutIDs = [step.handoutID].compactMap { $0 } + step.handoutIDs
+        let clueIDs = [step.clueID].compactMap { $0 } + step.clueIDs
         let npcIDs = [step.npcID].compactMap { $0 } + step.npcIDs
         let maps = content.scene(for: step.sceneID).map { content.maps(for: $0) } ?? []
-        let hasLinks = !handoutIDs.isEmpty || !maps.isEmpty || !npcIDs.isEmpty || step.audioCueID != nil
+        let hasLinks = !handoutIDs.isEmpty || !clueIDs.isEmpty || !maps.isEmpty || !npcIDs.isEmpty || step.audioCueID != nil
 
         if hasLinks {
             ScrollView(.horizontal, showsIndicators: false) {
@@ -703,6 +728,12 @@ struct GuidedGMView: View {
                     ForEach(handoutIDs, id: \.self) { handoutID in
                         NavigationLink(destination: HandoutPreviewView(handoutID: handoutID)) {
                             Label(content.handout(for: handoutID).map { "\($0.id) · \($0.title)" } ?? handoutID, systemImage: "doc.text")
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    ForEach(clueIDs, id: \.self) { clueID in
+                        NavigationLink(destination: ClueDetailView(clueID: clueID)) {
+                            Label(content.manifest.clues.first(where: { $0.id == clueID }).map { "\($0.id) · \($0.title)" } ?? clueID, systemImage: "magnifyingglass")
                         }
                         .buttonStyle(.bordered)
                     }
@@ -738,6 +769,116 @@ struct GuidedGMView: View {
                 .tint(FrostTheme.cobalt)
             }
         }
+    }
+
+    @ViewBuilder
+    private func npcRegiePanel(for step: GuideStep) -> some View {
+        let ids = Array(Set(([step.npcID].compactMap { $0 } + step.npcIDs))).sorted()
+        if !ids.isEmpty {
+            VStack(alignment: .leading, spacing: 9) {
+                HStack {
+                    SectionLabel(title: "Jetzt relevante NPCs")
+                    Spacer()
+                    Text("Nur dieser Schritt")
+                        .font(.caption2)
+                        .foregroundStyle(FrostTheme.quiet)
+                }
+                ForEach(ids, id: \.self) { npcID in
+                    if let npc = content.manifest.npcs.first(where: { $0.id == npcID }) {
+                        let appearance = npc.appearances.first(where: { $0.sceneId == step.sceneID })
+                        VStack(alignment: .leading, spacing: 5) {
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Image(systemName: "person.crop.circle.fill")
+                                    .foregroundStyle(FrostTheme.cobalt)
+                                Text(npc.name)
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.white)
+                                Spacer()
+                                Text("bereit")
+                                    .font(.caption2.weight(.bold))
+                                    .foregroundStyle(FrostTheme.accent)
+                            }
+                            Text(npc.role)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(FrostTheme.quiet)
+                            if let appearance {
+                                Label(appearance.when, systemImage: "clock.badge.checkmark")
+                                    .font(.caption)
+                                    .foregroundStyle(.white.opacity(0.88))
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Label("So spielen: \(appearance.playAs)", systemImage: "person.wave.2")
+                                    .font(.caption)
+                                    .foregroundStyle(FrostTheme.cobalt)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Text("„\(appearance.openingLine)“")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(FrostTheme.warning)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            } else {
+                                Label("Kein geplanter Auftritt in dieser Szene. Nicht einsetzen.", systemImage: "exclamationmark.triangle")
+                                    .font(.caption)
+                                    .foregroundStyle(FrostTheme.warning)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            if !npc.states.isEmpty {
+                                Picker("Haltung von \(npc.name)", selection: Binding(
+                                    get: { session.npcStates[npc.id, default: 0] },
+                                    set: { session.setNPCState(npc.id, state: $0) }
+                                )) {
+                                    ForEach(Array(npc.states.enumerated()), id: \.offset) { index, label in
+                                        Text(label.capitalized).tag(index)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+                            }
+                        }
+                        .padding(11)
+                        .background(FrostTheme.ink.opacity(0.38), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                }
+            }
+            .padding(12)
+            .background(FrostTheme.panel, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+    }
+
+    private var statePanel: some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    SectionLabel(title: "Lage im Blick")
+                    Spacer()
+                    Text("wird mit Konsequenzen geführt")
+                        .font(.caption2)
+                        .foregroundStyle(FrostTheme.quiet)
+                }
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                    stateStepper(title: "Zeitverlust", value: session.time, range: 0...5, symbol: "clock") { session.setTime($0) }
+                    stateStepper(title: "Wärme", value: session.warmth, range: 0...5, symbol: "flame") { session.setWarmth($0) }
+                    stateStepper(title: "Vertrauen", value: session.trust, range: 0...5, symbol: "person.2") { session.setTrust($0) }
+                    stateStepper(title: "Verletzungen", value: session.injuries, range: 0...3, symbol: "cross.case") { session.setInjuries($0) }
+                }
+            }
+        }
+    }
+
+    private func stateStepper(title: String, value: Int, range: ClosedRange<Int>, symbol: String, set: @escaping (Int) -> Void) -> some View {
+        Stepper(value: Binding(get: { value }, set: set), in: range) {
+            Label {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title)
+                        .font(.caption.weight(.semibold))
+                    Text("\(value)/\(range.upperBound)")
+                        .font(.caption2.monospaced())
+                        .foregroundStyle(value == range.lowerBound ? FrostTheme.warning : FrostTheme.quiet)
+                }
+            } icon: {
+                Image(systemName: symbol)
+                    .foregroundStyle(value == range.lowerBound ? FrostTheme.warning : FrostTheme.accent)
+            }
+        }
+        .font(.caption)
+        .frame(minHeight: 44)
     }
 
     private var finaleModePicker: some View {
@@ -817,11 +958,9 @@ struct GuidedGMView: View {
     }
 
     private func availableOptions(for step: GuideStep) -> [GuideOption] {
-        guard ["S03", "S04", "S05"].contains(step.sceneID) else { return step.options }
-        let visited = session.completedSceneIDs.union(Set([session.currentSceneID]))
-        let investigativeVisits = visited.intersection(Set(["S03", "S04", "S05"])).count
+        let visited = session.completedSceneIDs.union([session.currentSceneID])
         return step.options.filter { option in
-            option.destinationSceneID != "S06" || investigativeVisits >= 2
+            option.isAvailable(completedSceneIDs: visited, checkedClueIDs: session.checkedClueIDs)
         }
     }
 
@@ -879,6 +1018,8 @@ struct GuidedGMView: View {
     }
 
     private func choose(_ option: GuideOption, from step: GuideStep) {
+        let visited = session.completedSceneIDs.union([session.currentSceneID])
+        guard option.isAvailable(completedSceneIDs: visited, checkedClueIDs: session.checkedClueIDs) else { return }
         if let endingID = option.endingID {
             session.setSelectedEnding(endingID)
             advance(step)
@@ -895,17 +1036,15 @@ struct GuidedGMView: View {
 
     private func move(to destination: String, resettingDependentPath: Bool) {
         audio.stopLayer("ambient", fadeMilliseconds: 600)
-        if let step = currentStep,
-           let cueID = step.audioCueID,
-           let cue = content.cue(for: cueID),
-           cue.mode == "loop" {
-            audio.play(cue)
-        }
         if resettingDependentPath {
             session.advanceToScene(destination, from: session.currentSceneID)
             session.resetDependentPath(from: destination)
         } else {
             session.advanceToScene(destination, from: session.currentSceneID)
+        }
+        if let scene = content.scene(for: destination),
+           let cue = scene.audioCueIds.compactMap({ content.cue(for: $0) }).first(where: { $0.layer == "ambient" }) {
+            audio.play(cue)
         }
         pendingDestination = nil
     }
@@ -924,21 +1063,20 @@ struct GuidedGMView: View {
         if step.id == "S01_ITEMS" {
             session.discoverItems(content.guideItems.map(\.id))
         }
-        let guaranteedClues: [String: Set<String>] = [
-            "S01_CLUE": ["C01", "C02"],
-            "S02_CLUE": ["C03", "C04"],
-            "S03_CLUE": ["C05"],
-            "S04_CLUE": ["C07"],
-            "S05_CLUE": ["C08", "C09", "C11"],
-            "S06_CLUE": ["C06", "C10"]
-        ]
-        if let clues = guaranteedClues[step.id] {
-            session.checkedClueIDs.formUnion(clues)
-        } else if let clueID = step.clueID {
-            session.checkedClueIDs.insert(clueID)
-        }
+        playCueForStep(step)
+        let clueIDs = Set(step.clueIDs).union(step.clueID.map { [$0] } ?? [])
+        session.checkedClueIDs.formUnion(clueIDs)
         let count = steps.count
         session.advanceGuideStep(in: session.currentSceneID, stepID: step.id, stepCount: count)
+    }
+
+    private func playCueForStep(_ step: GuideStep) {
+        guard let cueID = step.audioCueID, let cue = content.cue(for: cueID) else { return }
+        if cueID == "SFX07", let music = content.cue(for: "M02") {
+            audio.play(music)
+        }
+        if cueID == "SFX09", session.selectedEndingID != "E03" { return }
+        audio.play(cue)
     }
 
     private func stepColor(_ kind: GuideStepKind) -> Color {
@@ -1380,68 +1518,5 @@ struct ReadAloudCueSheet: View {
             }
         }
         .preferredColorScheme(.dark)
-    }
-}
-
-struct CombatReferenceView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    FrostCard {
-                        VStack(alignment: .leading, spacing: 8) {
-                            SectionLabel(title: "OPTIONALER KAMPF")
-                            Text("Kampf am Tisch")
-                                .font(.title2.weight(.bold))
-                                .foregroundStyle(FrostTheme.frost)
-                            Text("Nutze diese Kurzreferenz nur, wenn die Gruppe den finalen Konflikt wirklich ausspielen möchte. Für ein schnelleres Finale wechselst du zurück in die geführte Gefahrenszene.")
-                                .font(.subheadline)
-                                .foregroundStyle(FrostTheme.quiet)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                    combatRule("1 · Reihenfolge", "Alle würfeln 1W10 plus den Begabungswert Handeln. Die höchste Zahl handelt zuerst. Bei Überraschung setzt die betroffene Figur die erste Runde aus.")
-                    combatRule("2 · Angriff", "Angreifer würfelt eine passende Fertigkeitsprobe mit W100. Bei Erfolg trifft der Angriff; bei Misserfolg entsteht kein Schaden.")
-                    combatRule("3 · Parade", "Eine Figur darf einmal pro Runde mit Handeln parieren. Kritische Angriffe und Schusswaffen sind nicht parierbar.")
-                    combatRule("4 · Schaden", "Würfle die zur Waffe passende Anzahl W10. Kritische Angriffe verdoppeln den Schaden. Ziehe die Summe von den LP ab.")
-                    combatRule("5 · LP-Zustände", "Unter 10 LP ist eine Figur bewusstlos, bei 0 LP tot. Mehr als 60 Schaden in einem einzelnen Treffer macht ebenfalls bewusstlos.")
-                    combatRule("6 · Ende", "Der Knochenhirsch flieht, sobald die Bindung bricht. Spiele SFX09 nur bei E03 und öffne danach den Epilog.")
-                    FrostCard {
-                        Label("Keine Gegnerwerte im Kanon", systemImage: "info.circle")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(FrostTheme.warning)
-                        Text("Für dieses Abenteuer sind keine festen Knochenhirsch-Werte definiert. Entscheide Trefferpunkte und Fertigkeitswerte passend zur Gruppe oder nutze den geführten Modus.")
-                            .font(.caption)
-                            .foregroundStyle(FrostTheme.quiet)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .padding(20)
-                .safeAreaPadding(.bottom, 24)
-            }
-            .background(FrostTheme.ink.ignoresSafeArea())
-            .navigationTitle("Kampf-Kurzreferenz")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Fertig") { dismiss() }
-                }
-            }
-        }
-        .preferredColorScheme(.dark)
-    }
-
-    private func combatRule(_ title: String, _ body: String) -> some View {
-        FrostCard {
-            VStack(alignment: .leading, spacing: 6) {
-                SectionLabel(title: title)
-                Text(body)
-                    .font(.body)
-                    .foregroundStyle(.white.opacity(0.9))
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
     }
 }

@@ -15,11 +15,11 @@ Das Repository enthält:
 
 ## iPad-Build und AltStore
 
-Der aktuelle native Release ist `v4.3.0` (Build `10`). Die App ist für iPad ausgelegt. Den IPA-Build erzeugt macOS oder GitHub Actions; die IPA bleibt unsigniert und wird erst durch AltStore mit deinem Apple-Account signiert.
+Der native Code steht auf `v5.0.0` (Build `11`). Als AltStore-Release ist derzeit `v4.3.0` (Build `10`) veröffentlicht und direkt installierbar. Die App ist für iPad ausgelegt. macOS oder GitHub Actions erzeugen die unsignierte IPA. AltStore signiert sie bei der Installation mit deinem Apple-Account.
 
 - [GitHub-Repository](https://github.com/nexis-cmyk/kraehenfels)
 - [Release-Übersicht](https://github.com/nexis-cmyk/kraehenfels/releases)
-- [AltStore-Feed für v4.3.0](https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.3.0/source.generated.json)
+- [AltStore-Feed für den veröffentlichten Release v4.3.0](https://github.com/nexis-cmyk/kraehenfels/releases/download/v4.3.0/source.generated.json)
 - [Dauerhafter AltStore-Feed](https://github.com/nexis-cmyk/kraehenfels/raw/refs/heads/main/altstore/source.json)
 
 Die IPA ist unsigniert und wird beim Installieren von AltStore mit deinem Apple-Account signiert. Eine kurze Windows-Anleitung steht in [`altstore/README.md`](altstore/README.md).
@@ -49,6 +49,7 @@ python tools/build_print_pack_v3.py
 python tools/build_archives_v3.py
 python tools/validate_project.py
 python tools/validate_guided_flow.py
+python tools/validate_altstore_feed.py altstore/source.json
 ```
 
 `process_audio_v5.py` baut die acht bereits abgenommenen V5-Cues. `generate_audio_v6.py` ersetzt die zwölf markierten Problem-Cues reproduzierbar und kopiert sie in das native Bundle. Danach liegen PDFs unter `outputs/` und alle Audio-Dateien unter `audio/generated/`. Die Web-App wird mit `tools/build_web_preview.py` separat aus dem aktuellen Inhaltsmanifest und den nativen Ressourcen synchronisiert. Das iOS-Projekt wird auf macOS mit XcodeGen erzeugt:
@@ -78,7 +79,7 @@ Die Unterlagen haben eine gemeinsame 1890er-Schwarzwald-Optik: kaltes Nachtblau,
 - `10_SL_Abenteuer.pdf`: vorlesbare Szenen, NPCs und Enden
 - `11_SL_Schnellreferenz.pdf`: Wahrheit, Pflichtspuren und Improvisationshilfe
 - `12_SL_Am_Tisch.pdf`: einseitiger Ablaufzettel mit Hinweisen, Sounds und Eskalation pro Szene
-- `13_SL_Spoiler-Handouts.pdf`: H09, das Ritualfragment, getrennt für die Spielleitung
+- `13_SL_Spoiler-Handouts.pdf`: reservierter Spoiler-Bereich für spätere geheime Zusatzblätter (H09 liegt jetzt bei den Spielerhandouts)
 - `14_Soundboard-Cues.pdf`: konkrete Cue-Momente mit Papier-Fallbacks
 
 Für die direkte Weitergabe liegen zusätzlich `outputs/Kraehenfels-Druckpaket.zip` und `outputs/Kraehenfels-Audio.zip` bereit.

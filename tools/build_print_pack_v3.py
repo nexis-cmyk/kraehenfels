@@ -1,4 +1,4 @@
-"""Build the Krähenfels 3.3 printable player and GM pack."""
+"""Build the Krähenfels 4.0 printable player and GM pack."""
 
 from __future__ import annotations
 
@@ -117,12 +117,12 @@ def build_start(path: Path, data: dict) -> None:
     paragraph(c, "Ein detektivischer Folk-Horror für drei Reisende und eine Spielleitung. Schwarzwald, November 1890. Eure Kutsche hat die Straße verlassen. Das Dorf wartet bereits.", 18 * mm, 22 * mm, width - 36 * mm, 55 * mm, text_style("start", 12, 16, FROST))
     c.setFillColor(QUIET)
     c.setFont("Helvetica", 8)
-    c.drawString(18 * mm, 12 * mm, "How to be a Hero · W100 · Version 3.3.0")
+    c.drawString(18 * mm, 12 * mm, "How to be a Hero · W100 · Content 4.0.0")
     c.showPage()
     page_title(c, "Spielstart", "Für die Spielleitung · 20 Minuten Vorbereitung")
     y = height - 55 * mm
     steps = [
-        ("Tisch", "Lege die Spielerkarte, drei eigene Figurenbögen, die sechs Gegenstandskarten sowie H01 bis H08 und H10 verdeckt bereit. H09 bleibt bei dir."),
+        ("Tisch", "Lege die Spielerkarte, drei eigene Figurenbögen, die sechs Gegenstandskarten sowie H01 bis H10 verdeckt bereit. H09 wird in S06 ausgegeben."),
         ("Figuren", "Jede Person bringt einen eigenen Charakter mit. Tragt die drei Namen ein und verteilt die sechs Gegenstände nach der Kutschenpanne untereinander."),
         ("Einstieg", "Starte M01 leise. Lies S01 vor. Frage nur: Was tut ihr? Gib H01 unabhängig vom Würfelwurf. A01 beginnt erst beim Aufbruch."),
         ("Leitung", "Setze die Dorfspannung manuell. Die App zeigt Empfehlungen, entscheidet aber nie an deiner Stelle."),
@@ -559,7 +559,7 @@ def draw_handout(c: canvas.Canvas, hid: str, title: str, spoiler: bool = False) 
         "H06": "FUNDORT · SCHMIEDE  /  SPUR D",
         "H07": "FUNDORT · DACHFENSTER  /  SPUR D",
         "H08": "FUNDORT · WALDRAND  /  SPUR D",
-        "H09": "SL-ARCHIV · SPOILER  /  SPUR D",
+        "H09": "AUSGABE · RATHAUSARCHIV  /  SPUR C",
         "H10": "FUNDORT · FORSTWEG  /  ORIENTIERUNG",
     }
     c.setFillColor(RUST if spoiler else COBALT)
@@ -616,6 +616,24 @@ def draw_handout(c: canvas.Canvas, hid: str, title: str, spoiler: bool = False) 
 def build_handouts(path: Path, ids: list[str], data: dict, spoiler: bool = False) -> None:
     c = canvas.Canvas(str(path), pagesize=A4)
     entries = {item["id"]: item for item in data["handouts"]}
+    if not ids:
+        # Keep the spoiler bundle as a valid, explicit deliverable even when
+        # the current content has no GM-only handouts.  An empty PDF is hard
+        # to distinguish from a failed export and breaks downstream checks.
+        page_title(c, "SL-Spoiler-Handouts", "Keine separaten Spoiler-Handouts")
+        width, height = c._pagesize
+        body = (
+            "Für Content 4.0.0 gibt es keine zusätzlichen SL-only-Handouts. "
+            "Alle zehn Handouts, einschließlich des Archiv-Fragments, sind für die Spielenden "
+            "freigegeben und liegen vollständig in 02_Handouts.pdf. "
+            "Die Geheimnisse der Geschichte stehen ausschließlich in den "
+            "SL-Abenteuer- und NPC-Regie-Unterlagen."
+        )
+        paragraph(c, body, 24 * mm, height / 2, width - 48 * mm, 48 * mm, BODY)
+        c.setFillColor(QUIET)
+        c.setFont("Helvetica-Oblique", 8)
+        c.drawString(24 * mm, 28 * mm, "Krähenfels · Keine separaten Spoiler-Handouts")
+        c.showPage()
     for hid in ids:
         entry = entries[hid]
         draw_handout(c, hid, entry["title"], spoiler or entry.get("spoiler", False))
@@ -737,8 +755,8 @@ def main() -> None:
     build_item_cards(OUTPUT / "04_Gegenstandskarten.pdf", data)
     build_maps(data)
     build_detail_maps(data)
-    build_handouts(OUTPUT / "02_Handouts.pdf", ["H01", "H02", "H03", "H04", "H05", "H06", "H07", "H08", "H10"], data)
-    build_handouts(OUTPUT / "13_SL_Spoiler-Handouts.pdf", ["H09"], data, spoiler=True)
+    build_handouts(OUTPUT / "02_Handouts.pdf", ["H01", "H02", "H03", "H04", "H05", "H06", "H07", "H08", "H09", "H10"], data)
+    build_handouts(OUTPUT / "13_SL_Spoiler-Handouts.pdf", [], data, spoiler=True)
     build_sl_adventure(OUTPUT / "10_SL_Abenteuer.pdf", data)
     build_reference(OUTPUT / "11_SL_Schnellreferenz.pdf", data, "quick")
     build_reference(OUTPUT / "12_SL_Am_Tisch.pdf", data, "table")

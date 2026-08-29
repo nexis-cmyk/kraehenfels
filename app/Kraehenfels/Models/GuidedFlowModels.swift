@@ -117,10 +117,18 @@ struct RollSpec: Codable, Hashable {
 struct RollConsequenceEffect: Codable, Hashable {
     let threatDelta: Int?
     let minimumThreat: Int?
+    let timeDelta: Int?
+    let warmthDelta: Int?
+    let trustDelta: Int?
+    let injuryDelta: Int?
 
-    init(threatDelta: Int? = nil, minimumThreat: Int? = nil) {
+    init(threatDelta: Int? = nil, minimumThreat: Int? = nil, timeDelta: Int? = nil, warmthDelta: Int? = nil, trustDelta: Int? = nil, injuryDelta: Int? = nil) {
         self.threatDelta = threatDelta
         self.minimumThreat = minimumThreat
+        self.timeDelta = timeDelta
+        self.warmthDelta = warmthDelta
+        self.trustDelta = trustDelta
+        self.injuryDelta = injuryDelta
     }
 }
 
@@ -169,13 +177,33 @@ struct GuideOption: Codable, Identifiable, Hashable {
     let detail: String
     let destinationSceneID: String?
     let endingID: String?
+    let requiresCompletedSceneIDs: [String]
 
-    init(id: String, title: String, detail: String, destinationSceneID: String? = nil, endingID: String? = nil) {
+    init(id: String, title: String, detail: String, destinationSceneID: String? = nil, endingID: String? = nil, requiresCompletedSceneIDs: [String] = []) {
         self.id = id
         self.title = title
         self.detail = detail
         self.destinationSceneID = destinationSceneID
         self.endingID = endingID
+        self.requiresCompletedSceneIDs = requiresCompletedSceneIDs
+    }
+
+    func isAvailable(completedSceneIDs: Set<String>, checkedClueIDs: Set<String> = []) -> Bool {
+        requiresCompletedSceneIDs.allSatisfy(completedSceneIDs.contains)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, title, detail, destinationSceneID, endingID, requiresCompletedSceneIDs
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        detail = try container.decode(String.self, forKey: .detail)
+        destinationSceneID = try container.decodeIfPresent(String.self, forKey: .destinationSceneID)
+        endingID = try container.decodeIfPresent(String.self, forKey: .endingID)
+        requiresCompletedSceneIDs = try container.decodeIfPresent([String].self, forKey: .requiresCompletedSceneIDs) ?? []
     }
 }
 
@@ -189,6 +217,7 @@ struct GuideStep: Codable, Identifiable, Hashable {
     let materialInstruction: String?
     let roll: RollSpec?
     let clueID: String?
+    let clueIDs: [String]
     let handoutID: String?
     let handoutIDs: [String]
     let npcID: String?
@@ -206,6 +235,7 @@ struct GuideStep: Codable, Identifiable, Hashable {
         materialInstruction: String? = nil,
         roll: RollSpec? = nil,
         clueID: String? = nil,
+        clueIDs: [String] = [],
         handoutID: String? = nil,
         handoutIDs: [String] = [],
         npcID: String? = nil,
@@ -222,6 +252,7 @@ struct GuideStep: Codable, Identifiable, Hashable {
         self.materialInstruction = materialInstruction
         self.roll = roll
         self.clueID = clueID
+        self.clueIDs = clueIDs
         self.handoutID = handoutID
         self.handoutIDs = handoutIDs
         self.npcID = npcID
@@ -231,7 +262,7 @@ struct GuideStep: Codable, Identifiable, Hashable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, sceneID, kind, title, body, actionLabel, materialInstruction, roll, clueID, handoutID, handoutIDs
+        case id, sceneID, kind, title, body, actionLabel, materialInstruction, roll, clueID, clueIDs, handoutID, handoutIDs
         case npcID, npcIDs, audioCueID, options
     }
 
@@ -246,6 +277,7 @@ struct GuideStep: Codable, Identifiable, Hashable {
         materialInstruction = try container.decodeIfPresent(String.self, forKey: .materialInstruction)
         roll = try container.decodeIfPresent(RollSpec.self, forKey: .roll)
         clueID = try container.decodeIfPresent(String.self, forKey: .clueID)
+        clueIDs = try container.decodeIfPresent([String].self, forKey: .clueIDs) ?? []
         handoutID = try container.decodeIfPresent(String.self, forKey: .handoutID)
         handoutIDs = try container.decodeIfPresent([String].self, forKey: .handoutIDs) ?? []
         npcID = try container.decodeIfPresent(String.self, forKey: .npcID)
@@ -417,6 +449,7 @@ struct GuideContent: Codable {
     let hiddenFromPlayers: String
     let itemFindLocations: [ItemFindLocation]
     let items: [AdventureItem]
+    let combat: CombatConfig?
     let steps: [String: [GuideStep]]
 
     init(
@@ -426,6 +459,7 @@ struct GuideContent: Codable {
         hiddenFromPlayers: String = "",
         itemFindLocations: [ItemFindLocation] = [],
         items: [AdventureItem] = [],
+        combat: CombatConfig? = nil,
         steps: [String: [GuideStep]] = [:]
     ) {
         self.characters = characters
@@ -434,11 +468,12 @@ struct GuideContent: Codable {
         self.hiddenFromPlayers = hiddenFromPlayers
         self.itemFindLocations = itemFindLocations
         self.items = items
+        self.combat = combat
         self.steps = steps
     }
 
     private enum CodingKeys: String, CodingKey {
-        case characters, setupItems, playerBriefing, hiddenFromPlayers, itemFindLocations, items, steps
+        case characters, setupItems, playerBriefing, hiddenFromPlayers, itemFindLocations, items, combat, steps
     }
 
     init(from decoder: Decoder) throws {
@@ -449,6 +484,7 @@ struct GuideContent: Codable {
         hiddenFromPlayers = try container.decodeIfPresent(String.self, forKey: .hiddenFromPlayers) ?? ""
         itemFindLocations = try container.decodeIfPresent([ItemFindLocation].self, forKey: .itemFindLocations) ?? []
         items = try container.decodeIfPresent([AdventureItem].self, forKey: .items) ?? []
+        combat = try container.decodeIfPresent(CombatConfig.self, forKey: .combat)
         steps = try container.decodeIfPresent([String: [GuideStep]].self, forKey: .steps) ?? [:]
     }
 
@@ -460,6 +496,152 @@ struct GuideContent: Codable {
 
     func item(for id: String) -> AdventureItem? {
         items.first(where: { $0.id == id })
+    }
+}
+
+struct CombatConfig: Codable, Hashable {
+    let enemy: CombatEnemy
+    let victoryByEnding: [String: String]
+
+    init(enemy: CombatEnemy, victoryByEnding: [String: String] = [:]) {
+        self.enemy = enemy
+        self.victoryByEnding = victoryByEnding
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case enemy, victoryByEnding
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        enemy = try container.decode(CombatEnemy.self, forKey: .enemy)
+        victoryByEnding = try container.decodeIfPresent([String: String].self, forKey: .victoryByEnding) ?? [:]
+    }
+}
+
+struct CombatEnemy: Codable, Hashable {
+    let id: String
+    let name: String
+    let maxLP: Int
+    let initiative: Int
+    let attackSkill: Int
+    let damageDice: String
+    let parryable: Bool
+    let notes: String
+
+    init(
+        id: String,
+        name: String,
+        maxLP: Int,
+        initiative: Int,
+        attackSkill: Int,
+        damageDice: String,
+        parryable: Bool = false,
+        notes: String = ""
+    ) {
+        self.id = id
+        self.name = name
+        self.maxLP = max(1, maxLP)
+        self.initiative = initiative
+        self.attackSkill = min(max(attackSkill, 1), 100)
+        self.damageDice = damageDice
+        self.parryable = parryable
+        self.notes = notes
+    }
+}
+
+enum CombatParticipantKind: String, Codable, Hashable {
+    case player
+    case enemy
+    case ally
+}
+
+struct CombatParticipant: Codable, Identifiable, Hashable {
+    let id: String
+    var name: String
+    let kind: CombatParticipantKind
+    let maxLP: Int
+    var currentLP: Int
+    var initiative: Int
+    var attackSkill: Int
+    var damageDice: String
+    var ammunition: Int
+    var geistesblitze: Int
+    let parryable: Bool
+    var hasActed: Bool
+
+    init(
+        id: String,
+        name: String,
+        kind: CombatParticipantKind,
+        maxLP: Int = 100,
+        currentLP: Int? = nil,
+        initiative: Int = 0,
+        attackSkill: Int = 50,
+        damageDice: String = "1W10",
+        ammunition: Int = 0,
+        geistesblitze: Int = 0,
+        parryable: Bool = true,
+        hasActed: Bool = false
+    ) {
+        self.id = id
+        self.name = name
+        self.kind = kind
+        self.maxLP = max(1, maxLP)
+        self.currentLP = min(max(currentLP ?? maxLP, 0), max(1, maxLP))
+        self.initiative = max(0, initiative)
+        self.attackSkill = min(max(attackSkill, 1), 100)
+        self.damageDice = damageDice
+        self.ammunition = max(0, ammunition)
+        self.geistesblitze = max(0, geistesblitze)
+        self.parryable = parryable
+        self.hasActed = hasActed
+    }
+
+    var isDefeated: Bool { currentLP <= 0 }
+
+    var statusLabel: String {
+        if currentLP <= 0 { return "ausgeschaltet" }
+        if currentLP < 10 { return "bewusstlos" }
+        if currentLP < maxLP / 2 { return "angeschlagen" }
+        return "handlungsfähig"
+    }
+}
+
+struct CombatState: Codable, Hashable {
+    var isActive: Bool
+    var round: Int
+    var turnIndex: Int
+    var endingID: String?
+    var participants: [CombatParticipant]
+    var log: [String]
+    var outcome: String?
+
+    init(
+        isActive: Bool = true,
+        round: Int = 1,
+        turnIndex: Int = 0,
+        endingID: String? = nil,
+        participants: [CombatParticipant] = [],
+        log: [String] = [],
+        outcome: String? = nil
+    ) {
+        self.isActive = isActive
+        self.round = max(1, round)
+        self.turnIndex = max(0, turnIndex)
+        self.endingID = endingID
+        self.participants = participants
+        self.log = Array(log.suffix(100))
+        self.outcome = outcome
+    }
+
+    var currentParticipant: CombatParticipant? {
+        guard participants.indices.contains(turnIndex) else { return nil }
+        return participants[turnIndex]
+    }
+
+    var enemyDefeated: Bool {
+        participants.contains { $0.kind == .enemy && $0.isDefeated }
     }
 }
 

@@ -46,7 +46,7 @@ def sync_selected(source: Path, target: Path, names: set[str]) -> int:
 def main() -> None:
     manifest = json.loads((ROOT / "content" / "manifest.json").read_text(encoding="utf-8"))
     version = manifest.get("meta", {}).get("version", "dev")
-    shell_version = f"{version}-r7"
+    shell_version = f"{version}-r11"
     sync_file(ROOT / "content" / "manifest.json", WEB / "data" / "manifest.json")
     index = WEB / "index.html"
     index_source = index.read_text(encoding="utf-8")
@@ -79,14 +79,18 @@ def main() -> None:
     (WEB / "js" / "app.js").write_text(app_source, encoding="utf-8")
     art_names = {scene["art"] for scene in manifest["scenes"] if scene.get("art")}
     audio_names = {cue["file"] for cue in manifest["audioCues"]}
+    handout_names = {handout["previewAsset"] for handout in manifest["handouts"] if handout.get("previewAsset")}
+    item_names = {item["playerCardAsset"] for item in manifest.get("guide", {}).get("items", []) if item.get("playerCardAsset")}
     art_count = sync_selected(APP / "Art", WEB / "assets" / "art", art_names)
     audio_count = sync_selected(APP / "Audio", WEB / "assets" / "audio", audio_names)
+    handout_count = sync_selected(APP / "Materials" / "Handouts", WEB / "assets" / "materials" / "handouts", handout_names)
+    item_count = sync_selected(APP / "Materials" / "Items", WEB / "assets" / "materials" / "items", item_names)
     sync_file(ROOT / "altstore" / "icon.png", WEB / "assets" / "icon.png")
     service_worker = WEB / "service-worker.js"
     service_worker_source = service_worker.read_text(encoding="utf-8")
     # Bump the shell suffix when the web layout changes so an installed service
     # worker cannot keep serving a previous HTML/CSS/JS shell.
-    cache_name = f"kraehenfels-web-v{version}-shell13"
+    cache_name = f"kraehenfels-web-v{version}-shell17"
     service_worker_source, replacements = re.subn(
         r'const CACHE = "[^"]+";',
         f'const CACHE = "{cache_name}";',
@@ -105,7 +109,7 @@ def main() -> None:
         if resource_replacements != 1:
             raise RuntimeError(f"Could not update {resource} version in {service_worker}")
     service_worker.write_text(service_worker_source, encoding="utf-8")
-    print(f"Synced browser preview v{version}: {art_count} artwork files and {audio_count} audio files")
+    print(f"Synced browser preview v{version}: {art_count} artwork files, {audio_count} audio files, {handout_count} handout previews and {item_count} item cards")
 
 
 if __name__ == "__main__":

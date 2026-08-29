@@ -8,7 +8,7 @@ Die Umleitung über Krähenfels ist handschriftlich ergänzt. Bürgermeister Gru
 
 ## H02 Krähenfelser Wochenblatt
 
-Ein kurzer Lokalteil berichtet von drei Reisenden, die nach einer Übernachtung nicht weiterreisten. Ein Gemeinderat bittet darum, "fremde Namen nicht unnötig zu wiederholen".
+Ein kurzer Lokalteil berichtet von drei Reisenden, die nach einer Übernachtung nicht weiterreisten. Ein Gemeinderat bittet darum, "fremde Namen nicht unnötig zu wiederholen". Das Blatt ist ein optionaler Zusatzbeleg für C03; die konkrete Gästebuchspur bleibt H03 vorbehalten.
 
 ## H03 Gästebuch des schwarzen Keilers
 
@@ -36,7 +36,7 @@ Die Kohleabreibung zeigt eine Schwelle, einen Kreis und einen gebrochenen Geweih
 
 ## H09 Fragment des alten Rituals
 
-Dieses Blatt bleibt zunächst bei der Spielleitung. Es beschreibt drei Wege: das Dorf zum Widerruf bringen, das Gastrecht an der Eiche erneuern oder die Bindung mit Feuer und Eisen brechen.
+Dieses Spielerhandout wird im Rathausarchiv nach H05 ausgegeben. Es beschreibt drei Wege: das Dorf zum Widerruf bringen, das Gastrecht an der Eiche erneuern oder die Bindung mit Feuer und Eisen brechen.
 
 ## H10 Forstkarte zur Alten Eiche
 

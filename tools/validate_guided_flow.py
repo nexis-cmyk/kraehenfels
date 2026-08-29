@@ -22,6 +22,7 @@ def main() -> None:
         fail("manifest has no shared guide")
 
     scene_ids = {scene["id"] for scene in manifest["scenes"]}
+    scenes_by_id = {scene["id"]: scene for scene in manifest["scenes"]}
     steps_by_scene = guide.get("steps", {})
     step_ids = {step["id"] for steps in steps_by_scene.values() for step in steps}
     step_scenes = set(steps_by_scene)
@@ -118,10 +119,17 @@ def main() -> None:
             for handout_id in [step.get("handoutID"), *step.get("handoutIDs", [])]:
                 if handout_id and handout_id not in handout_ids:
                     fail(f"guided flow references missing handout {handout_id}")
+                if handout_id and handout_id not in set(scenes_by_id[scene_id].get("handoutIds", [])):
+                    fail(f"{step['id']} exposes {handout_id} outside its scene handout list")
             referenced_npcs = [step.get("npcID"), *step.get("npcIDs", [])]
             invalid_npcs = {npc_id for npc_id in referenced_npcs if npc_id and npc_id not in npc_ids}
             if invalid_npcs:
                 fail(f"guided flow references missing NPCs: {sorted(invalid_npcs)}")
+            for npc_id in referenced_npcs:
+                if npc_id:
+                    npc = next(entry for entry in manifest.get("npcs", []) if entry["id"] == npc_id)
+                    if scene_id not in {appearance.get("sceneId") for appearance in npc.get("appearances", [])}:
+                        fail(f"{step['id']} references {npc_id} without a scene-specific appearance in {scene_id}")
             for option in step.get("options", []):
                 destination = option.get("destinationSceneID")
                 if destination:
@@ -154,12 +162,27 @@ def main() -> None:
                     effect = consequence.get("effect", {})
                     if not isinstance(effect, dict):
                         fail(f"consequence {consequence.get('id')} has an invalid effect")
-                    if set(effect) - {"threatDelta", "minimumThreat"}:
+                    if set(effect) - {"threatDelta", "minimumThreat", "timeDelta", "warmthDelta", "trustDelta", "injuryDelta"}:
                         fail(f"consequence {consequence['id']} in {step['id']} has an unsupported effect")
                     for effect_key in effect:
                         if not isinstance(effect[effect_key], int) or isinstance(effect[effect_key], bool):
                             fail(f"consequence {consequence['id']} has a non-integer {effect_key}")
-                if step["id"] == "S07_DANGER":
+            for clue_id in [step.get("clueID"), *step.get("clueIDs", [])]:
+                if clue_id and clue_id not in {clue["id"] for clue in manifest.get("clues", [])}:
+                    fail(f"guided flow references missing clue {clue_id}")
+                if clue_id and clue_id not in set(scenes_by_id[scene_id].get("clueIds", [])):
+                    fail(f"{step['id']} exposes {clue_id} outside its scene clue list")
+            required_scenes = set()
+            for option in step.get("options", []):
+                required = option.get("requiresCompletedSceneIDs", [])
+                if not isinstance(required, list) or any(scene_id not in scene_ids for scene_id in required):
+                    fail(f"option {option.get('id')} in {step['id']} has invalid scene requirements")
+                required_scenes.update(required)
+            if step["id"] in {"S03_NEXT", "S04_NEXT", "S05_NEXT"}:
+                archive = next((option for option in step.get("options", []) if option.get("destinationSceneID") == "S06"), None)
+                if not archive or set(archive.get("requiresCompletedSceneIDs", [])) != {"S03", "S04", "S05"}:
+                    fail(f"{step['id']} must gate S06 behind S03, S04 and S05")
+            if step["id"] == "S07_DANGER":
                     for ending_id in sorted(ending_ids):
                         available = [
                             consequence
@@ -175,6 +198,22 @@ def main() -> None:
     required_steps = {"S01_READ", "S01_ITEMS", "S01_DISTRIBUTE", "S01_CLUE", "S02_CHOICE", "S06_TRIGGER", "S07_DANGER", "S08_NEXT"}
     if not required_steps <= step_ids:
         fail(f"required guide steps missing: {sorted(required_steps - step_ids)}")
+
+    combat = guide.get("combat")
+    if not isinstance(combat, dict) or not isinstance(combat.get("enemy"), dict):
+        fail("guide must define a combat configuration")
+    enemy = combat["enemy"]
+    for key in ("id", "name", "damageDice", "notes"):
+        if not enemy.get(key):
+            fail(f"combat enemy has no {key}")
+    for key in ("maxLP", "initiative", "attackSkill"):
+        if not isinstance(enemy.get(key), int) or isinstance(enemy.get(key), bool) or enemy[key] < 1:
+            fail(f"combat enemy has invalid {key}")
+    if enemy.get("parryable") is not False:
+        fail("the Knochenhirsch must be marked as not parryable")
+    victories = combat.get("victoryByEnding", {})
+    if set(victories) != ending_ids or any(not isinstance(value, str) or not value for value in victories.values()):
+        fail("combat victory text must cover exactly all three endings")
 
     material_steps = {
         "S01_READ", "S01_ITEMS", "S01_DISTRIBUTE", "S01_CLUE",

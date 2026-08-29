@@ -1,5 +1,5 @@
-const CACHE = "kraehenfels-web-v3.3.0-shell13";
-const CORE = ["./", "./index.html", "./styles.css?v=3.3.0-r7", "./js/app.js?v=3.3.0-r7", "./js/guided-flow.js?v=3.3.0-r7", "./js/audio-engine.js", "./data/manifest.json", "./assets/icon.png"];
+const CACHE = "kraehenfels-web-v4.0.0-shell17";
+const CORE = ["./", "./index.html", "./styles.css?v=4.0.0-r11", "./js/app.js?v=4.0.0-r11", "./js/guided-flow.js?v=4.0.0-r11", "./js/audio-engine.js", "./data/manifest.json", "./assets/icon.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)));

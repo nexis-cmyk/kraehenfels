@@ -23,7 +23,9 @@ struct RootView: View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             sidebar
         } detail: {
-            centerContent
+            NavigationStack {
+                centerContent
+            }
                 .safeAreaInset(edge: .bottom, spacing: 0) {
                     AudioTransportBar()
                 }
@@ -39,6 +41,10 @@ struct RootView: View {
         .onChange(of: selection) { _, destination in
             guard case let .scene(sceneID) = destination else { return }
             guard session.currentSceneID != sceneID else { return }
+            guard session.canEnterScene(sceneID) else {
+                selection = .scene(session.currentSceneID)
+                return
+            }
             session.currentSceneID = sceneID
             session.guidedStepIndex = 0
         }
@@ -57,6 +63,7 @@ struct RootView: View {
 
             Section("Szenen") {
                 ForEach(content.manifest.scenes) { scene in
+                    let isAvailable = session.canEnterScene(scene.id)
                     NavigationLink(value: WorkspaceDestination.scene(scene.id)) {
                         HStack(spacing: 10) {
                             Text(scene.id)
@@ -71,6 +78,10 @@ struct RootView: View {
                                     .foregroundStyle(session.isRecommendedScene(scene.id) ? FrostTheme.accent : FrostTheme.quiet)
                             }
                             Spacer(minLength: 0)
+                            if !isAvailable {
+                                Image(systemName: "lock.fill")
+                                    .foregroundStyle(FrostTheme.quiet)
+                            }
                             if session.completedSceneIDs.contains(scene.id) {
                                 Image(systemName: "checkmark.circle.fill")
                                     .foregroundStyle(FrostTheme.accent)
@@ -78,6 +89,7 @@ struct RootView: View {
                         }
                         .frame(minHeight: 44)
                     }
+                    .disabled(!isAvailable)
                 }
             }
 
@@ -266,8 +278,9 @@ struct WorkspaceContextView: View {
                         .foregroundStyle(FrostTheme.frost)
                     Divider().overlay(FrostTheme.line)
                     contextRow("Sound", value: step.audioCueID.flatMap { content.cue(for: $0)?.title } ?? "Kein Sound vorgeschlagen", symbol: "waveform")
-                    contextRow("Hinweis", value: step.clueID ?? step.handoutID ?? "Keine Ausgabe", symbol: "doc.text")
-                    contextRow("NPC", value: step.npcID ?? step.npcIDs.first ?? "Keiner", symbol: "person")
+                    contextRow("Hinweise", value: clueLabels(for: step).isEmpty ? "Keine Ausgabe" : clueLabels(for: step).joined(separator: " · "), symbol: "doc.text.magnifyingglass")
+                    contextRow("Handouts", value: handoutLabels(for: step).isEmpty ? "Keine Ausgabe" : handoutLabels(for: step).joined(separator: " · "), symbol: "doc.text")
+                    contextRow("NPCs", value: npcLabels(for: step).isEmpty ? "Keine feste Figur" : npcLabels(for: step).joined(separator: " · "), symbol: "person.3")
                     if let roll = step.roll {
                         FrostCard {
                             VStack(alignment: .leading, spacing: 5) {
@@ -307,6 +320,27 @@ struct WorkspaceContextView: View {
                     .font(.subheadline)
                     .foregroundStyle(FrostTheme.frost)
             }
+        }
+    }
+
+    private func clueLabels(for step: GuideStep) -> [String] {
+        let ids = [step.clueID].compactMap { $0 } + step.clueIDs
+        return ids.compactMap { id in
+            content.manifest.clues.first(where: { $0.id == id }).map { "\($0.id) · \($0.title)" }
+        }
+    }
+
+    private func handoutLabels(for step: GuideStep) -> [String] {
+        let ids = [step.handoutID].compactMap { $0 } + step.handoutIDs
+        return ids.compactMap { id in
+            content.handout(for: id).map { "\($0.id) · \($0.title)" }
+        }
+    }
+
+    private func npcLabels(for step: GuideStep) -> [String] {
+        let ids = [step.npcID].compactMap { $0 } + step.npcIDs
+        return ids.compactMap { id in
+            content.manifest.npcs.first(where: { $0.id == id }).map(\.name)
         }
     }
 }

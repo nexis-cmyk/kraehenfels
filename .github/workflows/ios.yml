@@ -14,6 +14,7 @@ jobs:
       - name: Validate content and guided flow
         run: |
           python3 tools/validate_guided_flow.py
+          python3 tools/validate_altstore_feed.py altstore/source.json
       - name: Install XcodeGen
         run: HOMEBREW_NO_REQUIRE_TAP_TRUST=1 brew install xcodegen
       - name: Generate project

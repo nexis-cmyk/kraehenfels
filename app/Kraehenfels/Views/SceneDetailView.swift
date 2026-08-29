@@ -5,6 +5,7 @@ struct SceneDetailView: View {
     @EnvironmentObject private var content: ContentStore
     @EnvironmentObject private var audio: AudioEngine
     @EnvironmentObject private var session: SessionStore
+    @Environment(\.dismiss) private var dismiss
     @State private var showSpoilers = false
 
     var body: some View {
@@ -31,6 +32,11 @@ struct SceneDetailView: View {
         .background(FrostTheme.ink.ignoresSafeArea())
         .navigationTitle(scene.shortTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Zurück", systemImage: "chevron.left") { dismiss() }
+            }
+        }
     }
 
     private var sceneHeader: some View {
@@ -300,8 +306,8 @@ struct SceneDetailView: View {
                         .accessibilityLabel("Haltung von \(npc.name)")
                     }
                 }
-                if npc.appearances.first(where: { $0.sceneId == scene.id }) == nil, let prompt = npc.prompts.first {
-                    Label(prompt, systemImage: "person.wave.2")
+                if npc.appearances.first(where: { $0.sceneId == scene.id }) == nil {
+                    Label("Kein geplanter Auftritt in dieser Szene. NPC nicht automatisch einsetzen.", systemImage: "exclamationmark.triangle")
                         .font(.caption)
                         .foregroundStyle(FrostTheme.warning)
                         .fixedSize(horizontal: false, vertical: true)

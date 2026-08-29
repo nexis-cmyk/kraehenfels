@@ -45,7 +45,24 @@ def main() -> None:
     if map_ids != {"MAP01", "MAP02", "MAP03", "MAP04", "MAP05", "MAP06"}: fail("V3 map set is incomplete")
     if phase_ids != {"P01", "P02", "P03", "P04", "P05"}: fail("V3 phase set is incomplete")
     if len(manifest.get("endings", [])) != 3: fail("V3 must expose exactly three endings")
-    if manifest["meta"].get("version") != "3.3.0": fail("Native manifest must be the 3.3.0 content release")
+    if manifest["meta"].get("version") != "4.0.0": fail("Native manifest must be the 4.0.0 content release")
+
+    location_ids = {entry["id"] for entry in manifest.get("locations", [])}
+    fact_ids = {fact["id"] for fact in manifest.get("facts", [])}
+    for fact in manifest.get("facts", []):
+        clue_refs = fact.get("clueIds", [])
+        if not clue_refs or len(clue_refs) != len(set(clue_refs)):
+            fail(f"Fact {fact['id']} has duplicate or empty clue references")
+        missing = set(clue_refs) - clue_ids
+        if missing:
+            fail(f"Fact {fact['id']} references missing clues: {sorted(missing)}")
+    for handout in handouts:
+        linked = handout.get("linkedClueIds", [])
+        if len(linked) != len(set(linked)):
+            fail(f"Handout {handout['id']} has duplicate linked clues")
+        missing = set(linked) - clue_ids
+        if missing:
+            fail(f"Handout {handout['id']} references missing clues: {sorted(missing)}")
 
     for scene in scenes:
         missing = set(scene["handoutIds"]) - handout_ids
@@ -58,7 +75,7 @@ def main() -> None:
         if missing: fail(f"{scene['id']} references missing NPCs: {sorted(missing)}")
         missing = set(scene.get("clueIds", [])) - clue_ids
         if missing: fail(f"{scene['id']} references missing clues: {sorted(missing)}")
-        missing = set(scene.get("locationIds", [])) - {entry["id"] for entry in manifest.get("locations", [])}
+        missing = set(scene.get("locationIds", [])) - location_ids
         if missing: fail(f"{scene['id']} references missing locations: {sorted(missing)}")
         if scene.get("phaseId") not in phase_ids: fail(f"{scene['id']} has invalid phase")
         if not scene.get("readAloud"): fail(f"{scene['id']} has no read-aloud prompt")
@@ -89,14 +106,56 @@ def main() -> None:
             npc = next(entry for entry in npcs if entry["id"] == npc_id)
             if scene["id"] not in {appearance["sceneId"] for appearance in npc.get("appearances", [])}:
                 fail(f"{scene['id']} lists {npc_id} without a scene-specific appearance")
-    if "H09" in next(npc for npc in npcs if npc["id"] == "N03").get("givesHandoutIds", []):
-        fail("Elias must not expose the GM-only H09 as a regular player handout")
+    h09 = next((handout for handout in handouts if handout["id"] == "H09"), None)
+    if not h09 or h09.get("spoiler"):
+        fail("H09 must be a regular player handout")
+    if "H09" not in next(scene for scene in scenes if scene["id"] == "S06").get("handoutIds", []):
+        fail("S06 must expose H09 as a player handout")
     if "N06" in next(scene for scene in scenes if scene["id"] == "S07").get("npcIds", []):
         fail("Leni must remain safe and cannot be present at the Old Oak finale")
     for clue in clues:
         fallback = clue.get("handoutId")
         if fallback is not None and fallback not in handout_ids:
             fail(f"Clue {clue['id']} has invalid handout reference")
+        if clue.get("factId") is not None and clue["factId"] not in fact_ids:
+            fail(f"Clue {clue['id']} has invalid fact reference")
+        if clue.get("locationId") is not None and clue["locationId"] not in location_ids:
+            fail(f"Clue {clue['id']} has invalid location reference")
+        if fallback is not None:
+            linked = next(handout for handout in handouts if handout["id"] == fallback).get("linkedClueIds", [])
+            if clue["id"] not in linked:
+                fail(f"Clue {clue['id']} is not linked back from handout {fallback}")
+
+    guide = manifest.get("guide", {})
+    combat = guide.get("combat")
+    if not isinstance(combat, dict) or not isinstance(combat.get("enemy"), dict):
+        fail("Guide combat configuration is missing")
+    enemy = combat["enemy"]
+    expected_enemy = {"id": "enemy-bone-stag", "maxLP": 120, "initiative": 7, "attackSkill": 65, "damageDice": "7W10", "parryable": False}
+    for key, expected in expected_enemy.items():
+        if enemy.get(key) != expected:
+            fail(f"Combat enemy {key} must be {expected!r}")
+    if set(combat.get("victoryByEnding", {})) != {"E01", "E02", "E03"}:
+        fail("Combat victory text must cover all three endings")
+    guide_steps = guide.get("steps", {})
+    for scene_id, steps in guide_steps.items():
+        for step in steps:
+            clue_refs = [step.get("clueID"), *step.get("clueIDs", [])]
+            if set(filter(None, clue_refs)) - clue_ids:
+                fail(f"{step['id']} references a missing clue")
+            for option in step.get("options", []):
+                required = option.get("requiresCompletedSceneIDs", [])
+                if set(required) - scene_ids:
+                    fail(f"{step['id']} has an option with a missing scene requirement")
+            for npc_id in [step.get("npcID"), *step.get("npcIDs", [])]:
+                if npc_id:
+                    npc = next(entry for entry in npcs if entry["id"] == npc_id)
+                    if scene_id not in {appearance.get("sceneId") for appearance in npc.get("appearances", [])}:
+                        fail(f"{step['id']} references {npc_id} without a scene-specific appearance in {scene_id}")
+            if step.get("id") in {"S03_NEXT", "S04_NEXT", "S05_NEXT"}:
+                archive = next((option for option in step.get("options", []) if option.get("destinationSceneID") == "S06"), None)
+                if not archive or set(archive.get("requiresCompletedSceneIDs", [])) != {"S03", "S04", "S05"}:
+                    fail(f"{step['id']} does not gate S06 behind all three investigation scenes")
 
     app_manifest_path = ROOT / "app" / "Kraehenfels" / "Resources" / "manifest.json"
     if app_manifest_path.read_text(encoding="utf-8") != manifest_path.read_text(encoding="utf-8"):
@@ -180,8 +239,11 @@ def main() -> None:
         print(f"OK: {name} ({pages} pages)")
 
     player_handouts_text = "\n".join(page.extract_text() or "" for page in PdfReader(str(ROOT / "outputs" / "02_Handouts.pdf")).pages)
-    if "H09" in player_handouts_text:
-        fail("Player handouts contain a spoiler handout")
+    if "H09" not in player_handouts_text:
+        fail("Player handouts are missing H09")
+    spoiler_handouts_text = "\n".join(page.extract_text() or "" for page in PdfReader(str(ROOT / "outputs" / "13_SL_Spoiler-Handouts.pdf")).pages)
+    if "H09" in spoiler_handouts_text:
+        fail("H09 must not be duplicated in the spoiler handout PDF")
     player_map_text = "\n".join(page.extract_text() or "" for page in PdfReader(str(ROOT / "outputs" / "01_Karte_Spieler.pdf")).pages)
     if "Spielerkarte" not in player_map_text:
         fail("Player map is missing its player-safe marker")
@@ -196,8 +258,22 @@ def main() -> None:
     if not final_npc_path.exists(): fail("Missing final NPC direction guide")
     final_player = PdfReader(str(final_player_path))
     final_npcs = PdfReader(str(final_npc_path))
-    if len(final_player.pages) != 19: fail(f"Final player session pack must have 19 pages, got {len(final_player.pages)}")
+    if len(final_player.pages) != 20: fail(f"Final player session pack must have 20 pages, got {len(final_player.pages)}")
     if len(final_npcs.pages) != 7: fail(f"NPC direction guide must have 7 pages, got {len(final_npcs.pages)}")
+    player_page_texts = [page.extract_text() or "" for page in final_player.pages]
+    def unique_page_for(marker: str) -> int:
+        matches = [index for index, text in enumerate(player_page_texts) if marker in text]
+        if len(matches) != 1:
+            fail(f"Final player session pack must contain exactly one page with {marker}, got {len(matches)}")
+        return matches[0]
+
+    # The generated PDF font encoding may normalize umlauts and middle dots;
+    # the stable handout IDs are sufficient to identify each page.
+    h10_page = unique_page_for("H10")
+    h05_page = unique_page_for("H05")
+    h09_page = unique_page_for("H09")
+    if not h10_page < h05_page < h09_page:
+        fail("Final player session pack must order H10 before H05 and H09")
     item_page_text = final_player.pages[3].extract_text() or ""
     for spoiler_term in ("Knochenhirsch", "geführten Finale", "Bindung zerstören", "Marta"):
         if spoiler_term in item_page_text:
@@ -228,6 +304,16 @@ def main() -> None:
             asset = entry.get(key)
             if asset and not (maps_dir / asset).exists(): fail(f"Missing web map asset: {asset}")
             if asset and not (print_assets / asset).exists(): fail(f"Missing print map asset: {asset}")
+    web_handout_dir = ROOT / "web" / "assets" / "materials" / "handouts"
+    for handout in handouts:
+        preview_asset = handout.get("previewAsset")
+        if preview_asset and not (web_handout_dir / preview_asset).exists():
+            fail(f"Missing web handout preview: {preview_asset}")
+    web_item_dir = ROOT / "web" / "assets" / "materials" / "items"
+    for item in manifest.get("guide", {}).get("items", []):
+        card_asset = item.get("playerCardAsset")
+        if card_asset and not (web_item_dir / card_asset).exists():
+            fail(f"Missing web item card: {card_asset}")
     for name in ("Einladung_Kraehenfels.pdf", "Kraehenfels-Druckpaket.zip", "Kraehenfels-Audio.zip"):
         if not (ROOT / "outputs" / name).exists(): fail(f"Missing shareable output: {name}")
     print(f"OK: {len(scenes)} scenes, {len(handouts)} handouts, {len(npcs)} NPCs, {len(clues)} clues, {len(cues)} audio cues")

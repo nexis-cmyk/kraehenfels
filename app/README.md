@@ -2,7 +2,7 @@
 
 Die App ist ein offline-first SwiftUI-Begleiter für die Spielleitung. Szenen, Hinweise, Regeln und Audio-Cues liegen im Bundle. Es gibt keine Anmeldung und keine Netzwerkabhängigkeit während der Runde.
 
-Der Guided Flow kommt aus `adventure/guide.json` und wird über `tools/build_content_v5.py` in das Bundle geschrieben. Die drei Spieler bringen eigene Figuren mit; die App speichert dafür nur ihre Namen. Nach dem Kutschenunfall werden sechs Gegenstände an drei Fundorten aufgedeckt und unter den Figuren verteilt. Der Spielstand nutzt den V6-Schlüssel und übernimmt ältere V5- und V4-Journale. Zurückgehen stellt die vorherige Position wieder her, ohne gefundene Hinweise oder Tischnotizen zu löschen. Misslungene Würfe bleiben bis zur Auswahl einer storygerechten Folge offen; Ergebnis, Folge und bestätigte Gegenstandsnutzung werden strukturiert gespeichert.
+Der Guided Flow kommt aus `adventure/guide.json` und wird über `tools/build_content_v5.py` in das Bundle geschrieben. Die drei Spieler bringen eigene Figuren mit; die App speichert dafür nur ihre Namen. Nach dem Kutschenunfall werden sechs Gegenstände an drei Fundorten aufgedeckt und unter den Figuren verteilt. H09 ist ein reguläres Spielerhandout und wird im Archiv nach H05 ausgegeben. Der Spielstand nutzt den V7-Schlüssel und übernimmt ältere V6-, V5- und V4-Journale. Zurückgehen stellt die vorherige Position wieder her, ohne gefundene Hinweise oder Tischnotizen zu löschen. Misslungene Würfe bleiben bis zur Auswahl einer storygerechten Folge offen; Ergebnis, Folge und bestätigte Gegenstandsnutzung werden strukturiert gespeichert.
 
 ## Build auf macOS
 

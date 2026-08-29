@@ -35,7 +35,7 @@ Der Player hält vier Ebenen getrennt. Ein Szenen-Preset wechselt nur die Ortsat
 
 ## Druckpaket
 
-`tools/build_print_pack_v3.py` ruft den V3-Generator auf. Die Handouts tragen IDs, eigene Requisitenlayouts und eine gestrichelte Außenlinie mit Ausschneidehinweis. Das Spielerpaket enthält keine H09-Ritualspoiler. Die Kartensätze sind in Spieler- und SL-Ansicht getrennt. Die textfreien GPT-Bildplatten werden erst im Build mit Titeln, Hinweis-IDs und Spoilerrahmen versehen. Gasthaus, Kirche, Schmiede, Rathausarchiv und Alte Eiche liegen zusätzlich als Detailkarten bei.
+`tools/build_print_pack_v3.py` ruft den V3-Generator auf. Die Handouts tragen IDs, eigene Requisitenlayouts und eine gestrichelte Außenlinie mit Ausschneidehinweis. H09 liegt im Spielerpaket, wird aber erst im Rathausarchiv nach H05 ausgegeben. Die Kartensätze sind in Spieler- und SL-Ansicht getrennt. Die textfreien GPT-Bildplatten werden erst im Build mit Titeln, Hinweis-IDs und Spoilerrahmen versehen. Gasthaus, Kirche, Schmiede, Rathausarchiv und Alte Eiche liegen zusätzlich als Detailkarten bei.
 
 Geliefert werden:
 
@@ -58,7 +58,7 @@ python tools/validate_project.py
 python tools/validate_guided_flow.py
 ```
 
-`tools/validate_project.py` prüft IDs und Querverweise, die native Manifest-Synchronität, den Web-Stand, Szene- und Kartenbilder, exakt die 21 erwarteten nativen Audio-Dateien (20 Cues plus Selbsttest), unreferenzierte Audio-/Art-Dateien, Dubletten im gesamten nativen Paket, Cue-Zeitpunkte, kritische Szenenzuordnungen, PDF-Lesbarkeit und die Spoilertrennung der Spielerunterlagen. Der Kartensatz umfasst MAP01 bis MAP06.
+`tools/validate_project.py` prüft IDs und Querverweise, die native Manifest-Synchronität, den Web-Stand, Szene- und Kartenbilder, die bidirektionalen Hinweis-/Handout-Verknüpfungen, szenenspezifische NPC-Auftritte, exakt die 21 erwarteten nativen Audio-Dateien (20 Cues plus Selbsttest), unreferenzierte Audio-/Art-Dateien, Dubletten im gesamten nativen Paket, Cue-Zeitpunkte, kritische Szenenzuordnungen, die Reihenfolge H10 → H05 → H09 im Spielerpaket, PDF-Lesbarkeit und die Spoilertrennung der Spielerunterlagen. Der Kartensatz umfasst MAP01 bis MAP06.
 
 ## Web-Leitstand
 

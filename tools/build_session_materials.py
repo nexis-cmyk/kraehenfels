@@ -73,6 +73,7 @@ PAGE_NAMES = [
     "06_Waldspur/03_H10_Forstweg",
     "07_Archiv/01_Karte_Rathausarchiv",
     "07_Archiv/02_H05_Winterbuchhaltung",
+    "07_Archiv/03_H09_Ritualfragment",
     "08_Finale/01_Karte_Alte_Eiche",
     "08_Finale/02_Endkarten",
 ]
@@ -267,6 +268,9 @@ def build_player_body(path: Path, data: dict) -> None:
     c.showPage()
     c.setPageSize(A4)
     draw_handout(c, "H05", handouts["H05"]["title"])
+    c.showPage()
+    c.setPageSize(A4)
+    draw_handout(c, "H09", handouts["H09"]["title"])
     c.showPage()
     draw_player_map(c, maps["MAP06"], MAP_ORDER[5][1])
     c.showPage()
